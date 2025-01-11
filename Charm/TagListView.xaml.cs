@@ -1744,7 +1744,7 @@ public partial class TagListView : UserControl
                 _allTagItems.Add(new TagItem
                 {
                     Hash = wem.Hash,
-                    Name = $"WEM {metadata.FileIndex}",
+                    Name = $"WEM {metadata.FileIndex} {(wem.Channels > 2 ? "⚠" : "")}",
                     Subname = $"{Helpers.GetReadableSize(metadata.Size)} | Duration: {wem.Duration}",
                     TagType = ETagListType.Sound
                 });
@@ -2285,7 +2285,6 @@ public class TagItem
     }
 
     public string Subname { get; set; } = String.Empty;
-
     public TigerHash Hash { get; set; }
 
     public string HashString
