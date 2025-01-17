@@ -124,6 +124,11 @@
         <Link>Shaders\Lighting.hlsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+
+      <Content Include="..\Atlas\Shaders\TFXFunctions.hlsl">
+        <Link>Shaders\TFXFunctions.hlsl</Link>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 

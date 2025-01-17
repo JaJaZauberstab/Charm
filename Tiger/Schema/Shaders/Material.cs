@@ -50,13 +50,13 @@ namespace Tiger.Schema.Shaders
                 {
                     string pixel = Pixel.Shader.Decompile($"ps{Pixel.Shader.Hash}");
                     Directory.CreateDirectory($"{saveDirectory}/Shaders/HLSL");
-                    File.WriteAllText($"{saveDirectory}/Shaders/HLSL/PS_{Hash}.hlsl", pixel);
+                    File.WriteAllText($"{saveDirectory}/Shaders/HLSL/PS_{Pixel.Shader.Hash}.hlsl", pixel);
 
                     if (_config.GetUnrealInteropEnabled())
                     {
                         string usf = new UsfConverter().HlslToUsf(this, false);
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Unreal");
-                        File.WriteAllText($"{saveDirectory}/Shaders/Unreal/PS_{Hash}.usf", usf);
+                        File.WriteAllText($"{saveDirectory}/Shaders/Unreal/PS_{Pixel.Shader.Hash}.usf", usf);
                     }
 
                     if (_config.GetS2ShaderExportEnabled())
@@ -65,7 +65,7 @@ namespace Tiger.Schema.Shaders
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Source2");
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Source2/materials");
 
-                        File.WriteAllText($"{saveDirectory}/Shaders/Source2/PS_{Pixel.Shader.Hash}.shader", vfx);
+                        File.WriteAllText($"{saveDirectory}/Shaders/Source2/PS_{Hash}.shader", vfx);
                         if (!isTerrain)
                             Source2Handler.SaveVMAT(saveDirectory, Hash, this);
                     }
