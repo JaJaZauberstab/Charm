@@ -106,7 +106,7 @@ public enum TfxExtern : byte
 
 public static class Externs
 {
-    public static string GetExternFloat(TfxExtern extern_, int element)
+    public static string GetExternFloat(TfxExtern extern_, int element, bool bInline = false)
     {
         switch (extern_)
         {
@@ -114,11 +114,11 @@ public static class Externs
                 switch (element)
                 {
                     case 0:
-                        return $"float4(g_flTime,g_flTime,g_flTime,g_flTime)"; // game_time
+                        return bInline ? $"float4(g_flTime,g_flTime,g_flTime,g_flTime)" : "(Time)"; // game_time
                     case 0x04:
-                        return $"float4(g_flTime,g_flTime,g_flTime,g_flTime)"; // render_time
+                        return bInline ? $"float4(g_flTime,g_flTime,g_flTime,g_flTime)" : "(Time)"; // render_time
                     case 0x10:
-                        return $"float4(0.5,0.5,0.5,0.5)";
+                        return bInline ? $"float4(FrameTimeOfDay.xxxx)" : $"(exists(FrameTimeOfDay) ? (FrameTimeOfDay) : (0.5))";
                     case 0x14:
                         return $"float4(0.016,0.016,0.016,0.016)"; // delta_game_time
                     case 0x1C:
@@ -132,14 +132,14 @@ public static class Externs
                 switch (element)
                 {
                     case 0x70:
-                        return $"float4(AtmosTimeOfDay,AtmosTimeOfDay,AtmosTimeOfDay,AtmosTimeOfDay)";
+                        return bInline ? $"float4(AtmosTimeOfDay.xxxx)" : $"(exists(AtmosTimeOfDay) ? (AtmosTimeOfDay) : (0.5))";
                     case 0x198:
                     case 0x170:
                         return $"float4(0.0001,0.0001,0.0001,0.0001)";
                     case 0x1b4:
-                        return $"float4(AtmosRotation,AtmosRotation,AtmosRotation,AtmosRotation)";
+                        return bInline ? $"float4(AtmosRotation.xxxx)" : $"(exists(AtmosRotation) ? (AtmosRotation) : (0))";
                     case 0x1b8:
-                        return $"float4(AtmosTimeOfDay,AtmosTimeOfDay,AtmosTimeOfDay,AtmosTimeOfDay)";
+                        return bInline ? $"float4(AtmosIntensity.xxxx)" : $"(exists(AtmosIntensity) ? (AtmosIntensity) : (0.5))";
                     case 0x1bc:
                         return $"float4(0.5,0.5,0.5,0.5)";
                     case 0x1e8:

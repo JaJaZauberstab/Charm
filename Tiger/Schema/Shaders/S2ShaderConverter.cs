@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using SharpDX.Direct3D11;
 using Tiger.Schema.Shaders;
 
@@ -90,12 +91,13 @@ PS
     #define cmp -
 
 //ps_samplers
+//ps_CBuffers
 //ps_Inputs
 //ps_additional
 
     float4 MainPs( PixelInput i ) : SV_Target0
     {{
-//ps_CBuffers
+//ps_CBuffers_inline
 //ps_Function
 
 //ps_output
@@ -105,6 +107,8 @@ PS
     public string HlslToVfx(Material material)
     {
         Material = material;
+        bool bInline = material.Pixel.GetBytecode().CanInlineBytecode();
+
         //Pixel Shader
         StringBuilder texSamples = new StringBuilder();
         hlsl = new StringReader(material.Pixel.Shader.Decompile($"ps{material.Pixel.Shader.Hash}"));
@@ -140,7 +144,12 @@ PS
         }
 
         vfxStructure = vfxStructure.Replace("//ps_samplers", texSamples.ToString());
-        vfxStructure = vfxStructure.Replace("//ps_CBuffers", WriteCbuffers(material, false).ToString());
+        vfxStructure = Regex.Replace(
+                        vfxStructure,
+                        bInline ? @"//ps_CBuffers_inline\b" : @"//ps_CBuffers\b",
+                        WriteCbuffers(material, false).ToString()
+                    );
+
         vfxStructure = vfxStructure.Replace("//ps_Inputs", WriteTexInputs(material, false).ToString());
 
         if (Resources.Exists(cbuffer => cbuffer.ResourceType == ResourceType.CBuffer && cbuffer.Index == 12))
@@ -184,7 +193,11 @@ PS
             }
 
             vfxStructure = vfxStructure.Replace("//vs_samplers", texSamples.ToString());
-            vfxStructure = vfxStructure.Replace("//vs_CBuffers", WriteCbuffers(material, true).ToString());
+            vfxStructure = Regex.Replace(
+                        vfxStructure,
+                        bInline ? @"//vs_CBuffers_inline\b" : @"//vs_CBuffers\b",
+                        WriteCbuffers(material, true).ToString()
+                    );
 
             instructions = ConvertInstructions(material, true);
             if (instructions.ToString().Length == 0)
@@ -197,18 +210,18 @@ PS
         }
 
         //--------------------------
+
+        vfxStructure = Regex.Replace(vfxStructure, @"//ps_\w+", "");
+        vfxStructure = Regex.Replace(vfxStructure, @"//vs_\w+", "");
+
         vfx.AppendLine(vfxStructure);
         return vfx.ToString();
     }
 
-    // TODO: Somehow determine if the materials dynamic expressions are long enough to warrant shoving into the shader
-    // instead of the material (really long expressions can crash s&box).
-    // If shoving into shader (as it is currently), save and use shader as material hash
-    // else, save shader as shader hash and populate in material (like before)
     private StringBuilder WriteCbuffers(Material material, bool isVertexShader)
     {
+        bool bInline = material.Pixel.GetBytecode().CanInlineBytecode();
         StringBuilder CBuffers = new();
-
         foreach (var resource in Resources)
         {
             switch (resource.ResourceType)
@@ -218,101 +231,114 @@ PS
                 //    break;
 
                 case ResourceType.CBuffer:
-                    switch (resource.Index)
+                    if (!bInline)
                     {
-                        case 0:
-                            var cb0 = isVertexShader ? material.Vertex.GetCBuffer0() : material.Pixel.GetCBuffer0();
-                            CBuffers.AppendLine($"\t\tfloat4 cb0[{cb0.Count}] =\n\t\t{{");
-                            foreach (var vec in cb0)
-                            {
-                                CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString()},");
-                            }
-                            CBuffers.AppendLine($"\t\t}};");
-
-                            // Dynamic expressions
-                            TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(isVertexShader ? material.Vertex.TFX_Bytecode : material.Pixel.TFX_Bytecode));
-                            var bytecode_hlsl = bytecode.Evaluate(isVertexShader ? material.Vertex.TFX_Bytecode_Constants : material.Pixel.TFX_Bytecode_Constants, false, material);
-
-                            foreach (var entry in bytecode_hlsl)
-                            {
-                                CBuffers.AppendLine($"\t\tcb0[{entry.Key}] = {entry.Value.Replace("dot4", "dot")};");
-                            }
-                            break;
-
-                        case 2:
-                            CBuffers.AppendLine($"\t\tfloat4 cb2[{resource.Count}] = \n\t\t{{ // Transparent");
+                        if (resource.Index != 12 && (!isVertexShader || resource.Index != 1))
+                        {
+                            string cbType = isVertexShader ? "vs_cb" : "cb";
                             for (int i = 0; i < resource.Count; i++)
                             {
-                                if (i == 0)
-                                    CBuffers.AppendLine($"\t\t\tfloat4(0,100,0,0),");
-                                else
-                                    CBuffers.AppendLine($"\t\t\tfloat4(1,1,1,1),");
+                                CBuffers.AppendLine($"\tfloat4 {cbType}{resource.Index}_{i} < Default4( 0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( \"{cbType}{resource.Index}/{i}\"); >;");
                             }
-                            CBuffers.AppendLine($"\t\t}};");
-                            break;
-
-                        case 8:
-                            CBuffers.AppendLine($"\t\tfloat4 cb8[37] =\n\t\t{{ // Transparent_Advanced");
-                            Vector4[] data = new Vector4[37];
-
-                            data[0] = new Vector4(0.0009849314, 0.0019836868, 0.0007783567, 0.0015586712);
-                            data[1] = new Vector4(0.00098604, 0.002085914, 0.0009838239, 0.0018864698);
-                            data[2] = new Vector4(0.0011860824, 0.0024346288, 0.0009468408, 0.001850187);
-                            data[3] = new Vector4(0.7903466, 0.7319064, 0.56213695, 0.0);
-                            data[4] = new Vector4(0.0, 1.0, 0.109375, 0.046875);
-                            data[5] = new Vector4(0.0, 0.0, 0.0, 0.00086945295);
-                            data[6] = new Vector4(0.05, 0.05, 0.05, 0.5); // Main Tint? // float4(0.55, 0.41091052, 0.22670946, 0.50381273)
-                            data[7] = new Vector4(1.0, 1.0, 1.0, 0.9997778); // Cubemap Reflection Tint?
-                            data[8] = new Vector4(132.92885, 66.40444, 56.853416, 0.0);
-                            data[9] = new Vector4(132.92885, 66.40444, 1000.0, 0.0001);
-                            data[10] = new Vector4(131.92885, 65.40444, 55.853416, 0.6784314);
-                            data[11] = new Vector4(131.92885, 65.40444, 999.0, 5.5);
-                            data[12] = new Vector4(0.0, 0.5, 25.575994, 0.0);
-                            data[13] = new Vector4(0.0, 0.0, 0.0, 0.0);
-                            data[14] = new Vector4(0.025, 10000.0, -9999.0, 1.0);
-                            data[15] = new Vector4(1.0, 1.0, 1.0, 0.0);
-                            data[16] = new Vector4(0.0, 0.0, 0.0, 0.0);
-                            data[17] = new Vector4(10.979255, 7.1482353, 6.3034935, 0.0);
-                            data[18] = new Vector4(0.0037614072, 0.0, 0.0, 0.0);
-                            data[19] = new Vector4(0.0, 0.0075296126, 0.0, 0.0);
-                            data[20] = new Vector4(0.0, 0.0, 0.017589089, 0.0);
-                            data[21] = new Vector4(0.27266484, -0.31473818, -0.15603681, 1.0);
-                            data[36] = new Vector4(1.0, 0.0, 0.0, 0.0);
-
-                            foreach (var vec in data)
-                            {
-                                CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString()},");
-                            }
-                            CBuffers.AppendLine($"\t\t}};");
-                            break;
-
-                        case 13: // Frame
-                            CBuffers.AppendLine($"\t\tfloat4 cb13[7] =\n\t\t{{ // Frame");
-
-                            CBuffers.AppendLine($"\t\t\tfloat4(g_flTime, g_flTime, 0.05, 0.016),");
-                            CBuffers.AppendLine($"\t\t\tfloat4(0.65,16,0.65,1.5),");
-                            CBuffers.AppendLine($"\t\t\tfloat4((g_flTime + 33.75) * 1.258699, (g_flTime + 60.0) * 0.9583125, (g_flTime + 60.0) * 8.789123, (g_flTime + 33.75) * 2.311535),");
-                            CBuffers.AppendLine($"\t\t\tfloat4(1,1,0,1),");
-                            CBuffers.AppendLine($"\t\t\tfloat4(0,0,512,0),");
-                            CBuffers.AppendLine($"\t\t\tfloat4(0,1,sin(g_flTime * 6.0) * 0.5 + 0.5,0),");
-                            CBuffers.AppendLine($"\t\t\tfloat4(0,0.5,180,0),");
-
-                            CBuffers.AppendLine($"\t\t}};");
-                            break;
-
-                        default:
-                            if (resource.Index != 12 && (!isVertexShader || resource.Index != 1))
-                            {
-                                CBuffers.AppendLine($"\t\tfloat4 cb{resource.Index}[{resource.Count}] =\n\t\t{{");
-                                for (int i = 0; i < resource.Count; i++)
+                        }
+                    }
+                    else
+                    {
+                        switch (resource.Index)
+                        {
+                            case 0:
+                                var cb0 = isVertexShader ? material.Vertex.GetCBuffer0() : material.Pixel.GetCBuffer0();
+                                CBuffers.AppendLine($"\n\t\tfloat4 cb0[{cb0.Count}] =\n\t\t{{");
+                                foreach (var vec in cb0)
                                 {
-                                    CBuffers.AppendLine($"\t\t\tfloat4(0,0,0,0),");
+                                    CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString()},");
                                 }
                                 CBuffers.AppendLine($"\t\t}};");
-                            }
-                            break;
-                    }
 
+                                // Dynamic expressions
+                                TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(isVertexShader ? material.Vertex.TFX_Bytecode : material.Pixel.TFX_Bytecode));
+                                var bytecode_hlsl = bytecode.Evaluate(isVertexShader ? material.Vertex.TFX_Bytecode_Constants : material.Pixel.TFX_Bytecode_Constants, false, material);
+
+                                foreach (var entry in bytecode_hlsl)
+                                {
+                                    CBuffers.AppendLine($"\t\tcb0[{entry.Key}] = {entry.Value.Replace("dot4", "dot")};");
+                                }
+                                break;
+
+                            case 2:
+                                CBuffers.AppendLine($"\n\t\tfloat4 cb2[{resource.Count}] = \n\t\t{{ // Transparent");
+                                for (int i = 0; i < resource.Count; i++)
+                                {
+                                    if (i == 0)
+                                        CBuffers.AppendLine($"\t\t\tfloat4(0,100,0,0),");
+                                    else
+                                        CBuffers.AppendLine($"\t\t\tfloat4(1,1,1,1),");
+                                }
+                                CBuffers.AppendLine($"\t\t}};");
+                                break;
+
+                            case 8:
+                                CBuffers.AppendLine($"\n\t\tfloat4 cb8[37] =\n\t\t{{ // Transparent_Advanced");
+                                Vector4[] data = new Vector4[37];
+
+                                data[0] = new Vector4(0.0009849314, 0.0019836868, 0.0007783567, 0.0015586712);
+                                data[1] = new Vector4(0.00098604, 0.002085914, 0.0009838239, 0.0018864698);
+                                data[2] = new Vector4(0.0011860824, 0.0024346288, 0.0009468408, 0.001850187);
+                                data[3] = new Vector4(0.7903466, 0.7319064, 0.56213695, 0.0);
+                                data[4] = new Vector4(0.0, 1.0, 0.109375, 0.046875);
+                                data[5] = new Vector4(0.0, 0.0, 0.0, 0.00086945295);
+                                data[6] = new Vector4(0.05, 0.05, 0.05, 0.5); // Main Tint? // float4(0.55, 0.41091052, 0.22670946, 0.50381273)
+                                data[7] = new Vector4(1.0, 1.0, 1.0, 0.9997778); // Cubemap Reflection Tint?
+                                data[8] = new Vector4(132.92885, 66.40444, 56.853416, 0.0);
+                                data[9] = new Vector4(132.92885, 66.40444, 1000.0, 0.0001);
+                                data[10] = new Vector4(131.92885, 65.40444, 55.853416, 0.6784314);
+                                data[11] = new Vector4(131.92885, 65.40444, 999.0, 5.5);
+                                data[12] = new Vector4(0.0, 0.5, 25.575994, 0.0);
+                                data[13] = new Vector4(0.0, 0.0, 0.0, 0.0);
+                                data[14] = new Vector4(0.025, 10000.0, -9999.0, 1.0);
+                                data[15] = new Vector4(1.0, 1.0, 1.0, 0.0);
+                                data[16] = new Vector4(0.0, 0.0, 0.0, 0.0);
+                                data[17] = new Vector4(10.979255, 7.1482353, 6.3034935, 0.0);
+                                data[18] = new Vector4(0.0037614072, 0.0, 0.0, 0.0);
+                                data[19] = new Vector4(0.0, 0.0075296126, 0.0, 0.0);
+                                data[20] = new Vector4(0.0, 0.0, 0.017589089, 0.0);
+                                data[21] = new Vector4(0.27266484, -0.31473818, -0.15603681, 1.0);
+                                data[36] = new Vector4(1.0, 0.0, 0.0, 0.0);
+
+                                foreach (var vec in data)
+                                {
+                                    CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString()},");
+                                }
+                                CBuffers.AppendLine($"\t\t}};");
+                                break;
+
+                            case 13: // Frame
+                                CBuffers.AppendLine($"\n\t\tfloat4 cb13[7] =\n\t\t{{ // Frame");
+
+                                CBuffers.AppendLine($"\t\t\tfloat4(g_flTime, g_flTime, 0.05, 0.016),");
+                                CBuffers.AppendLine($"\t\t\tfloat4(0.65,16,0.65,1.5),");
+                                CBuffers.AppendLine($"\t\t\tfloat4((g_flTime + 33.75) * 1.258699, (g_flTime + 60.0) * 0.9583125, (g_flTime + 60.0) * 8.789123, (g_flTime + 33.75) * 2.311535),");
+                                CBuffers.AppendLine($"\t\t\tfloat4(1,1,0,1),");
+                                CBuffers.AppendLine($"\t\t\tfloat4(0,0,512,0),");
+                                CBuffers.AppendLine($"\t\t\tfloat4(0,1,sin(g_flTime * 6.0) * 0.5 + 0.5,0),");
+                                CBuffers.AppendLine($"\t\t\tfloat4(0,0.5,180,0),");
+
+                                CBuffers.AppendLine($"\t\t}};");
+                                break;
+
+                            default:
+                                if (resource.Index != 12 && (!isVertexShader || resource.Index != 1))
+                                {
+                                    CBuffers.AppendLine($"\t\tfloat4 cb{resource.Index}[{resource.Count}] =\n\t\t{{");
+                                    for (int i = 0; i < resource.Count; i++)
+                                    {
+                                        CBuffers.AppendLine($"\t\t\tfloat4(0,0,0,0),");
+                                    }
+                                    CBuffers.AppendLine($"\t\t}};");
+                                }
+                                break;
+                        }
+                    }
                     break;
             }
         }
@@ -364,14 +390,51 @@ PS
             funcDef.AppendLine($"\tTexture2D g_t14 < Attribute( \"TerrainDyemap\" ); SrgbRead( false ); >;\r\n\n");
         }
 
-        var opcodes = material.Pixel.GetBytecode().Opcodes;
-        foreach ((int i, var op) in opcodes.Select((value, index) => (index, value)))
+        var opcodes = material.Pixel.GetBytecode();
+        bool bInline = opcodes.CanInlineBytecode();
+        foreach ((int i, var op) in opcodes.Opcodes.Select((value, index) => (index, value)))
         {
             switch (op.op)
             {
+                case TfxBytecode.PushExternInputFloat:
+                    var externFloatData = (PushExternInputFloatData)op.data;
+                    var externIndex = externFloatData.element * 4;
+                    switch (externFloatData.extern_)
+                    {
+                        case TfxExtern.Frame:
+                            switch (externIndex)
+                            {
+                                case 0x10 when bInline:
+                                    if (!funcDef.ToString().Contains($"\tfloat FrameTimeOfDay < Attribute( \"FrameTimeOfDay\" ); Default1( 0.5 ); >;"))
+                                        funcDef.AppendLine($"\tfloat FrameTimeOfDay < Attribute( \"FrameTimeOfDay\" ); Default1( 0.5 ); >;");
+                                    break;
+                            }
+                            break;
+
+
+                        case TfxExtern.Atmosphere:
+                            switch (externIndex)
+                            {
+                                case 0x70 when bInline:
+                                    if (!funcDef.ToString().Contains($"\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;"))
+                                        funcDef.AppendLine($"\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;");
+                                    break;
+                                case 0x1b4 when bInline:
+                                    if (!funcDef.ToString().Contains($"\tfloat AtmosRotation < Attribute( \"AtmosRotation\" ); Default1( 0.5 ); >;"))
+                                        funcDef.AppendLine($"\tfloat AtmosRotation < Attribute( \"AtmosRotation\" ); Default1( 0.5 ); >;");
+                                    break;
+                                case 0x1b8 when bInline:
+                                    if (!funcDef.ToString().Contains($"\tfloat AtmosIntensity < Attribute( \"AtmosIntensity\" ); Default1( 0.5 ); >;"))
+                                        funcDef.AppendLine($"\tfloat AtmosIntensity < Attribute( \"AtmosIntensity\" ); Default1( 0.5 ); >;");
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+
                 case TfxBytecode.PushExternInputTextureView:
                     var data = (PushExternInputTextureViewData)op.data;
-                    var slot = ((SetShaderTextureData)opcodes[i + 1].data).value & 0x1F;
+                    var slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
                     var index = data.element * 8;
                     switch (data.extern_)
                     {
@@ -421,16 +484,6 @@ PS
 
                                 case 0xF0: // SMapAtmosphere T13
                                     ExternTextureSlots.Add(slot);
-                                    break;
-
-                                case 0x70:
-                                    funcDef.AppendLine($"\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;");
-                                    break;
-                                case 0x1b4:
-                                    funcDef.AppendLine($"\tfloat AtmosRotation < Attribute( \"AtmosRotation\" ); Default1( 0.5 ); >;");
-                                    break;
-                                case 0x1b8:
-                                    funcDef.AppendLine($"\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;");
                                     break;
                             }
                             break;
@@ -517,6 +570,8 @@ PS
     private StringBuilder ConvertInstructions(Material material, bool isVertexShader)
     {
         StringBuilder funcDef = new();
+        //bool bInline = (isVertexShader ? material.Vertex : material.Pixel).GetBytecode().CanInlineBytecode();
+        bool bInline = material.Pixel.GetBytecode().CanInlineBytecode();
 
         if (isVertexShader)
         {
@@ -676,7 +731,31 @@ PS
             line = hlsl.ReadLine();
             if (line != null)
             {
-                if (line.Contains("while (true)"))
+                if (!bInline && (line.Contains("cb") && !line.Contains("Sample")))
+                {
+                    string pattern = @"cb(\d+)\[(\d+)\]"; // Matches cb#[#]
+                    string output = Regex.Replace(line, pattern, match =>
+                    {
+                        // Extract the values from the matched groups
+                        string group1 = match.Groups[1].Value; // cbuffer index
+                        string group2 = match.Groups[2].Value; // cbuffer array index
+
+                        if (group1 != "12" && (!isVertexShader || group1 != "1"))
+                        {
+                            // Replace with the actual values of group1 and group2
+                            return isVertexShader ? $"vs_cb{group1}_{group2}" : $"cb{group1}_{group2}";
+                        }
+                        else
+                        {
+                            // If group1 is "12", don't replace
+                            return match.Value;
+                        }
+                    });
+
+                    // Append the modified line to funcDef
+                    funcDef.AppendLine($"\t\t{output.TrimStart()}");
+                }
+                else if (line.Contains("while (true)"))
                 {
                     funcDef.AppendLine($"\t\t{line.TrimStart().Replace("while (true)", "[loop] while (true)")}");
                 }
@@ -695,28 +774,28 @@ PS
                     var sampleUv = line.Split(", ")[1].Split(").")[0];
                     var dotAfter = line.Split(").")[1];
 
-                    //if (sampleUv.Contains("cb")) //Rare case where a cbuffer value is used as a texcoord
-                    //{
-                    //    string pattern = @"cb(\d+)\[(\d+)\]"; // Matches cb#[#]
-                    //    sampleUv = Regex.Replace(sampleUv, pattern, match =>
-                    //    {
-                    //        // Extract the values from the matched groups
-                    //        string group1 = match.Groups[1].Value; // cbuffer index
-                    //        string group2 = match.Groups[2].Value; // cbuffer array index
+                    if (!bInline && sampleUv.Contains("cb")) //Rare case where a cbuffer value is used as a texcoord
+                    {
+                        string pattern = @"cb(\d+)\[(\d+)\]"; // Matches cb#[#]
+                        sampleUv = Regex.Replace(sampleUv, pattern, match =>
+                        {
+                            // Extract the values from the matched groups
+                            string group1 = match.Groups[1].Value; // cbuffer index
+                            string group2 = match.Groups[2].Value; // cbuffer array index
 
-                    //        if (group1 != "12" || (isVertexShader && group1 != "1"))
-                    //        {
-                    //            equal_tex_post = equal_tex_post.Replace($"cb{group1}[{group2}]", $"cb{group1}_{group2}");
-                    //            // Replace with the actual values of group1 and group2
-                    //            return isVertexShader ? $"vs_cb{group1}_{group2}" : $"cb{group1}_{group2}";
-                    //        }
-                    //        else
-                    //        {
-                    //            // If group1 is "12", don't replace
-                    //            return match.Value;
-                    //        }
-                    //    });
-                    //}
+                            if (group1 != "12" || (isVertexShader && group1 != "1"))
+                            {
+                                equal_tex_post = equal_tex_post.Replace($"cb{group1}[{group2}]", $"cb{group1}_{group2}");
+                                // Replace with the actual values of group1 and group2
+                                return isVertexShader ? $"vs_cb{group1}_{group2}" : $"cb{group1}_{group2}";
+                            }
+                            else
+                            {
+                                // If group1 is "12", don't replace
+                                return match.Value;
+                            }
+                        });
+                    }
 
 
                     if (texIndex == 14 && isTerrain) // Terrain dyemap, not defined in the material itself
@@ -877,11 +956,11 @@ PS
                 }
                 else if (line.Contains("GetDimensions"))
                 {
-                    var equal = line.Split("=")[0];
-                    var texIndex = Int32.Parse(line.Split(".GetDimensions")[0].Split("t")[1]);
-                    var after = line.Split(".GetDimensions")[1];
+                    funcDef.AppendLine($"\t\t//{line.TrimStart()}");
+                    //var texIndex = Int32.Parse(line.Split(".GetDimensions")[0].Split("t")[1]);
+                    //var after = line.Split(".GetDimensions")[1];
 
-                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.GetDimensions{after}");
+                    //funcDef.AppendLine($"\t\tg_t{texIndex}.GetDimensions{after}");
                 }
                 else if (line.Contains("sincos")) // 3dmigoto bug?
                 {
@@ -989,7 +1068,7 @@ PS
         if (isDecorator) // Surely this is fine...
             return $"VS\r\n{{\r\n\t#include \"common/vertex.hlsl\"\r\n\r\n    float g_flEdgeFrequency < Default( 0.17 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flEdgeAmplitude < Default( 0.15 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flBranchFrequency < Default( 0.17 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flBranchAmplitude < Default( 0.15 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flTrunkDeflection < Default( 0.0 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flTrunkDeflectionStart < Default( 0.0 ); Range( 0.0, 1000.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n\r\n    float4 SmoothCurve( float4 x )\r\n    {{  \r\n        return x * x * ( 3.0 - 2.0 * x );  \r\n    }}  \r\n\r\n    float4 TriangleWave( float4 x )\r\n    {{\r\n        return abs( frac( x + 0.5 ) * 2.0 - 1.0 );  \r\n    }}  \r\n\r\n    float4 SmoothTriangleWave( float4 x )\r\n    {{  \r\n        return SmoothCurve( TriangleWave( x ) );  \r\n    }}\r\n\r\n    // High-frequency displacement used in Unity's TerrainEngine; based on \"Vegetation Procedural Animation and Shading in Crysis\"\r\n    // http://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch16.html\r\n    void FoliageDetailBending( inout float3 vPositionOs, float3 vNormalOs, float3 vVertexColor, float3x4 matObjectToWorld, float3 vWind )\r\n    {{\r\n        // 1.975, 0.793, 0.375, 0.193 are good frequencies   \r\n        const float4 vFoliageFreqs = float4( 1.975, 0.793, 0.375, 0.193 );\r\n\r\n        // Attenuation and phase offset is encoded in the vertex color\r\n        const float flEdgeAtten = vVertexColor.r;\r\n        const float flBranchAtten = vVertexColor.b;\r\n        const float flDetailPhase = vVertexColor.g;\r\n\r\n        // Material defined frequency and amplitude\r\n        const float2 vTime = g_flTime.xx * float2( g_flEdgeFrequency, g_flBranchFrequency );\r\n        const float flEdgeAmp = g_flEdgeAmplitude;\r\n        const float flBranchAmp = g_flBranchAmplitude;\r\n\r\n        // Phases\r\n        float flObjPhase = dot( mul( matObjectToWorld, float4( 0, 0, 0, 1 ) ), 1 );\r\n        float flBranchPhase = flDetailPhase + flObjPhase;\r\n        float flVtxPhase = dot( vPositionOs.xyz, flDetailPhase + flBranchPhase );\r\n\r\n        // fmod max phase avoid imprecision at high phases\r\n        const float maxPhase = 50000.0f;\r\n\r\n        // x is used for edges; y is used for branches\r\n        float2 vWavesIn = ( vTime.xy + fmod( float2( flVtxPhase, flBranchPhase ), maxPhase ) ) * length( vWind );\r\n        \r\n        float4 vWaves = ( frac( vWavesIn.xxyy * vFoliageFreqs ) * 2.0 - 1.0 );\r\n        vWaves = SmoothTriangleWave( vWaves );\r\n        float2 vWavesSum = vWaves.xz + vWaves.yw;\r\n\r\n        // Edge (xy) and branch bending (z)\r\n        float flBranchWindBend = 1.0f - abs( dot( normalize( vWind.xyz ), normalize( float3( vPositionOs.xy, 0.0f ) ) ) );\r\n        flBranchWindBend *= flBranchWindBend;\r\n\r\n        vPositionOs.xyz += vWavesSum.x * flEdgeAtten * flEdgeAmp * vNormalOs.xyz;\r\n        vPositionOs.xyz += vWavesSum.y * flBranchAtten * flBranchAmp * float3( 0.0f, 0.0f, 1.0f );\r\n        vPositionOs.xyz += vWavesSum.y * flBranchAtten * flBranchAmp * flBranchWindBend * vWind.xyz;\r\n    }}\r\n\r\n    // Main vegetation bending - displace verticies' xy positions along the wind direction\r\n    // using normalized height to scale the amount of deformation.\r\n    void FoliageMainBending( inout float3 vPositionOs, float3 vWind )\r\n    {{\r\n        if ( g_flTrunkDeflection <= 0.0 ) return;\r\n\r\n        float flLength = length( vPositionOs.xyz );\r\n        // Bend factor - Wind variation is done on the CPU.  \r\n        float flBF = 0.01f * max( vPositionOs.z - g_flTrunkDeflectionStart, 0 ) * g_flTrunkDeflection;  \r\n        // Smooth bending factor and increase its nearby height limit.  \r\n        flBF += 1.0f;\r\n        flBF *= flBF;\r\n        flBF = flBF * flBF - flBF;\r\n\r\n        // Back and forth\r\n        float flBend = pow( max( 0.0f, length( vWind ) - 1.0f ) / 4.0f, 2 ) * 4.0f;\r\n        flBend = flBend + 0.7f * sqrt( flBend ) * sin( g_flTime );\r\n        flBF *= flBend;\r\n\r\n        // Displace position  \r\n        float3 vNewPos = vPositionOs;\r\n        vNewPos.xy += vWind.xy * flBF;\r\n\r\n        // Rescale (reduces stretch)\r\n        vPositionOs.xyz = normalize( vNewPos.xyz ) * flLength;\r\n    }}\r\n\r\n\t//\r\n\t// Main\r\n\t//\r\n\tPixelInput MainVs( VertexInput i )\r\n\t{{\r\n\t\tPixelInput o = ProcessVertex( i );\r\n\r\n        //o.vColor = i.vColor;\r\n\t\to.vColor = i.vColor;\r\n\t\to.vColor.a = i.vColor.a;\r\n\r\n        float3 vNormalOs;\r\n        float4 vTangentUOs_flTangentVSign;\r\n\r\n        VS_DecodeObjectSpaceNormalAndTangent( i, vNormalOs, vTangentUOs_flTangentVSign );\r\n\t\t\r\n        float3 vPositionOs = i.vPositionOs.xyz;\r\n        float3x4 matObjectToWorld = CalculateInstancingObjectToWorldMatrix( i );\r\n\r\n\t\tif(!all(i.vColor.xyz == float3(1, 1, 1)))\r\n\t\t{{\r\n\t\t\tfloat3 vWind = float3(1,1,0.1) * 4.0f; //g_vWindDirection.xyz * g_vWindStrengthFreqMulHighStrength.x;\r\n\t\t\tFoliageDetailBending( vPositionOs, vNormalOs, i.vColor.xyz, matObjectToWorld, vWind );\r\n\t\t\tFoliageMainBending( vPositionOs, vWind );\r\n\t\t}}\r\n\r\n        o.vPositionWs = mul( matObjectToWorld, float4( vPositionOs.xyz, 1.0 ) );\r\n\t    o.vPositionPs.xyzw = Position3WsToPs( o.vPositionWs.xyz );\r\n\r\n\t\t// Add your vertex manipulation functions here\r\n\t\treturn FinalizeVertex( o );\r\n\t}}\r\n}}";
         else // Basic vertex shader
-            return $"VS\r\n{{\r\n\t#include \"common/vertex.hlsl\"\r\n    #define CUSTOM_TEXTURE_FILTERING\r\n    #define cmp -\r\n\r\n//vs_samplers\r\n//vs_Inputs\r\n\r\n\tPixelInput MainVs( VertexInput i )\r\n\t{{\r\n\t\tPixelInput o = ProcessVertex( i );\r\n        float4 o0,o1,o2,o3,o4,o5,o6,o7,o8;\r\n        o.vColor = i.vColor;\r\n\t\to.vColor.a = i.vColor.a;\r\n        o.vPositionOs = i.vPositionOs.xyz;\r\n        VS_DecodeObjectSpaceNormalAndTangent( i, o.vNormalOs, o.vTangentUOs_flTangentVSign );\r\n\r\n//vs_CBuffers\r\n//vs_Function\r\n//vs_output\r\n\t\treturn FinalizeVertex( o );\r\n\t}}\r\n}}";
+            return $"VS\r\n{{\r\n\t#include \"common/vertex.hlsl\"\r\n    #define CUSTOM_TEXTURE_FILTERING\r\n    #define cmp -\r\n\r\n//vs_samplers\r\n//vs_CBuffers\r\n//vs_Inputs\r\n\r\n\tPixelInput MainVs( VertexInput i )\r\n\t{{\r\n\t\tPixelInput o = ProcessVertex( i );\r\n        float4 o0,o1,o2,o3,o4,o5,o6,o7,o8;\r\n        o.vColor = i.vColor;\r\n\t\to.vColor.a = i.vColor.a;\r\n        o.vPositionOs = i.vPositionOs.xyz;\r\n        VS_DecodeObjectSpaceNormalAndTangent( i, o.vNormalOs, o.vTangentUOs_flTangentVSign );\r\n\r\n//vs_CBuffers_inline\r\n//vs_Function\r\n//vs_output\r\n\t\treturn FinalizeVertex( o );\r\n\t}}\r\n}}";
     }
 
 

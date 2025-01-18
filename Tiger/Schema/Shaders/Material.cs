@@ -65,7 +65,8 @@ namespace Tiger.Schema.Shaders
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Source2");
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Source2/materials");
 
-                        File.WriteAllText($"{saveDirectory}/Shaders/Source2/PS_{Hash}.shader", vfx);
+                        var hash = Pixel.GetBytecode().CanInlineBytecode() ? Hash : Pixel.Shader.Hash;
+                        File.WriteAllText($"{saveDirectory}/Shaders/Source2/PS_{hash}.shader", vfx);
                         if (!isTerrain)
                             Source2Handler.SaveVMAT(saveDirectory, Hash, this);
                     }
