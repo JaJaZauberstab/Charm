@@ -53,11 +53,13 @@ public struct D2Class_9D798080
     [SchemaField(0x50)]
     public ResourcePointer Unk50; // 8B178080 D1
 
-    [SchemaField(0x70)]
+    [SchemaField(0x70, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk70;  // C0778080 socketEntries
 
     [SchemaField(0x58, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x70, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk78;  // D2Class_81738080, BD178080 D1
 
     //[SchemaField(0x88, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
@@ -65,19 +67,19 @@ public struct D2Class_9D798080
 
     [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x90, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x80, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x78, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk90;  // D2Class_77738080
 
     [SchemaField(0x78, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0xA8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x98, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x90, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash InventoryItemHash;
     public TigerHash UnkAC;
     public byte SeasonIndex; // 'seasonHash', not used for gear
 
     [SchemaField(0x8A, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0xC2, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0xAC, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0xA4, TigerStrategy.DESTINY2_LATEST)]
     public byte ItemRarity;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
@@ -96,7 +98,7 @@ public struct D2Class_9D798080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x110, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0xD8, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0xD0, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_05798080> TraitIndices;
 }
 
@@ -410,12 +412,12 @@ public struct D2Class_9F548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x60, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk60;  // D2Class_CF548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x70, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk78;  // D2Class_B4548080
 
     [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
@@ -424,34 +426,34 @@ public struct D2Class_9F548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x88, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x80, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x78, TigerStrategy.DESTINY2_LATEST)]
     public short IconIndex;
     public short FoundryIconIndex; // the banner that appears on foundry weapons (Hakke, veist, etc)
     public short EmblemContainerIndex; // Can be the emblem or foundry container post-TFS
 
     [SchemaField(0x78, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x8C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x88, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x80, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemName;  // "displayProperties" -> "name"
 
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x98, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x94, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x8C, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemType;  // "itemTypeDisplayName"
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xA0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x9C, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x94, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemDisplaySource; // "displaySource"
 
     [SchemaField(0x88, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0xB0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0xAC, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0xA4, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemFlavourText;  // "flavorText"
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xB8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0xB8, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0xB0, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArrayUnloaded<D2Class_F1598080> UnkB8;
 
     public TigerHash UnkC8;  // "bucketTypeHash" / "equipmentSlotTypeHash"
@@ -463,7 +465,7 @@ public struct D2Class_9F548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xE0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0xE0, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0xD8, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_B2548080> TooltipNotifications;
     // ive missed lots of stuff here
 

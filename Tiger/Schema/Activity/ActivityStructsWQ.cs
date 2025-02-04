@@ -425,17 +425,20 @@ public struct D2Class_6A988080
     public DynamicArray<D2Class_B7978080> DialogueTables;
     public TigerHash StartingBubbleName;
     public TigerHash Unk24;
-    [SchemaField(0x2C)]
+    [SchemaField(0x2C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x30, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SMusicTemplate> Music;
     [SchemaField(TigerStrategy.DESTINY2_LATEST)]
     public Tag<D2Class_A4BC8080> Music2;
 
-    [SchemaField(0x60)]
+    [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
     public StringPointer DescentMusicPath;
     [Tag64]
     public Entity.Entity DescentMusic;
 
-    [SchemaField(0x7C)]
+    [SchemaField(0x7C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x84, TigerStrategy.DESTINY2_LATEST)]
     public Tag DescentMisc; // C7978080, contains anim clips and models used when loading into destination
 }
 

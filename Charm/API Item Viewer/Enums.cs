@@ -38,6 +38,7 @@ public enum DestinyUIDisplayStyle : uint
 
 
 // TODO: Find where these indexes actually go?
+// Would be nice if bungie stopped changing these every season :)
 public static class DestinyDamageType
 {
     public static DestinyDamageTypeEnum GetDamageType(int index)
@@ -49,26 +50,32 @@ public static class DestinyDamageType
             case 1319:
             case 1373:
             case 1405:
+            case 1469: // nice
                 return DestinyDamageTypeEnum.Kinetic;
             case 1320:
             case 1374:
             case 1406:
+            case 1470:
                 return DestinyDamageTypeEnum.Arc;
             case 1321:
             case 1375:
             case 1407:
+            case 1471:
                 return DestinyDamageTypeEnum.Solar;
             case 1322:
             case 1376:
             case 1408:
+            case 1472:
                 return DestinyDamageTypeEnum.Void;
             case 1323:
             case 1377:
             case 1409:
+            case 1473:
                 return DestinyDamageTypeEnum.Stasis;
             case 1324:
             case 1378:
             case 1410:
+            case 1474:
                 return DestinyDamageTypeEnum.Strand;
             default:
                 Log.Warning($"Unknown DestinyDamageTypeEnum {index}");
