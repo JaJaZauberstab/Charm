@@ -235,7 +235,7 @@ public partial class MusicPlayerControl : UserControl
         _prevPositionValue = 0;
         var duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
         var s = sender as Slider;
-        _waveProvider.Position = (long)(s.Value * _wem.GetDuration().TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
+        _waveProvider.Position = (long)(s.Value * duration.TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
         SetPosition(_waveProvider.Position);
         Play();
     }
@@ -249,7 +249,7 @@ public partial class MusicPlayerControl : UserControl
         _prevPositionValue = 0;
         var duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
         var s = sender as Slider;
-        _waveProvider.Position = (long)(s.Value * _wem.GetDuration().TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
+        _waveProvider.Position = (long)(s.Value * duration.TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
         SetPosition(_waveProvider.Position);
         Play();
     }
