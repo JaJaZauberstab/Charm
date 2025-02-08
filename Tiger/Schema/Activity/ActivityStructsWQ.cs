@@ -418,25 +418,32 @@ public struct D2Class_DD978080
 /// <summary>
 /// Directive table + audio links for activity directives.
 /// </summary>
-[SchemaStruct("6A988080", 0x84)]
+/// 
+[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "6A988080", 0x84)]
 public struct D2Class_6A988080
 {
     public DynamicArray<D2Class_28898080> DirectiveTables;
     public DynamicArray<D2Class_B7978080> DialogueTables;
     public TigerHash StartingBubbleName;
     public TigerHash Unk24;
+
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)] // idk why these are needed when only WQ SchemaStruct is used
     [SchemaField(0x2C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x30, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SMusicTemplate> Music;
+
     [SchemaField(TigerStrategy.DESTINY2_LATEST)]
     public Tag<D2Class_A4BC8080> Music2;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
     public StringPointer DescentMusicPath;
+
     [Tag64]
     public Entity.Entity DescentMusic;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x7C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x84, TigerStrategy.DESTINY2_LATEST)]
     public Tag DescentMisc; // C7978080, contains anim clips and models used when loading into destination

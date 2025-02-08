@@ -1466,6 +1466,7 @@ public struct D2Class_FA2C8080
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public Tag<D2Class_A36F8080> AudioEntityParentD1;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xF0, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     [SchemaField(0x120, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag<D2Class_A36F8080> AudioEntityParentD2;

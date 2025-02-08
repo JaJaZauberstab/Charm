@@ -53,7 +53,7 @@ public struct D2Class_9D798080
     [SchemaField(0x50)]
     public ResourcePointer Unk50; // 8B178080 D1
 
-    [SchemaField(0x70, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x70, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk70;  // C0778080 socketEntries
 
