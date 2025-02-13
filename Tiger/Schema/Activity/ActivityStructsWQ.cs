@@ -11,9 +11,11 @@ namespace Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402;
 public struct SActivity_WQ
 {
     public long FileSize;
+
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public StringPointer ActivityName;
+
     [SchemaField(0x10, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public TigerHash LocationName;  // these all have actual string hashes but have no string container given directly
@@ -22,17 +24,21 @@ public struct SActivity_WQ
     public TigerHash Unk14;
     public ResourcePointer Unk18;  // 6A988080 + 20978080 (+ 19978080, beyondlight)
     public FileHash64 Destination;  // D2Class_8B8E8080
+
     //[SchemaField(0x30, TigerStrategy.DESTINY2_LATEST)] // Doesnt look useful?
     //public DynamicArray<D2Class_00978080> Unk30;
+
     [SchemaField(0x70, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x40, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public DynamicArray<D2Class_26898080> Unk40;
     public DynamicArray<D2Class_24898080> Unk50;
+
     [SchemaField(0x90, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x70, TigerStrategy.DESTINY2_LIGHTFALL_7366)]
     public TigerHash Unk60;
     public FileHash Unk64;  // an entity thing
+
     [SchemaField(0xA0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
     [SchemaField(0x68, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     [SchemaField(0x78, TigerStrategy.DESTINY2_LIGHTFALL_7366), Tag64]
