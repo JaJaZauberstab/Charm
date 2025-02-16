@@ -88,7 +88,7 @@ public struct D2Class_9D798080
     public byte UnkC4; // 'isInstanceItem'?
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xCA, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0xA2, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public byte RecipeItemIndex; // 'recipeItemHash'
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
@@ -1032,6 +1032,10 @@ public struct D2Class_0E5A8080
     [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64, NoLoad]
     public LocalizedStrings LocalizedStrings;
 
+    [SchemaField(0x18, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    public short Index; // Index into 26BA8080 container is LocalizedStrings is null
+    public short Unk1A;
+
     public LocalizedStrings GetLocalizedStrings()
     {
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
@@ -1039,6 +1043,22 @@ public struct D2Class_0E5A8080
         else
             return LocalizedStrings;
     }
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "26BA8080", 0x18)]
+public struct D2Class_26BA8080
+{
+    public long FileSize;
+    public DynamicArray<D2Class_2CBA8080> LocalizedStrings;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "2CBA8080", 0x20)]
+public struct D2Class_2CBA8080
+{
+    public TigerHash BankFnvHash;  // some kind of name for the bank
+
+    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64, NoLoad]
+    public LocalizedStrings LocalizedStrings;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CF508080", 0x18)]
