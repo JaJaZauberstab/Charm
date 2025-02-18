@@ -460,8 +460,9 @@ public struct D2Class_9F548080
     public TigerHash UnkCC;  // DestinySandboxPatternDefinition hash
     public TigerHash UnkD0;  // DestinySandboxPatternDefinition hash
     public TigerHash UnkD4;
-    public StringHash TooltipStyle; // 'tooltipStyle' as fnv hash
-    public StringHash DisplayStyle; // 'uiItemDisplayStyle'
+
+    public DestinyTooltipStyle TooltipStyle; // 'tooltipStyle' as fnv hash
+    public DestinyUIDisplayStyle DisplayStyle; // 'uiItemDisplayStyle'
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xE0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
@@ -491,7 +492,7 @@ public struct D2Class_DC548080
 [SchemaStruct("D7548080", 0x20)]
 public struct D2Class_D7548080 // 'preview'
 {
-    public TigerHash ScreenStyleHash; // screenStyle
+    public DestinyScreenStyle ScreenStyle; // screenStyle
     public int PreviewVendorIndex; // previewVendorHash
     public StringIndexReference PreviewActionString; // previewActionString
 }
