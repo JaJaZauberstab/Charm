@@ -31,8 +31,8 @@ public partial class APITooltip : UserControl
 
         // TODO: Make this better, it sucks
         if (itemStrings is not null &&
-            ((DestinyTooltipStyle)itemStrings.TagData.TooltipStyle.Hash32 != DestinyTooltipStyle.None
-            && (DestinyTooltipStyle)itemStrings.TagData.TooltipStyle.Hash32 != DestinyTooltipStyle.Record))
+            (itemStrings.TagData.TooltipStyle != DestinyTooltipStyle.None
+            && itemStrings.TagData.TooltipStyle != DestinyTooltipStyle.Record))
         {
             item.PlugRarity = DestinyTierType.Unknown;
             item.PlugRarityColor = DestinyTierType.Unknown.GetColor();
@@ -70,7 +70,7 @@ public partial class APITooltip : UserControl
 
             if (itemStrings?.TagData.Unk40.GetValue(itemStrings.GetReader()) is D2Class_D7548080 preview)
             {
-                if (preview.ScreenStyleHash.Hash32 == 3797307284) // 'screen_style_emblem'
+                if (preview.ScreenStyle == DestinyScreenStyle.Emblem)
                 {
                     AddToTooltip(new PlugItem
                     {
@@ -137,7 +137,7 @@ public partial class APITooltip : UserControl
                     if (item.PlugStyle == DestinySocketCategoryStyle.Reusable)
                         return;
 
-                    if (itemStrings is not null && (DestinyUIDisplayStyle)itemStrings.TagData.DisplayStyle.Hash32 == DestinyUIDisplayStyle.EnergyMod)
+                    if (itemStrings is not null && itemStrings.TagData.DisplayStyle == DestinyUIDisplayStyle.EnergyMod)
                     {
                         foreach (var stat in stats.InvestmentStats)
                         {
