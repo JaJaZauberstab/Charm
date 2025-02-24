@@ -2,42 +2,10 @@
 using System.ComponentModel;
 using System.Windows.Media;
 using Arithmic;
-using Tiger;
-
-// https://bungie-net.github.io/multi/schema_Destiny-Definitions-Sockets-DestinySocketCategoryDefinition.html#schema_Destiny-Definitions-Sockets-DestinySocketCategoryDefinition
-// https://bungie-net.github.io/multi/schema_Destiny-DestinySocketCategoryStyle.html#schema_Destiny-DestinySocketCategoryStyle
-public enum DestinySocketCategoryStyle : uint
-{
-    Unknown = 0, // 0
-    Reusable = 2656457638, // 1
-    Consumable = 1469714392, // 2
-                             // where Intrinsic? Replaced with LargePerk? // 4
-    Unlockable = 1762428417, // 3
-    EnergyMeter = 750616615, // 5
-    LargePerk = 2251952357, // 6
-    Abilities = 1901312945, // 7
-    Supers = 497024337, // 8
-}
-
-public enum DestinyTooltipStyle : uint
-{
-    None = StringHash.InvalidHash32, // C59D1C81
-    Build = 3284755031, // 'build'
-    Record = 3918064370, // 'record'
-    VendorAction = 4278229900 // 'vendor_action'
-}
-
-public enum DestinyUIDisplayStyle : uint
-{
-    None = StringHash.InvalidHash32, // C59D1C81
-    Info = 3556713801, // 'ui_display_style_info'
-    PerkInfo = 900809780, // 'ui_display_style_perk_info'
-    ItemAddon = 1366836148, // 'ui_display_style_item_add_on'
-    EnergyMod = 3201739904 // 'ui_display_style_energy_mod'
-}
 
 
 // TODO: Find where these indexes actually go?
+// Would be nice if bungie stopped changing these every season :)
 public static class DestinyDamageType
 {
     public static DestinyDamageTypeEnum GetDamageType(int index)
@@ -49,26 +17,32 @@ public static class DestinyDamageType
             case 1319:
             case 1373:
             case 1405:
+            case 1469: // nice
                 return DestinyDamageTypeEnum.Kinetic;
             case 1320:
             case 1374:
             case 1406:
+            case 1470:
                 return DestinyDamageTypeEnum.Arc;
             case 1321:
             case 1375:
             case 1407:
+            case 1471:
                 return DestinyDamageTypeEnum.Solar;
             case 1322:
             case 1376:
             case 1408:
+            case 1472:
                 return DestinyDamageTypeEnum.Void;
             case 1323:
             case 1377:
             case 1409:
+            case 1473:
                 return DestinyDamageTypeEnum.Stasis;
             case 1324:
             case 1378:
             case 1410:
+            case 1474:
                 return DestinyDamageTypeEnum.Strand;
             default:
                 Log.Warning($"Unknown DestinyDamageTypeEnum {index}");

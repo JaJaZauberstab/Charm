@@ -382,17 +382,34 @@ public struct SStaticMeshInstanceMap
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "AE7D8080", 0x50)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "1E898080", 0x60)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "1E898080", 0x6C)]
 public struct SBubbleParent
 {
     public long FileSize;
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_LATEST, Obsolete = true)] // Changed to Tag64 in Heresy
     public Tag<SBubbleDefinition> ChildMapReference;
-    [SchemaField(0x10)] // todo i dont get this
+
+    [SchemaField(TigerStrategy.DESTINY2_LATEST), Tag64] // Changed to Tag64 in Heresy
+    public Tag<SBubbleDefinition> ChildMapReference64;
+
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x20, TigerStrategy.DESTINY2_LATEST)]
     public StringHash MapName;
     public int Unk1C;
-    [SchemaField(0x40)]
+    [SchemaField(0x40, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x48, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_C9968080> Unk40;
     [Tag64, SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public Tag Unk50;  // some kind of parent thing, very strange weird idk
+
+    public Tag<SBubbleDefinition> GetChildMapReference()
+    {
+        if (Strategy.IsLatest())
+            return ChildMapReference64;
+        else
+            return ChildMapReference;
+    }
 }
 
 /// <summary>

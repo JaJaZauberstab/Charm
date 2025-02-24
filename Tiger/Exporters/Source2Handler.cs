@@ -39,7 +39,7 @@ public static class Source2Handler
                     }
                     mats.AppendLine("},\n");
 
-                    if (part.Material.Vertex.Unk64 != 0)
+                    if (part.Material?.Vertex.Unk64 != 0)
                     {
                         exceptions.AppendLine($"\"{name}_Group{part.GroupIndex}_Index{part.Index}_{i}_{part.LodCategory}\",");
                     }

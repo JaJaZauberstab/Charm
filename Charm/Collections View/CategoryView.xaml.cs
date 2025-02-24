@@ -242,7 +242,8 @@ public partial class CategoryView : UserControl
             };
             newItem.PlugItem = plugItem;
 
-            _allItems.Add(newItem);
+            if (!_allItems.Any(x => x.ItemHash == newItem.ItemHash))
+                _allItems.Add(newItem);
         }
     }
 

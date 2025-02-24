@@ -2072,8 +2072,10 @@ public partial class TagListView : UserControl
                 continue;
 
             string name = "";
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON) // && name == "")
+            if (Strategy.IsD1()) // && name == "")
                 name = sound.TagData.SoundbankBL.GetNameFromBank();
+            else if (Strategy.IsPostBL())
+                name = sound.TagData.SoundbankWQ.TagData.SoundBank.GetNameFromBank();
 
             _allTagItems.Add(new TagItem
             {

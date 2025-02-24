@@ -967,8 +967,8 @@ public static class ApiImageUtils
         if (container == null || container.TagData.IconPrimaryContainer == null)
             return null;
 
-        var primaryStream = GetTexture(container.TagData.IconPrimaryContainer, texIndex, listIndex).GetTexture();
-        var primary = primaryStream != null ? MakeBitmapImage(primaryStream, 96, 96) : null;
+        var primaryStream = GetTexture(container.TagData.IconPrimaryContainer, texIndex, listIndex);
+        var primary = primaryStream != null ? MakeBitmapImage(primaryStream.GetTexture(), 96, 96) : null;
 
         var dw = new ImageBrush(primary);
         dw.Freeze();

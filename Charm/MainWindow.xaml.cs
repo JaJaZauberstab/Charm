@@ -107,10 +107,11 @@ public partial class MainWindow
         // you're not cool, you get off to your 5 minutes of fame on twitter
         if (!ConfigSubsystem.Get().GetAcceptedAgreement())
         {
-            var a = MessageBox.Show($"By using Charm, you agree to:" +
+            var a = MessageBox.Show($"Charm is NOT a datamining tool!\n" +
+                $"By using Charm, you agree to:" +
                 $"\n- Not use this to leak content." +
                 $"\n- Not use this to spread spoilers." +
-                $"\n\nSeriously, it's getting very annoying seeing this used for leaks. (Looking at you BungieLeaks)" +
+                $"\n\nSeriously, it's getting very annoying seeing this used for leaks/spoilers." +
                 $"\n\nSeeing leaks come from here makes public releases and updates less and less likely. Stop ruining it.",
                 $"Usage Agreement",
                 MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -241,7 +242,7 @@ public partial class MainWindow
     // Disabling update checking for now since the last github release is a fossil at this point
     private async void CheckVersion()
     {
-        var currentVersion = new ApplicationVersion("2.3.7");
+        var currentVersion = new ApplicationVersion("2.4.0");
         Arithmic.Log.Info($"Charm Version: {currentVersion.Id}");
         //var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/main/", currentVersion);
         //versionChecker.LatestVersionName = "version";

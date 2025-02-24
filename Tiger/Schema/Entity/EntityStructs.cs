@@ -1411,7 +1411,7 @@ public struct D2Class_F42C8080
 
     [SchemaField(0x1D8, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x2C8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x2E8, TigerStrategy.DESTINY2_LATEST)]
+    [SchemaField(0x318, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_FA2C8080> PatternAudioGroups;
 
     [SchemaField(0xD0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
@@ -1426,7 +1426,7 @@ public struct D2Class_F42C8080
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "12238080", 0x140)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "FA2C8080", 0x258)]
 [SchemaStruct(TigerStrategy.DESTINY2_LIGHTFALL_7366, "EEBC8080", 0x278)]
-[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "73B78080", 0x278)] // Why does this keep changing???
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "73B78080", 0x2A8)] // Why does this keep changing???
 public struct D2Class_FA2C8080
 {
     [SchemaField(0x18, TigerStrategy.DESTINY1_RISE_OF_IRON)]
@@ -1441,18 +1441,23 @@ public struct D2Class_FA2C8080
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)] // These aren't obsolete but not needed, I don't think
     [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     public Tag Unk60;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     public Tag Unk78;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x90, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     public Tag Unk90;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xA8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     public Tag UnkA8;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xC0, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     public Tag UnkC0;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xD8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     public Tag UnkD8;
@@ -1461,32 +1466,41 @@ public struct D2Class_FA2C8080
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public Tag<D2Class_A36F8080> AudioEntityParentD1;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xF0, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
+    [SchemaField(0x120, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag<D2Class_A36F8080> AudioEntityParentD2;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x120, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x150, TigerStrategy.DESTINY2_LATEST)] // ??
     public TigerHash WeaponTypeHash2; // "weaponTypeHash" from API
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x130, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
+    [SchemaField(0x160, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag Unk130;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x148, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
+    [SchemaField(0x178, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag Unk148;
 
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x118, TigerStrategy.DESTINY2_LIGHTFALL_7366)]
+    [SchemaField(0x148, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk118;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x1C0, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     [SchemaField(0x1D0, TigerStrategy.DESTINY2_LIGHTFALL_7366), Tag64]
+    [SchemaField(0x200, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag Unk1C0;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x1D8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     [SchemaField(0x1E8, TigerStrategy.DESTINY2_LIGHTFALL_7366), Tag64]
+    [SchemaField(0x218, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag Unk1D8;
 
     // public DynamicArray<D2Class_87978080> Unk1E8;
@@ -1496,6 +1510,7 @@ public struct D2Class_FA2C8080
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x248, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
     [SchemaField(0x268, TigerStrategy.DESTINY2_LIGHTFALL_7366), Tag64]
+    [SchemaField(0x298, TigerStrategy.DESTINY2_LATEST), Tag64]
     public Tag Unk248;
 
     public Tag<D2Class_A36F8080> GetAudioEntityParent()
