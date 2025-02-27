@@ -107,23 +107,42 @@ public partial class MainWindow
         // you're not cool, you get off to your 5 minutes of fame on twitter
         if (!ConfigSubsystem.Get().GetAcceptedAgreement())
         {
-            var a = MessageBox.Show($"Charm is NOT a datamining tool!\n" +
-                $"By using Charm, you agree to:" +
-                $"\n- Not use this to leak content." +
-                $"\n- Not use this to spread spoilers." +
-                $"\n\nSeriously, it's getting very annoying seeing this used for leaks/spoilers." +
-                $"\n\nSeeing leaks come from here makes public releases and updates less and less likely. Stop ruining it.",
-                $"Usage Agreement",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            WarningBanner warn = new();
+            warn.DarkenBackground = true;
+            warn.Icon = "⚠️";
+            warn.Title = "ATTENTION";
+            warn.Subtitle = "Charm is NOT a datamining tool!";
+            warn.Description = $"Charm's main purpose is focused towards 3D artists, content preservation and learning how the game works!" +
+                $"\n\nBy using Charm, you agree to:" +
+                $"\n• Not use this to leak content." +
+                $"\n• Not use this to spread spoilers." +
+                $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!";
 
-            if (a == MessageBoxResult.Yes)
-                ConfigSubsystem.Get().SetAcceptedAgreement(true);
-            else
-            {
-                ConfigSubsystem.Get().SetAcceptedAgreement(false);
-                MessageBox.Show("Womp Womp", "Well that's too bad.", MessageBoxButton.OK);
-                Environment.Exit(0);
-            }
+            warn.UserInput = "Accept";
+            warn.HoldDuration = 4000;
+            warn.Progress = true;
+            warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(warn);
+
+            //var a = MessageBox.Show($"Charm is NOT a datamining tool!\n" +
+            //    $"By using Charm, you agree to:" +
+            //    $"\n- Not use this to leak content." +
+            //    $"\n- Not use this to spread spoilers." +
+            //    $"\n\nSeriously, it's getting very annoying seeing this used for leaks/spoilers." +
+            //    $"\n\nSeeing leaks come from here makes public releases and updates less and less likely. Stop ruining it.",
+            //    $"Usage Agreement",
+            //    MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            //if (a == MessageBoxResult.Yes)
+            //    ConfigSubsystem.Get().SetAcceptedAgreement(true);
+            //else
+            //{
+            //    ConfigSubsystem.Get().SetAcceptedAgreement(false);
+            //    MessageBox.Show("Womp Womp", "Well that's too bad.", MessageBoxButton.OK);
+            //    Environment.Exit(0);
+            //}
         }
     }
 
@@ -225,7 +244,6 @@ public partial class MainWindow
         try
         {
             ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
-            config.checkagree(true);
             var path = config.GetPackagesPath(Strategy.CurrentStrategy).Split("packages")[0] + "destiny2.exe";
             var versionInfo = FileVersionInfo.GetVersionInfo(path);
             string version = versionInfo.FileVersion;

@@ -10,7 +10,6 @@
     Loaded="OnControlLoaded"
     mc:Ignorable="d">
 
-    <UserControl.Resources />
 
     <Grid Style="{StaticResource GradientBackground}">
         <Grid.Triggers>

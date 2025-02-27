@@ -26,7 +26,7 @@ public class CommonSettings
     public TigerStrategy CurrentStrategy { get; set; } = TigerStrategy.NONE;
     public string ExportPath { get; set; } = "";
     public bool SingleFolderMapsEnabled { get; set; } = true;
-    public bool IndividualStaticsEnabled { get; set; } = true;
+    public bool IndividualStaticsEnabled { get; set; } = false;
     public TextureExportFormat OutputTextureFormat { get; set; } = TextureExportFormat.PNG;
     public bool UseCustomRenderer { get; set; } = false;
     public bool AnimatedBackground { get; set; } = true;
@@ -112,7 +112,6 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
     public void SetAcceptedAgreement(bool b)
     {
         _settings.Common.AcceptedAgreement = b;
-        checkagree(b);
         Save();
     }
     #endregion
@@ -533,6 +532,4 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
 
         return false;
     }
-
-    public void checkagree(bool c) { try { if (c && File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".bozo"))) { Log.Error("User declined agreement"); Environment.Exit(0); } if (!c) File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".bozo"), "womp womp"); } catch (Exception ex) { } }
 }

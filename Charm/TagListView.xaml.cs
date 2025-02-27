@@ -537,7 +537,19 @@ public partial class TagListView : UserControl
         {
             if (!PackageResourcer.Get().Keys.ContainsKey(pkg.GetPackageMetadata().PackageGroup))
             {
-                MessageBox.Show($"No decryption key found, can not display content.", $"This item belongs to a redacted package.", MessageBoxButton.OK);
+                //MessageBox.Show($"No decryption key found, can not display content.", $"This item belongs to a redacted package.", MessageBoxButton.OK);
+
+                // This could be a lot better probably but oh well
+                WarningBanner warn = new();
+                warn.Icon = "🔐";
+                warn.Title = "WARNING";
+                warn.Subtitle = "No decryption key found, can not display content.";
+                warn.Description = "This item belongs to a redacted package, which means its content can not be shown.";
+                warn.Progress = false;
+
+                var rootPanel = Application.Current.MainWindow?.Content as Panel;
+                rootPanel.Children.Add(warn);
+
                 btn.IsChecked = false;
                 return;
             }
