@@ -107,7 +107,7 @@ public partial class MainWindow
         // you're not cool, you get off to your 5 minutes of fame on twitter
         if (!ConfigSubsystem.Get().GetAcceptedAgreement())
         {
-            WarningBanner warn = new();
+            PopupBanner warn = new();
             warn.DarkenBackground = true;
             warn.Icon = "⚠️";
             warn.Title = "ATTENTION";
@@ -415,6 +415,57 @@ public partial class MainWindow
             dynamic content = tab.Content;
             if (content is APIItemView || content is CategoryView)
                 MainTabControl.Items.Remove(tab);
+        }
+        else if (e.Key == Key.W
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+        {
+            PopupBanner test = new();
+            test.DarkenBackground = false;
+            test.Icon = "ℹ️";
+            test.Title = "INFORMATION";
+            test.Subtitle = "Test Information Popup Subtitle";
+            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+            test.Style = PopupBanner.PopupStyle.Information;
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(test);
+        }
+        else if (e.Key == Key.E
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+        {
+            PopupBanner test = new();
+            test.DarkenBackground = false;
+            test.Icon = "⚠️";
+            test.Title = "ERROR";
+            test.Subtitle = "Test Error Popup Subtitle";
+            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nError code: Valumptious";
+
+            test.Style = PopupBanner.PopupStyle.Warning;
+            test.UserInput = "Hold To Accept";
+            test.HoldDuration = 1000;
+            test.Progress = true;
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(test);
+        }
+        else if (e.Key == Key.Q
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+        {
+            PopupBanner test = new();
+            test.DarkenBackground = false;
+            test.Icon = "💬";
+            test.Title = "GENERAL";
+            test.Subtitle = "Test General Popup Subtitle";
+            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+            test.UserInput = "Ok";
+            test.Style = PopupBanner.PopupStyle.Generic;
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(test);
         }
     }
 

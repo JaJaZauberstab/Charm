@@ -6,22 +6,24 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 namespace Charm;
 
 /// <summary>
 /// Interaction logic for UserControl1.xaml
 /// </summary>
-public partial class WarningBanner : UserControl
+public partial class PopupBanner : UserControl
 {
     private DispatcherTimer holdTimer;
     private const int TickInterval = 1;
     private int elapsedTime = 0;
 
     public bool DarkenBackground = false;
-    public bool Progress = true;
+    public bool Progress = false;
     public int HoldDuration = 1000;
 
+    public PopupStyle Style = PopupStyle.Information;
     public string Icon { get; set; }
     public string Title { get; set; }
     public string Subtitle { get; set; }
@@ -30,7 +32,11 @@ public partial class WarningBanner : UserControl
 
     public Action OnProgressComplete = null;
 
-    public WarningBanner()
+    public SolidColorBrush ExpanderColor { get; set; }
+    public SolidColorBrush BodyColor { get; set; }
+    public SolidColorBrush IconColor { get; set; }
+
+    public PopupBanner()
     {
         InitializeComponent();
     }
@@ -39,6 +45,25 @@ public partial class WarningBanner : UserControl
     {
         if (DarkenBackground)
             MainGrid.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(100, 0, 0, 0));
+
+        switch (Style)
+        {
+            case PopupStyle.Warning:
+                ExpanderColor = new SolidColorBrush(Color.FromArgb(0x88, 0xBE, 0x25, 0x00));
+                BodyColor = new SolidColorBrush(Color.FromArgb(0x4B, 0x90, 0x00, 0x00));
+                IconColor = new SolidColorBrush(Color.FromArgb(0xC9, 0xBE, 0x00, 0x00));
+                break;
+            case PopupStyle.Information:
+                ExpanderColor = new SolidColorBrush(Color.FromArgb(0x88, 0x00, 0x74, 0x90));
+                BodyColor = new SolidColorBrush(Color.FromArgb(0x4B, 0x00, 0x74, 0x90));
+                IconColor = new SolidColorBrush(Color.FromArgb(0xC9, 0x00, 0x92, 0xB6));
+                break;
+            case PopupStyle.Generic:
+                ExpanderColor = new SolidColorBrush(Color.FromArgb(0x88, 0xBE, 0xBE, 0xBE));
+                BodyColor = new SolidColorBrush(Color.FromArgb(0x4B, 0x90, 0x90, 0x90));
+                IconColor = new SolidColorBrush(Color.FromArgb(0xC9, 0xBE, 0xBE, 0xBE));
+                break;
+        }
 
         if (Progress)
         {
@@ -70,7 +95,7 @@ public partial class WarningBanner : UserControl
     private void HoldElement_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         holdTimer.Stop();
-        HoldProgress.Value = 0; // Reset progress bar if released early
+        HoldProgress.Value = 0;
     }
 
     private void HoldTimer_Tick(object sender, EventArgs e)
@@ -86,12 +111,37 @@ public partial class WarningBanner : UserControl
         }
     }
 
+    // isnt actually removed here, just starts the animation that calls the actual function when it ends
     private void Remove()
+    {
+        double currentHeight = ElementStack.ActualHeight;
+        var heightAnimation = new DoubleAnimation
+        {
+            From = currentHeight,
+            To = 0,
+            Duration = TimeSpan.FromSeconds(0.15),
+            FillBehavior = FillBehavior.HoldEnd,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+        };
+        ElementStack.BeginAnimation(FrameworkElement.HeightProperty, heightAnimation);
+
+        Storyboard fadeOut = (Storyboard)FindResource("PopupFadeAnimation");
+        fadeOut.Begin();
+    }
+
+    private void FadeOutAnimation_Completed(object sender, EventArgs e)
     {
         if (this.Parent is Panel parentPanel)
         {
             parentPanel.Children.Remove(this);
         }
+    }
+
+    public enum PopupStyle
+    {
+        Warning,
+        Information,
+        Generic
     }
 }
 
@@ -109,7 +159,7 @@ public class SpacedTextConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException(); // One-way binding only
+        throw new NotImplementedException();
     }
 }
 
