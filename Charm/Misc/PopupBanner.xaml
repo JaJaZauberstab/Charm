@@ -151,6 +151,7 @@
                         <Border Background="Transparent">
                             <StackPanel Margin="20,20,200,20" Orientation="Vertical">
                                 <TextBlock
+                                    x:Name="SubtitleText"
                                     d:FontFamily="Haas Grot Text 55 Roman"
                                     FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
                                     FontSize="26"
@@ -162,6 +163,7 @@
                                 </TextBlock>
 
                                 <TextBlock
+                                    x:Name="DescriptionText"
                                     d:FontFamily="Haas Grot Text 55 Roman"
                                     FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
                                     FontSize="24"

@@ -41,6 +41,12 @@ public partial class PopupBanner : UserControl
         InitializeComponent();
     }
 
+    public void Show()
+    {
+        var rootPanel = Application.Current.MainWindow?.Content as Panel;
+        rootPanel.Children.Add(this);
+    }
+
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         if (DarkenBackground)
@@ -77,6 +83,12 @@ public partial class PopupBanner : UserControl
         {
             this.MouseLeftButtonDown += WarningBanner_MouseDown;
         }
+
+        if (Subtitle is null || Subtitle == string.Empty)
+            SubtitleText.Visibility = Visibility.Collapsed;
+        if (Description is null || Description == string.Empty)
+            DescriptionText.Visibility = Visibility.Collapsed;
+
         DataContext = this;
     }
 
@@ -105,8 +117,6 @@ public partial class PopupBanner : UserControl
         if (HoldProgress.Value >= 100)
         {
             holdTimer.Stop();
-            if (OnProgressComplete is not null)
-                OnProgressComplete.Invoke();
             Remove();
         }
     }
@@ -131,6 +141,9 @@ public partial class PopupBanner : UserControl
 
     private void FadeOutAnimation_Completed(object sender, EventArgs e)
     {
+        if (OnProgressComplete is not null)
+            OnProgressComplete.Invoke();
+
         if (this.Parent is Panel parentPanel)
         {
             parentPanel.Children.Remove(this);

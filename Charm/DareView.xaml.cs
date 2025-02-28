@@ -192,6 +192,17 @@ public partial class DareView : UserControl
                 }
                 MainWindow.Progress.CompleteStage();
             });
+
+            Dispatcher.Invoke(() =>
+            {
+                PopupBanner notify = new();
+                notify.DarkenBackground = true;
+                notify.Icon = "☑️";
+                notify.Title = "Export Complete";
+                notify.Description = $"Exported {_selectedItems.Count} item(s) to \"{config.GetExportSavePath()}\"";
+                notify.Style = PopupBanner.PopupStyle.Information;
+                notify.Show();
+            });
         });
     }
 

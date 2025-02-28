@@ -118,13 +118,12 @@ public partial class MainWindow
                 $"\n• Not use this to spread spoilers." +
                 $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!";
 
+            warn.Style = PopupBanner.PopupStyle.Warning;
             warn.UserInput = "Accept";
             warn.HoldDuration = 4000;
             warn.Progress = true;
             warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
-
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(warn);
+            warn.Show();
 
             //var a = MessageBox.Show($"Charm is NOT a datamining tool!\n" +
             //    $"By using Charm, you agree to:" +

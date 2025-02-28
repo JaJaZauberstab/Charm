@@ -542,12 +542,11 @@ public partial class TagListView : UserControl
                 // This could be a lot better probably but oh well
                 PopupBanner warn = new();
                 warn.Icon = "🔐";
-                warn.Title = "WARNING";
+                warn.Title = "ERROR";
                 warn.Subtitle = "No decryption key found, can not display content.";
                 warn.Description = "This item belongs to a redacted package, which means its content can not be shown.";
-
-                var rootPanel = Application.Current.MainWindow?.Content as Panel;
-                rootPanel.Children.Add(warn);
+                warn.Style = PopupBanner.PopupStyle.Warning;
+                warn.Show();
 
                 btn.IsChecked = false;
                 return;

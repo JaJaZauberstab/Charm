@@ -225,7 +225,16 @@ public partial class ActivityMapView : UserControl
                 break;
         }
 
-        MessageBox.Show("Export Complete.");
+        //MessageBox.Show("Export Complete.");
+
+        Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Hidden);
+        PopupBanner notify = new();
+        notify.Icon = "☑️";
+        notify.Title = "Export Complete";
+        notify.Description = $"Exported {_currentBubble.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}/Maps/{_currentActivity.DestinationName}/\"";
+        notify.Style = PopupBanner.PopupStyle.Information;
+        notify.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
+        notify.Show();
     }
 
     public async void ExportStaticMap()
@@ -350,7 +359,20 @@ public partial class ActivityMapView : UserControl
         if (maps.Count == 0)
         {
             Log.Error("No maps selected for export.");
-            MessageBox.Show("No maps selected for export.");
+            //MessageBox.Show("No maps selected for export.");
+
+            Dispatcher.Invoke(() =>
+            {
+                MapControl.Visibility = Visibility.Hidden;
+
+                PopupBanner warn = new();
+                warn.Icon = "⚠️";
+                warn.Title = "WARNING";
+                warn.Description = $"No map parts selected for export!";
+                warn.Style = PopupBanner.PopupStyle.Warning;
+                warn.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
+                warn.Show();
+            });
             return;
         }
 
@@ -375,7 +397,20 @@ public partial class ActivityMapView : UserControl
             MapControl.Visibility = Visibility.Visible;
         });
         Log.Info($"Exported activity data name: {PackageResourcer.Get().GetActivityName(activity.FileHash)}, hash: {activity.FileHash}");
-        MessageBox.Show("Activity map data exported completed.");
+        //MessageBox.Show("Activity map data exported completed.");
+
+        Dispatcher.Invoke(() =>
+        {
+            MapControl.Visibility = Visibility.Hidden;
+            PopupBanner notify = new();
+            notify.Icon = "☑️";
+            notify.Title = "Export Complete";
+            notify.Description = $"Exported activity data from {PackageResourcer.Get().GetActivityName(activity.FileHash)} to \"{ConfigSubsystem.Get().GetExportSavePath()}/Maps/{_currentActivity.DestinationName}/\"";
+            notify.Style = PopupBanner.PopupStyle.Information;
+            notify.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
+            notify.Show();
+        });
+
     }
 
     private async void StaticMap_OnClick(object sender, RoutedEventArgs e)
@@ -395,7 +430,20 @@ public partial class ActivityMapView : UserControl
             if (mapStages.Count == 0)
             {
                 Log.Error("No maps available for viewing.");
-                MessageBox.Show("No maps available for viewing.");
+                //MessageBox.Show("No maps available for viewing.");
+
+                Dispatcher.Invoke(() =>
+                {
+                    MapControl.Visibility = Visibility.Hidden;
+                    PopupBanner warn = new();
+                    warn.Icon = "⚠️";
+                    warn.Title = "WARNING";
+                    warn.Subtitle = $"No maps available for viewing!";
+                    warn.Style = PopupBanner.PopupStyle.Warning;
+                    warn.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
+                    warn.Show();
+                });
+
                 return;
             }
             MainWindow.Progress.SetProgressStages(mapStages);
