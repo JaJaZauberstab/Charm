@@ -2,7 +2,6 @@
     x:Class="Charm.StaticView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:atlasSharp="clr-namespace:AtlasSharp;assembly=AtlasSharp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Charm"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,6 +17,5 @@
             <RowDefinition Height="100*" />
         </Grid.RowDefinitions>
         <local:ModelView x:Name="ModelView" />
-        <atlasSharp:AtlasView x:Name="AtlasView" />
     </Grid>
 </UserControl>
