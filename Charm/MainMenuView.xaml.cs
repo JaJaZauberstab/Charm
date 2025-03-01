@@ -231,4 +231,23 @@ public partial class MainMenuView : UserControl
         await Task.Run(() => Investment.LazyInit());
         MainWindow.Progress.CompleteStage();
     }
+
+    private void AboutButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        PopupBanner about = new();
+        about.DarkenBackground = true;
+        about.Icon = "💠";
+        //about.IconImage = MainWindow.GetBitmapSource(System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location));
+        about.Title = $"CHARM {App.CurrentVersion.Id}";
+        about.Subtitle = "Charm was created by Montague";
+        about.Description = "Additional help/development from:\n" +
+            "• Delta\n" +
+            "• nblock\n" +
+            "• Cohae\n" +
+            "• BIOS\n" +
+            "• HighRTT\n" +
+            "\nCharm was developed for 3D artists, to preserve vaulted content as much as possible, and for learning how the Tiger engine works in general!";
+        about.Style = PopupBanner.PopupStyle.Information;
+        about.Show();
+    }
 }

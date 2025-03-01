@@ -127,8 +127,8 @@
                         Grid.Column="0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
-                        Source="https://media1.tenor.com/m/PpDg9VwOfYsAAAAd/cat.gif"
-                        Visibility="Collapsed" />
+                        Source="{Binding IconImage}"
+                        Visibility="Visible" />
 
                     <StackPanel
                         Grid.Column="1"
@@ -149,7 +149,7 @@
                         </Border>
 
                         <Border Background="Transparent">
-                            <StackPanel Margin="20,20,200,20" Orientation="Vertical">
+                            <StackPanel Margin="20,20,300,20" Orientation="Vertical">
                                 <TextBlock
                                     x:Name="SubtitleText"
                                     d:FontFamily="Haas Grot Text 55 Roman"

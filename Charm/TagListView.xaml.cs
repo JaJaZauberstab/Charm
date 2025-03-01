@@ -872,8 +872,20 @@ public partial class TagListView : UserControl
         {
             if (viewer.ExportControl.ExportChildrenBox.Visibility == Visibility.Visible && viewer.ExportControl.ExportChildrenBox.IsChecked.Value == true)
                 entities.AddRange(entity.GetEntityChildren());
+            viewer.EntityControl.ModelView.Visibility = Visibility.Hidden;
         });
         EntityView.Export(entities, info.Name, info.ExportType);
+
+        Dispatcher.Invoke(() =>
+        {
+            PopupBanner notify = new();
+            notify.Icon = "☑️";
+            notify.Title = "Export Complete";
+            notify.Description = $"Exported Entity {info.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}\\{info.Name}\\\"";
+            notify.Style = PopupBanner.PopupStyle.Information;
+            notify.OnProgressComplete += () => Dispatcher.Invoke(() => viewer.EntityControl.ModelView.Visibility = Visibility.Visible);
+            notify.Show();
+        });
     }
 
     /// <summary>

@@ -391,6 +391,7 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <Button
+                    Margin="5,0,5,0"
                     Click="GithubButton_OnClick"
                     MouseEnter="CategoryButton_MouseEnter"
                     MouseLeave="CategoryButton_MouseLeave"
@@ -403,6 +404,22 @@
                         FontSize="16"
                         Foreground="{StaticResource ForegroundColour80}"
                         Text="GITHUB" />
+                </Button>
+
+                <Button
+                    Margin="5,0,5,0"
+                    Click="AboutButton_OnClick"
+                    MouseEnter="CategoryButton_MouseEnter"
+                    MouseLeave="CategoryButton_MouseLeave"
+                    Style="{DynamicResource D2StyleButton}"
+                    Tag="ABOUT:View the credits for Charm">
+                    <TextBlock
+                        Margin="5"
+                        d:FontFamily="Haas Grot Text 55 Roman"
+                        FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
+                        FontSize="16"
+                        Foreground="{StaticResource ForegroundColour80}"
+                        Text="ABOUT" />
                 </Button>
 
             </StackPanel>

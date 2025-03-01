@@ -25,6 +25,7 @@ public partial class PopupBanner : UserControl
 
     public PopupStyle Style = PopupStyle.Information;
     public string Icon { get; set; }
+    public ImageSource IconImage { get; set; }
     public string Title { get; set; }
     public string Subtitle { get; set; }
     public string Description { get; set; }

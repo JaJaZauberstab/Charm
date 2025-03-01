@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using VersionChecker;
 
 namespace Charm
 {
@@ -11,6 +12,7 @@ namespace Charm
     /// </summary>
     public partial class App : Application
     {
+        public static ApplicationVersion CurrentVersion = new ApplicationVersion("2.4.2");
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {

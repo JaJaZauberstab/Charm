@@ -13,7 +13,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Tiger;
 using Tiger.Schema;
-using VersionChecker;
 
 namespace Charm;
 /// <summary>
@@ -259,8 +258,7 @@ public partial class MainWindow
     // Disabling update checking for now since the last github release is a fossil at this point
     private async void CheckVersion()
     {
-        var currentVersion = new ApplicationVersion("2.4.0");
-        Arithmic.Log.Info($"Charm Version: {currentVersion.Id}");
+        Arithmic.Log.Info($"Charm Version: {App.CurrentVersion.Id}");
         //var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/main/", currentVersion);
         //versionChecker.LatestVersionName = "version";
         //        try
@@ -468,7 +466,7 @@ public partial class MainWindow
         }
     }
 
-    private BitmapSource GetBitmapSource(Icon icon)
+    public static BitmapSource GetBitmapSource(Icon icon)
     {
         return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
                  icon.Handle,
