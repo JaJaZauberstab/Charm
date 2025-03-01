@@ -40,30 +40,30 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Page Update="Collections View\CollectionItemControl.xaml">
+      <Page Update="API\Collections View\CollectionItemControl.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
       <Page Update="Settings\ConfigSettingControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ConfigView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityMapView.xaml">
+      <Page Update="Activity\ActivityMapView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityDialogueView.xaml">
+      <Page Update="Activity\ActivityDialogueView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityDirectiveView.xaml">
+      <Page Update="Activity\ActivityDirectiveView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityMusicView.xaml">
+      <Page Update="Activity\ActivityMusicView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="TagListView.xaml">
+      <Page Update="Views\TagListView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>TagListViewerView.xaml</DependentUpon>
       </Page>
@@ -71,20 +71,20 @@
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ConfigView.xaml</DependentUpon>
       </Page>
-      <Page Update="TagView.xaml">
+      <Page Update="Views\TagView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>TagListViewerView.xaml</DependentUpon>
       </Page>
-      <Page Update="MusicWemsControl.xaml">
+      <Page Update="Music\MusicWemsControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>MusicView.xaml</DependentUpon>
       </Page>
-      <Page Update="MusicEventsControl.xaml">
+      <Page Update="Music\MusicEventsControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>MusicView.xaml</DependentUpon>
       </Page>
 
-      <Page Update="DareItemControl.xaml">
+      <Page Update="API\DareItemControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>DareView.xaml</DependentUpon>
       </Page>
@@ -137,7 +137,7 @@
 
 
     <ItemGroup>
-      <Compile Update="Collections View\CategoryView.xaml.cs">
+      <Compile Update="API\Collections View\CategoryView.xaml.cs">
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>
