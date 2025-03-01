@@ -28,7 +28,6 @@ public class CommonSettings
     public bool SingleFolderMapsEnabled { get; set; } = true;
     public bool IndividualStaticsEnabled { get; set; } = false;
     public TextureExportFormat OutputTextureFormat { get; set; } = TextureExportFormat.PNG;
-    public bool UseCustomRenderer { get; set; } = false;
     public bool AnimatedBackground { get; set; } = true;
     public bool ExportMaterials { get; set; } = false;
 
@@ -381,17 +380,6 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
     }
 
     #endregion
-
-    public void SetUseCustomRenderer(bool useCustomRenderer)
-    {
-        _settings.Common.UseCustomRenderer = useCustomRenderer;
-        Save();
-    }
-
-    public bool GetUseCustomRenderer()
-    {
-        return _settings.Common.UseCustomRenderer;
-    }
 
     public void SetAnimatedBackground(bool bg)
     {

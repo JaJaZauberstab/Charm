@@ -36,7 +36,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AtlasSharp\AtlasSharp.csproj" />
       <ProjectReference Include="..\Tiger\Tiger.csproj" />
     </ItemGroup>
 
@@ -120,12 +119,7 @@
 
 
     <ItemGroup>
-      <Content Include="..\Atlas\Shaders\Lighting.hlsl">
-        <Link>Shaders\Lighting.hlsl</Link>
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-
-      <Content Include="..\Atlas\Shaders\TFXFunctions.hlsl">
+      <Content Include="..\Tiger\Exporters\Shaders\TFXFunctions.hlsl">
         <Link>Shaders\TFXFunctions.hlsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
@@ -147,9 +141,5 @@
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>
-
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="xcopy &quot;$(SolutionDir)x64\$(Configuration)\Atlas.dll&quot; &quot;$(TargetDir)&quot; /y /i&#xA;xcopy &quot;$(SolutionDir)x64\$(Configuration)\Atlas.pdb&quot; &quot;$(TargetDir)&quot; /y /i" />
-    </Target>
 
 </Project>

@@ -92,16 +92,6 @@ public partial class GeneralConfigView : UserControl
         //cef.ChangeButton.Click += SingleFolderMapsEnabled_OnClick;
         //GeneralConfigPanel.Children.Add(cef);
 
-
-        // Disabled because it just doesn't work atm
-        _config.SetUseCustomRenderer(false);
-        //ConfigSettingControl cucr = new ConfigSettingControl();
-        //cucr.SettingName = "Use custom renderer";
-        //bval = _config.GetUseCustomRenderer();
-        //cucr.SettingValue = bval.ToString();
-        //cucr.ChangeButton.Click += UseCustomRenderer_OnClick;
-        //GeneralConfigPanel.Children.Add(cucr);
-
         // Output texture format
         ConfigSettingComboControl ctf = new ConfigSettingComboControl();
         ctf.SettingName = "Output Texture Format";
@@ -311,12 +301,6 @@ public partial class GeneralConfigView : UserControl
         Strategy.SetStrategy(_config.GetCurrentStrategy());
         PopulateConfigPanel();
         ConsiderShowingMainMenu();
-    }
-
-    private void UseCustomRenderer_OnClick(object sender, RoutedEventArgs e)
-    {
-        _config.SetUseCustomRenderer(!_config.GetUseCustomRenderer());
-        PopulateConfigPanel();
     }
 
     private void AnimatedBackground_OnClick(object sender, RoutedEventArgs e)
