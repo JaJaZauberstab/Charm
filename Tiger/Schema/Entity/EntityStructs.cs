@@ -1,5 +1,4 @@
-﻿using DirectXTexNet;
-using Tiger.Schema.Audio;
+﻿using Tiger.Schema.Audio;
 using Tiger.Schema.Investment;
 using Tiger.Schema.Model;
 using Tiger.Schema.Shaders;
@@ -37,16 +36,6 @@ public struct D2Class_F09A8080
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "ED9A8080", 0x28)]
 public struct D2Class_ED9A8080
 {
-    public short Unk00;
-    public short Unk02;
-    public short Unk04;
-    public short Unk06;
-    public int Unk08;  // some pointer
-    // public TagTypeHash Unk0C;  // the class of the final target resource
-    // [DestinyField(FieldType.ResourceInTagWeird)]
-    // public dynamic? Resource10;  // non-standard resource in tag, the resource type is actually the one before and its like a double-pointer thing. means nothing to me so wont parse these kinds.
-    // [SchemaField(0x20), DestinyField(FieldType.FileHash)]
-    // public Tag Unk20;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "90078080", 0x18)]
@@ -54,10 +43,6 @@ public struct D2Class_ED9A8080
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "EB9A8080", 0x18)]
 public struct D2Class_EB9A8080
 {
-    // Is a tag in D1, but not important
-    public ResourceInTagPointer Resource00;
-
-    public long Unk10;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "06008080", 0x2)]
@@ -93,16 +78,6 @@ public struct D2Class_069B8080  // Entity resource
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Tag UnkHash84;  // 819A8080
     // Rest is unknown
-}
-
-[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "30098080", 0x10)]
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "7C908080", 0x10)]
-public struct D2Class_7C908080
-{
-    public ResourcePointerWithClass ResourcePointer00;
-    public TigerHash ResourceClassHash08;
-    public short Unk0C;
-    public short Unk0E;
 }
 
 
@@ -186,66 +161,6 @@ public struct S121B8080
 }
 
 #region Texture Plates
-// todo move this
-public class TexturePlate : Tag<D2Class_919E8080>
-{
-    public TexturePlate(FileHash hash) : base(hash)
-    {
-    }
-
-    public ScratchImage? MakePlatedTexture()
-    {
-        var dimension = GetPlateDimensions();
-        if (dimension.X == 0)
-        {
-            return null;
-        }
-
-        using TigerReader reader = GetReader();
-        bool bSrgb = _tag.PlateTransforms[reader, 0].Texture.IsSrgb();
-        ScratchImage outputPlate = TexHelper.Instance.Initialize2D(bSrgb ? DXGI_FORMAT.B8G8R8A8_UNORM_SRGB : DXGI_FORMAT.B8G8R8A8_UNORM, dimension.X, dimension.Y, 1, 0, 0);
-
-        foreach (var transform in _tag.PlateTransforms.Enumerate(reader))
-        {
-            ScratchImage original = transform.Texture.GetScratchImage();
-            ScratchImage resizedOriginal = original.Resize(transform.Scale.X, transform.Scale.Y, TEX_FILTER_FLAGS.SEPARATE_ALPHA);
-            TexHelper.Instance.CopyRectangle(resizedOriginal.GetImage(0, 0, 0), 0, 0, transform.Scale.X, transform.Scale.Y, outputPlate.GetImage(0, 0, 0), bSrgb ? TEX_FILTER_FLAGS.SEPARATE_ALPHA : 0, transform.Translation.X, transform.Translation.Y);
-            original.Dispose();
-            resizedOriginal.Dispose();
-        }
-        return outputPlate;
-    }
-
-    public void SavePlatedTexture(string savePath)
-    {
-        var simg = MakePlatedTexture();
-        if (simg != null)
-        {
-            Texture.SavetoFile(savePath, simg);
-        }
-    }
-
-    public IntVector2 GetPlateDimensions()
-    {
-        int maxDimension = 0;  // plate must be square
-        foreach (var transform in _tag.PlateTransforms.Enumerate(GetReader()))
-        {
-            if (transform.Translation.X + transform.Scale.X > maxDimension)
-            {
-                maxDimension = transform.Translation.X + transform.Scale.X;
-            }
-            if (transform.Translation.Y + transform.Scale.Y > maxDimension)
-            {
-                maxDimension = transform.Translation.Y + transform.Scale.Y;
-            }
-        }
-
-        // Find power of two that fits this dimension, ie round up the exponent to nearest integer
-        maxDimension = (int)Math.Pow(2, Math.Ceiling(Math.Log2(maxDimension)));
-
-        return new IntVector2(maxDimension, maxDimension);
-    }
-}
 
 /// <summary>
 /// Texture plate header that stores all the texture plates used for the EntityModel.
@@ -330,28 +245,11 @@ public struct D2Class_8F9A8080
     public TigerHash Unk28;
 }
 
-[SchemaStruct("9F9A8080", 0x20)]
-public struct D2Class_9F9A8080
-{
-
-}
-
-[SchemaStruct("5F6E8080", 0x40)]
-public struct D2Class_5F6E8080
-{
-}
-
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "801A8080", 0x1D0)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "B8728080", 0x200)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "8A6D8080", 0x2E0)]
 public struct D2Class_8A6D8080
 {
-}
-
-[SchemaStruct("F39A8080", 0x10)]
-public struct D2Class_F39A8080
-{
-
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "BD068080", 0x100)]
@@ -614,24 +512,6 @@ public struct D2Class_0B008080
     public uint Unk00;
 }
 
-[SchemaStruct("D99E8080", 0x10)]
-public struct D2Class_D99E8080
-{
-    public DynamicArray<D2Class_0B008080> Unk00;
-}
-
-[SchemaStruct("F79A8080", 0x18)]
-public struct D2Class_F79A8080
-{
-    public ulong Unk00;
-}
-
-[SchemaStruct("9E958080", 4)]
-public struct D2Class_9E958080
-{
-    public uint Unk00;
-}
-
 [SchemaStruct("668B8080", 0x70)]
 public struct D2Class_668B8080
 {
@@ -645,135 +525,6 @@ public struct D2Class_628B8080
     public Vector4 Unk00;
 }
 
-[SchemaStruct("5F8B8080", 0x140)]
-public struct D2Class_5F8B8080
-{
-    //public ResourceInTagPointer Unk00;
-    //[SchemaField(0xA8)]
-    //public DynamicArray<D2Class_5F8C8080> UnkA8;
-    //public DynamicArray<D2Class_568C8080> UnkB8;
-    //public DynamicArray<D2Class_4F9F8080> UnkC8;
-    //public DynamicArray<D2Class_06008080> UnkD8;
-    //[SchemaField(0xF0)]
-    //public DynamicArray<D2Class_06008080> UnkF0;
-    //public DynamicArray<D2Class_06008080> Unk100;
-    //[SchemaField(0x128)]
-    //public DynamicArray<D2Class_DA8B8080> Unk128;
-    //public int Unk138;
-    //public short Unk13C;
-    //public short Unk13E;
-}
-
-//[SchemaStruct("5F8C8080", 8)]
-//public struct D2Class_5F8C8080
-//{
-//    public TigerHash Unk00;
-//    public int Unk04;
-//}
-
-//[SchemaStruct("568C8080", 0x34)]
-//public struct D2Class_568C8080
-//{
-//    public TigerHash Unk00;
-//    public short Unk04;
-//    public short Unk06;
-//    public short Unk08;
-//    public short Unk0A;
-//    public short Unk0C;
-//    public short Unk0E;
-//    public float Unk10;
-//    public int Unk14;
-
-//    public short Unk18;
-//    public short Unk1A;
-//    public short Unk1C;
-//    public short Unk1E;
-//    public short Unk20;
-//    public short Unk22;
-//    public float Unk24;
-//    public int Unk28;
-
-//    public short Unk2C;
-//    public short Unk2E;
-//    public sbyte Unk30;
-//    public sbyte Unk31;
-//    public sbyte Unk32;
-//    public sbyte Unk33;
-//}
-
-//[SchemaStruct("DA8B8080", 8)]
-//public struct D2Class_DA8B8080
-//{
-//    public TigerHash Unk00;
-//    public int Unk04;
-//}
-
-//[SchemaStruct("13268080", 0x830)]
-//public struct D2Class_13268080
-//{
-//    public ResourceInTagPointer Unk00;
-//    // lots of array stuff
-//}
-
-//[SchemaStruct("F8258080", 0x830)]
-//public struct D2Class_F8258080
-//{
-//    public ResourceInTagPointer Unk00;
-//    // lots of array stuff
-//    [SchemaField(0xA8), MarshalAs(UnmanagedType.ByValArray, SizeConst = 33)]
-//    public FileHash[] UnkA8;
-//}
-
-//[SchemaStruct("41268080", 0xBA0)]
-//public struct D2Class_41268080
-//{
-//    public ResourceInTagPointer Unk00;
-//    // lots of array stuff
-//    [SchemaField(0x1E0)]
-//    public DynamicArray<D2Class_0B008080> Unk1E0;
-//    public DynamicArray<D2Class_0F008080> Unk1F0;
-//    public DynamicArray<D2Class_90008080> Unk200;
-
-//    [SchemaField(0x240)]
-//    public DynamicArray<D2Class_0B008080> Unk240;
-//    public DynamicArray<D2Class_0F008080> Unk250;
-//    public DynamicArray<D2Class_90008080> Unk260;
-
-//    [SchemaField(0x5F8)]
-//    public DynamicArray<D2Class_86268080> Unk5F8;
-//    [SchemaField(0x658)]
-//    public DynamicArray<D2Class_86268080> Unk658;
-//    [SchemaField(0x6B8)]
-//    public DynamicArray<D2Class_86268080> Unk6B8;
-//    [SchemaField(0x718)]
-//    public DynamicArray<D2Class_86268080> Unk718;
-//    [SchemaField(0x778)]
-//    public DynamicArray<D2Class_86268080> Unk778;
-//    [SchemaField(0x7D8)]
-//    public DynamicArray<D2Class_86268080> Unk7D8;
-//    [SchemaField(0x838)]
-//    public DynamicArray<D2Class_86268080> Unk838;
-//    [SchemaField(0x898)]
-//    public DynamicArray<D2Class_86268080> Unk898;
-//    [SchemaField(0x8F8)]
-//    public DynamicArray<D2Class_86268080> Unk8F8;
-//    [SchemaField(0x958)]
-//    public DynamicArray<D2Class_86268080> Unk958;
-//    [SchemaField(0x9B8)]
-//    public DynamicArray<D2Class_86268080> Unk9B8;
-//    [SchemaField(0xA18)]
-//    public DynamicArray<D2Class_86268080> UnkA18;
-//    [SchemaField(0xA78)]
-//    public DynamicArray<D2Class_86268080> UnkA78;
-//    [SchemaField(0xAD8)]
-//    public DynamicArray<D2Class_86268080> UnkAD8;
-//    [SchemaField(0xB38)]
-//    public DynamicArray<D2Class_86268080> UnkB38;
-
-//    [SchemaField(0xB70)]
-//    public DynamicArray<D2Class_72268080> Unk6E8;
-//}
-
 [SchemaStruct("0F008080", 4)]
 public struct D2Class_0F008080
 {
@@ -784,117 +535,6 @@ public struct D2Class_0F008080
 public struct D2Class_90008080
 {
     public Vector4 Unk00;
-}
-
-[SchemaStruct("86268080", 0x14)]
-public struct D2Class_86268080
-{
-    [SchemaField(0x4)]
-    public Tag Unk04;
-}
-
-[SchemaStruct("72268080", 0x210)]
-public struct D2Class_72268080
-{
-    [SchemaField(0x200)]
-    public TigerHash Unk200;
-    public int Unk204;
-    public int Unk208;
-}
-
-[SchemaStruct("3C268080", 0x348)]
-public struct D2Class_3C268080
-{
-    public ResourceInTagPointer Unk00;
-}
-
-//[SchemaStruct("B1288080", 0xC30)]
-//public struct D2Class_B1288080
-//{
-//    public ResourceInTagPointer Unk00;
-
-//    [SchemaField(0xA8)]
-//    public DynamicArray<D2Class_0F008080> UnkA8;
-//    [SchemaField(0xB8)]
-//    public DynamicArray<D2Class_BC288080> UnkB8;
-//    [SchemaField(0xC8)]
-//    public DynamicArray<D2Class_BE288080> UnkC8;
-//    [SchemaField(0x790)]
-//    public DynamicArray<D2Class_E4288080> Unk790;
-//    [SchemaField(0x7D0)]
-//    public DynamicArray<D2Class_E4288080> Unk7D0;
-//    [SchemaField(0x810)]
-//    public DynamicArray<D2Class_E4288080> Unk810;
-//}
-
-[SchemaStruct("BC288080", 0xC)]
-public struct D2Class_BC288080
-{
-}
-
-[SchemaStruct("BE288080", 0x18)]
-public struct D2Class_BE288080
-{
-}
-
-[SchemaStruct("E4288080", 0x38)]
-public struct D2Class_E4288080
-{
-}
-
-[SchemaStruct("9B288080", 0x4C0)]
-public struct D2Class_9B288080
-{
-    //public ResourceInTagPointer Unk00;
-
-    //[SchemaField(0x270)]
-    //public DynamicArray<D2Class_2B948080> Unk270;
-}
-
-[SchemaStruct("2B948080", 0x100)]
-public struct D2Class_2B948080
-{
-    // Some set of vectors with rotation and translation data but interspersed with other data
-}
-
-[SchemaStruct("32288080", 0x160)]
-public struct D2Class_32288080
-{
-    //public ResourceInTagPointer Unk00;
-}
-
-[SchemaStruct("31288080", 0x108)]
-public struct D2Class_31288080
-{
-    //public ResourceInTagPointer Unk00;
-}
-
-[SchemaStruct("9C818080", 0xE0)]
-public struct D2Class_9C818080
-{
-    //public ResourceInTagPointer Unk00;
-}
-
-[SchemaStruct("9D818080", 0x108)]
-public struct D2Class_9D818080
-{
-    //public ResourceInTagPointer Unk00;
-
-    //[SchemaField(0x38)]
-    //public DynamicArray<D2Class_F79A8080> Unk38;
-    //[SchemaField(0xB8)]
-    //public DynamicArray<D2Class_A9818080> UnkB8;
-}
-
-[SchemaStruct("A9818080", 0x30)]
-public struct D2Class_A9818080
-{
-    public Vector4 Unk00;
-    public Vector4 Unk10;
-    public int Unk20;
-    public int Unk24;
-    public int Unk28;
-    public int Unk2C;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9B208080", 0x330)]
@@ -959,241 +599,11 @@ public struct D2Class_1D848080
     public Tag Unk08;
 }
 
-[SchemaStruct("21868080", 0x40)]
-public struct D2Class_21868080
-{
-}
-
-[SchemaStruct("6A918080", 0x2C0)]
-public struct D2Class_6A918080
-{
-    //public ResourceInTagPointer Unk00;
-
-    //[SchemaField(0x1D0)]
-    //public DynamicArray<D2Class_07008080> Unk1D0;
-    //[SchemaField(0x1F0)]
-    //public DynamicArray<D2Class_07008080> Unk1F0;
-}
-
 [SchemaStruct("07008080", 4)]
 public struct D2Class_07008080
 {
     public uint Unk00;
 }
-
-[SchemaStruct("46868080", 0x4D8)]
-public struct D2Class_46868080
-{
-    //public ResourceInTagPointer Unk00;
-
-    //[SchemaField(0x38)]
-    //public DynamicArray<D2Class_F79A8080> Unk38;
-    //[SchemaField(0x480)]
-    //public DynamicArray<D2Class_77878080> Unk480;
-    //[SchemaField(0x4C0)]
-    //public DynamicArray<D2Class_37878080> Unk4C0;
-}
-
-[SchemaStruct("77878080", 0x90)]
-public struct D2Class_77878080
-{
-    public TigerHash Unk00;
-    public TigerHash Unk04;
-    [SchemaField(0x14)]
-    public float Unk14;
-    public long Unk18;
-    public Vector4 Unk20;
-    public Vector4 Unk30;
-    public Vector4 Unk40;
-    public Vector4 Unk50;
-    public Vector4 Unk60;
-    public Vector4 Unk70;
-    public int Unk80;
-    public int Unk84;
-    public int Unk88;
-    public int Unk8C;
-}
-
-
-[SchemaStruct("37878080", 4)]
-public struct D2Class_37878080
-{
-    // public Tag Unk00;
-}
-
-// [SchemaStruct("C96C8080", 0x800)]
-// public struct D2Class_20408080
-// {
-//     [DestinyField(FieldType.ResourceInTag)]
-//     public dynamic? Unk00;
-//
-//     [SchemaField(0x350)]
-//     public DynamicArray<D2Class_DE408080> Unk350;
-//     [SchemaField(0x380)]
-//     public DynamicArray<D2Class_28218080> Unk380;
-//     [SchemaField(0x3D0)]
-//     public DynamicArray<D2Class_E0408080> Unk3D0;
-//     [SchemaField(0x7A0)]
-//     public DynamicArray<D2Class_51408080> Unk7A0;
-// }
-//
-// [SchemaStruct("C96C8080", 4)]
-// public struct D2Class_DE408080
-// {
-//     public float Unk00;
-// }
-//
-// [SchemaStruct("C96C8080", 0x28)]
-// public struct D2Class_28218080
-// {
-//     public float Unk00;
-//     public float Unk04;
-//     public float Unk08;
-//     // [D2FieldOffset(0x10), D2FieldType(26)]
-//     // public byte Unk0x10;
-//     [SchemaField(0x20)]
-//     public uint Unk20;
-// }
-//
-// [SchemaStruct("C96C8080", 0x70)]
-// public struct D2Class_E0408080
-// {
-//     [DestinyField(FieldType.ResourceInTag)]
-//     public dynamic? Unk00;
-// }
-//
-// [SchemaStruct("C96C8080", 0x40)]
-// public struct D2Class_51408080
-// {
-//     [DestinyField(FieldType.ResourceInTag)]
-//     public dynamic? Unk00;
-// }
-
-// [SchemaStruct("C96C8080", 0x668)]
-// public struct D2Class_FC3F8080
-// {
-//     [DestinyField(FieldType.ResourceInTag)]
-//     public dynamic? Unk00;
-//
-//     [SchemaField(0x1D0)]
-//     public DynamicArray<D2Class_91408080> Unk1D0;
-//     [SchemaField(0x1F0)]
-//     public DynamicArray<D2Class_3B408080> Unk1F0;
-//     [SchemaField(0x390)]
-//     public DynamicArray<D2Class_1C408080> Unk390;
-//     [SchemaField(0x3D0)]
-//     public DynamicArray<D2Class_E1408080> Unk3D0;
-// }
-//
-// [SchemaStruct("C96C8080", 0x160)]
-// public struct D2Class_91408080
-// {
-//     [DestinyField(FieldType.ResourceInTag)]
-//     public dynamic? Unk00;
-//
-//     [SchemaField(0x78)]
-//     public DynamicArray<D2Class_74408080> Unk78;
-// }
-//
-// [SchemaStruct("C96C8080", 0x10)]  // size is actually 8 but we need this to make it work
-// public struct D2Class_74408080
-// {
-//     [SchemaField(0xC), DestinyField(FieldType.Resource)]
-//     public dynamic? UnkC;
-// }
-//
-// [SchemaStruct("C96C8080", 0x38)]
-// public struct D2Class_8D408080
-// {
-//     [SchemaField(0x10)]
-//     public float Unk10;
-//     [SchemaField(0x20), DestinyField(FieldType.FileHash)]
-//     public Tag Unk20;
-//     [SchemaField(0x30)]
-//     public TigerHash Unk30;
-// }
-//
-// [SchemaStruct("C96C8080", 0xC)]  // Size is actually 8 but we need this to make it work
-// public struct D2Class_3B408080
-// {
-//     [SchemaField(0x8), DestinyField(FieldType.Resource)]
-//     public dynamic? UnkC;
-// }
-//
-// [SchemaStruct("C96C8080", 0x10)]
-// public struct D2Class_42408080
-// {
-// }
-//
-// [SchemaStruct("C96C8080", 0xC)]
-// public struct D2Class_1C408080
-// {
-//     public TigerHash Unk00;
-//     public int Unk04;
-//     public int Unk08;
-// }
-//
-// [SchemaStruct("C96C8080", 0x78)]
-// public struct D2Class_E1408080
-// {
-//     [DestinyField(FieldType.ResourceInTag)]
-//     public dynamic? Unk00;
-//
-//     // loads of floats
-// }
-//
-// [SchemaStruct("C96C8080", 0x28)]
-// public struct D2Class_FD3F8080
-// {
-// }
-//
-// [SchemaStruct("C96C8080", 0xB00)]
-// public struct D2Class_C5348080
-// {
-//     public D2Class_052E8080 Unk0x0;
-//     public byte UnkAF4;
-//     public byte UnkAF8;
-// }
-//
-// [SchemaStruct("C96C8080", 0xB00)]
-// public struct D2Class_052E8080
-// {
-//     [SchemaField(0x650)]
-//     public byte Unk650;
-//     [SchemaField(0x750)]
-//     public byte Unk750;
-//     [SchemaField(0x751)]
-//     public bool Unk751;
-//     [SchemaField(0x7D2)]
-//     public bool Unk7D2;
-//     [SchemaField(0x800)]
-//     public float Unk800;
-//     // [D2FieldOffset(0x804), D2FieldType(44)]
-//     // public byte Unk0x804;
-//     // [D2FieldOffset(0x808), D2FieldType(45)]
-//     // public byte Unk0x808;
-//     [SchemaField(0x768)]
-//     public DynamicArray<D2Class_D2398080> Unk768;
-// }
-//
-// [SchemaStruct("C96C8080", 0x30)]
-// public struct D2Class_D2398080
-// {
-//     // [D2FieldOffset(0x20), D2FieldType(32)]  // resource pointer
-//     // public byte Unk0x20;
-// }
-//
-// [SchemaStruct("C96C8080", 0x70)]
-// public struct D2Class_64338080
-// {
-//     [SchemaField(0x48)]
-//     public DynamicArray<D2Class_71338080> Unk48;
-// }
-//
-// [SchemaStruct("C96C8080", 0x30)]
-// public struct D2Class_71338080
-// {
-// }
 
 // General, parents that reference Entity
 
