@@ -431,6 +431,11 @@ public class ResourcePointer : RelativePointer
         }
     }
 
+    public uint GetValueRaw(TigerReader reader)
+    {
+        return ResourceClassHash;
+    }
+
     public override void Deserialize(TigerReader reader)
     {
         base.Deserialize(reader);

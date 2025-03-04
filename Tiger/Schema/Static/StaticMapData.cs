@@ -507,18 +507,23 @@ public struct SMapDataEntry
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true), NoLoad]
     public Entity.Entity EntitySK;
+
     [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public Vector4 Rotation;
     public Vector4 Translation;
+
     [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64, NoLoad]
     public Entity.Entity EntityWQ;
+
     [SchemaField(0x68)]
     public uint Unk68;
+
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x70, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public ulong WorldID;
+
     [SchemaField(0x88, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public ResourcePointer DataResource;

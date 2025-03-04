@@ -564,45 +564,90 @@ public struct D2Class_23978080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "63268080", 0xC60)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "1C888080", 0x50)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "12848080", 0x50)]
 public struct D2Class_12848080
 {
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "08278080", 0x598)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "18888080", 0x90)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "0E848080", 0xA0)]
 public struct D2Class_0E848080
 {
     [SchemaField(0x100, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     public DynamicArray<S712B8080> Unk100;
 
+    [SchemaField(0x78, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x88, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public DynamicArray<D2Class_1B848080> Unk88;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "20888080", 0x18)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "1B848080", 0x18)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "1B848080", 0x38)]
 public struct D2Class_1B848080
 {
-    [SchemaField(0x8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_1D848080> Unk08;
 }
 
-[SchemaStruct("1D848080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "22888080", 0x8)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "1D848080", 0x18)]
 public struct D2Class_1D848080
 {
     public int Unk00;
     public int Unk04;
-    [Tag64]
-    public Tag Unk08;
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true)]
+    public Tag Entity;
+
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
+    public Tag Entity64;
+
+    public Tag GetEntity()
+    {
+        if (Strategy.IsPreBL())
+            return Entity;
+        else
+            return Entity64;
+    }
 }
 
 [SchemaStruct("07008080", 4)]
 public struct D2Class_07008080
 {
     public uint Unk00;
+}
+
+// Used in the Trials of the Nine Spire ring things 221EC580 ent, 167BFE80 resource
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "D7848080", 0x250)]
+public struct D2Class_D7848080
+{
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E9848080", 0x2E8)]
+public struct D2Class_E9848080
+{
+    [SchemaField(0x168)]
+    public DynamicArray<D2Class_E6938080> Unk168;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E6938080", 0x18)]
+public struct D2Class_E6938080
+{
+    [SchemaField(0x10)]
+    public ResourcePointer Unk10; // 81888080
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "81888080", 0xEC)]
+public struct D2Class_81888080
+{
+    [SchemaField(0x74)]
+    public Tag Entity;
 }
 
 // General, parents that reference Entity
