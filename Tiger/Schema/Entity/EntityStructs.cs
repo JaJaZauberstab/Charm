@@ -707,6 +707,43 @@ public struct D2Class_44318080
     public Entity? Entity;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "3B9A8080", 0x50)]
+public struct D2Class_3B9A8080
+{
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "8F948080", 0xC8)]
+public struct D2Class_8F948080
+{
+    [SchemaField(0xA8)]
+    public DynamicArray<D2Class_56838080> UnkA8;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "56838080", 0x68)]
+public struct D2Class_56838080
+{
+    [SchemaField(0x8)]
+    public DynamicArray<D2Class_58838080> Table1; // Why...Are these all the same...?
+    public DynamicArray<D2Class_58838080> Table2;
+    public DynamicArray<D2Class_58838080> Table3;
+    public DynamicArray<D2Class_58838080> Table4;
+    public DynamicArray<D2Class_58838080> Table5;
+    public DynamicArray<D2Class_58838080> Table6;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "58838080", 0x18)]
+public struct D2Class_58838080
+{
+    public ResourceInTablePointer<SMapDataEntry>? Datatable;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "B67E8080", 0x34)]
+public struct D2Class_B67E8080
+{
+    [SchemaField(0x20)]
+    public StringHash EntityName;
+}
+
 #region Named entities
 
 //I think this is the old struct for named bags, it seems like it changed to 1D478080?

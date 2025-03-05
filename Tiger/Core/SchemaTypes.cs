@@ -593,11 +593,17 @@ public class StringReference64 : ITigerDeserialize
 [SchemaType(0x08)]
 public class ResourceInTablePointer<T> : ITigerDeserialize where T : struct
 {
-    public T Value;
+    public T? Value;
 
     public void Deserialize(TigerReader reader)
     {
         long resourcePointer = reader.ReadInt64();
+        if (resourcePointer == 0)
+        {
+            Value = null;
+            return;
+        }
+
         reader.Seek(resourcePointer - 8, SeekOrigin.Current);
         Value = reader.ReadSchemaStruct<T>();
     }

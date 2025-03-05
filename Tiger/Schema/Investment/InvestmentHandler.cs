@@ -717,7 +717,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         {
             foreach (var entryMultipleEntityAssignment in entry.MultipleEntityAssignments)
             {
-                foreach (var assignment in entryMultipleEntityAssignment.EntityAssignmentResource.Value.EntityAssignments)
+                foreach (var assignment in entryMultipleEntityAssignment.EntityAssignmentResource.Value.Value.EntityAssignments)
                 {
                     if (assignment.EntityAssignmentHash.IsValid())
                     {

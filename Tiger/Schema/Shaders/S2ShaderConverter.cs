@@ -251,7 +251,7 @@ PS
                                 CBuffers.AppendLine($"\n\t\tfloat4 cb0[{cb0.Count}] =\n\t\t{{");
                                 foreach (var vec in cb0)
                                 {
-                                    CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString()},");
+                                    CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString().Replace("Infinity", "1.#INF")},");
                                 }
                                 CBuffers.AppendLine($"\t\t}};");
 

@@ -25,7 +25,7 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
     {
         AddFromWordlist();
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             var vals = PackageResourcer.Get().GetAllHashes<S50058080>();
             Parallel.ForEach(vals, val =>
@@ -36,7 +36,7 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
             });
         }
         // surely this is fine..
-        if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_BEYONDLIGHT_3402)
+        else
         {
             var vals = PackageResourcer.Get().GetAllHashes<D2Class_02218080>(); //TODO: Beyond Light
             Parallel.ForEach(vals, val =>
@@ -44,9 +44,13 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
                 var tag = FileResourcer.Get().GetSchemaTag<D2Class_02218080>(val);
                 foreach (var entry in tag.TagData.Unk28)
                 {
-                    if (entry.Unk10 is not null && entry.Unk10.Hash.GetReferenceHash() == 0x808099EF) // EF998080
+                    if ((Strategy.IsPostBL() || Strategy.IsBL()) && entry.Unk10 is not null && entry.Unk10.Hash.GetReferenceHash() == 0x808099EF) // EF998080
                     {
                         AddStrings(FileResourcer.Get().GetFile<LocalizedStrings>(entry.Unk10.Hash));
+                    }
+                    else if (Strategy.IsPreBL() && entry.Unk00 is not null && entry.Unk00.Hash.GetReferenceHash() == 0x80809A88)
+                    {
+                        AddStrings(FileResourcer.Get().GetFile<LocalizedStrings>(entry.Unk00.Hash));
                     }
                 }
             });

@@ -481,6 +481,7 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
             throw new Exception($"Failed to create schema field instance of type {fieldType} ({reader.Hash:X})");
         }
 
+        //Console.WriteLine($"DeserializeTigerType {fieldType} ({reader.Hash:X})");
         fieldValue.Deserialize(reader);
         return fieldValue;
     }

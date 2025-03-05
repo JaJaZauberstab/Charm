@@ -446,9 +446,9 @@ namespace Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402 // BL + all the way to
                                 var unk80 = FileResourcer.Get().GetSchemaTag<D2Class_6B908080>(resource.EntityResourceParent.TagData.EntityResource.TagData.UnkHash80.Hash);
                                 foreach (var a in unk80.TagData.Unk08)
                                 {
-                                    if (a.Unk00.Value.Name.Value is not null)
+                                    if (a.Unk00.Value.Value.Name.Value is not null)
                                     {
-                                        strings.TryAdd(Helpers.Fnv(a.Unk00.Value.Name.Value), a.Unk00.Value.Name.Value);
+                                        strings.TryAdd(Helpers.Fnv(a.Unk00.Value.Value.Name.Value), a.Unk00.Value.Value.Name.Value);
                                     }
                                 }
                                 foreach (var worldid in resourceValue.Unk58)
