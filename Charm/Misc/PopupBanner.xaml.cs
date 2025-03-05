@@ -30,6 +30,7 @@ public partial class PopupBanner : UserControl
     public string Subtitle { get; set; }
     public string Description { get; set; }
     public string UserInput { get; set; } = "Dismiss";
+    public string UserInputSecondary { get; set; }
 
     public Action OnProgressComplete = null;
 
@@ -89,11 +90,13 @@ public partial class PopupBanner : UserControl
             SubtitleText.Visibility = Visibility.Collapsed;
         if (Description is null || Description == string.Empty)
             DescriptionText.Visibility = Visibility.Collapsed;
+        if (UserInputSecondary is null || UserInputSecondary == string.Empty)
+            SecondaryUserInput.Visibility = Visibility.Collapsed;
 
         DataContext = this;
     }
 
-    private void WarningBanner_MouseDown(object sender, MouseButtonEventArgs e)
+    public void WarningBanner_MouseDown(object sender, MouseButtonEventArgs e)
     {
         Remove();
     }
@@ -123,7 +126,7 @@ public partial class PopupBanner : UserControl
     }
 
     // isnt actually removed here, just starts the animation that calls the actual function when it ends
-    private void Remove()
+    public void Remove()
     {
         double currentHeight = ElementStack.ActualHeight;
         var heightAnimation = new DoubleAnimation
