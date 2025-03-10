@@ -162,7 +162,11 @@ public partial class EntityView : UserControl
         if (!aggregateOutput)
             savePath = config.GetExportSavePath() + $"/{name}";
 
-        var scene = Tiger.Exporters.Exporter.Get().CreateScene(name, Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON ? ExportType.D1API : ExportType.API);
+        Directory.CreateDirectory(savePath);
+        Directory.CreateDirectory($"{savePath}/Textures");
+        var scene = Tiger.Exporters.Exporter.Get().CreateScene(name, Strategy.IsD1() ? ExportType.D1API : ExportType.API);
+
+        ExportGearShader(item, name, savePath);
 
         // Export the model
         // todo bad, should be replaced
@@ -179,8 +183,6 @@ public partial class EntityView : UserControl
             overrideSkeleton = new EntitySkeleton(playerBase.Skeleton.Hash);
         }
 
-
-
         var val = Investment.Get().GetPatternEntityFromHash(item.Parent != null ? item.Parent.TagData.InventoryItemHash : item.Item.TagData.InventoryItemHash);
         if (val != null && val.Skeleton != null)
         {
@@ -189,7 +191,7 @@ public partial class EntityView : UserControl
 
         var entities = Investment.Get().GetEntitiesFromHash(item.Item.TagData.InventoryItemHash);
 
-        Log.Verbose($"Exporting entity model name: {name}");
+        Log.Info($"Exporting entity model name: {name}");
 
         foreach (var entity in entities)
         {
@@ -223,18 +225,16 @@ public partial class EntityView : UserControl
             Tiger.Exporters.Exporter.Get().Export(savePath);
 
         Log.Info($"Exported entity model {name} to {savePath.Replace('\\', '/')}/");
-
-        Directory.CreateDirectory(savePath);
-        ExportGearShader(item, name, savePath);
     }
 
     // I don't like this
     public static void ExportGearShader(ApiItem item, string itemName, string savePath)
     {
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        var config = ConfigSubsystem.Get();
 
+        Log.Info($"Exporting Gear Shader for: {item.ItemName}");
         // Export the dye info
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             Dictionary<TigerHash, DyeD1> dyes = new Dictionary<TigerHash, DyeD1>();
             if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is D2Class_77738080 translationBlock)
@@ -289,6 +289,7 @@ public partial class EntityView : UserControl
             var iridesceneLookup = Globals.Get().RenderGlobals.TagData.Textures.TagData.IridescenceLookup;
             TextureExtractor.SaveTextureToFile($"{savePath}/Textures/Iridescence_Lookup", iridesceneLookup.GetScratchImage());
         }
+        Log.Info($"Exported Gear Shader for: {item.ItemName}");
     }
 
     private List<MainViewModel.DisplayPart> MakeEntityDisplayParts(Entity entity, ExportDetailLevel detailLevel)
