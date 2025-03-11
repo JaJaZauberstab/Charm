@@ -1354,6 +1354,7 @@ public struct D2Class_18808080
     [SchemaField(0x278, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x398, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x3C0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x398, TigerStrategy.DESTINY2_LATEST)] // Got moved on Heresy Act 2 (3/11/25) update
     public Tag<D2Class_4D7E8080> Unk3C0;
 }
 

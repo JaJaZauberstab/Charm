@@ -77,11 +77,13 @@ public class Entity : Tag<SEntity>
                     break;
 
                 case D2Class_357C8080: // Generic name
-                    var genericName = ((D2Class_18808080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk3C0.TagData.EntityName;
-
                     // we care more about the specific name so if the entity name is already assigned, dont assign this one
-                    if (EntityName == null && (GlobalStrings.Get().GetString(genericName) != genericName))
-                        EntityName = GlobalStrings.Get().GetString(genericName);
+                    if (EntityName == null)
+                    {
+                        var genericName = ((D2Class_18808080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk3C0.TagData.EntityName;
+                        if (GlobalStrings.Get().GetString(genericName) != genericName)
+                            EntityName = GlobalStrings.Get().GetString(genericName);
+                    }
                     break;
 
                 case D2Class_DA5E8080: // Specific name
