@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using VersionChecker;
 
 namespace Charm
 {
@@ -11,9 +13,13 @@ namespace Charm
     /// </summary>
     public partial class App : Application
     {
+        public static ApplicationVersion CurrentVersion = new ApplicationVersion("2.4.4");
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            // Idk why for some people Charm is looking at system32 instead of the exe location...
+            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
             var args = e.Args;
             if (args.Length > 0)
             {

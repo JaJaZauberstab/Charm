@@ -4,7 +4,7 @@ namespace Tiger.Schema.Entity;
 
 public class Entity : Tag<SEntity>
 {
-    // Entity features
+    // Entity features, todo clean this up
     public EntitySkeleton? Skeleton { get; set; }
     public EntityModel? Model { get; private set; }
     public EntityResource? ModelParentResource { get; private set; }
@@ -16,6 +16,8 @@ public class Entity : Tag<SEntity>
     public EntityResource? EntityChildren { get; private set; }
     public string? EntityName { get; set; } // Usually just the generic name (Ogre, Vandal, etc)
     public DestinyGenderDefinition Gender { get; set; } = DestinyGenderDefinition.None; // Only used for player armor
+
+    public List<EntityResource>? EntityChildren2 { get; private set; } // Some weird collection of entities thats only in Pre-BL?
 
     private bool _loaded = false;
 
@@ -90,6 +92,13 @@ public class Entity : Tag<SEntity>
                     // Don't assign a name if the name hash doesnt return an actual string (returns the name hash instead)
                     if (GlobalStrings.Get().GetString(specificName) != specificName)
                         EntityName = GlobalStrings.Get().GetString(specificName);
+                    break;
+
+                case D2Class_D7848080 when Strategy.IsPreBL(): // No idea if this is SK only
+                    if (EntityChildren2 is null)
+                        EntityChildren2 = new();
+
+                    EntityChildren2.Add(resource);
                     break;
 
                 case D2Class_12848080:
@@ -188,6 +197,9 @@ public class Entity : Tag<SEntity>
         }
 
         List<Entity> entities = new List<Entity>();
+        if (Strategy.IsPreBL() && EntityChildren2 is not null)
+            entities.AddRange(GetEntityChildren2());
+
         if (EntityChildren is null)
             return entities;
 
@@ -218,25 +230,62 @@ public class Entity : Tag<SEntity>
         }
         else
         {
-            foreach (var entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk88)
+            if (EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader()) is D2Class_0E848080)
             {
-                foreach (var entry2 in entry.Unk08)
+                foreach (var entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk88)
                 {
-                    if (entry2.Unk08 is null)
-                        continue;
-
-                    Entity entity = FileResourcer.Get().GetFile<Entity>(entry2.Unk08.Hash);
-                    if (entity.HasGeometry())
+                    foreach (var entry2 in entry.Unk08)
                     {
-                        entities.Add(entity);
-                        //Just in case
-                        foreach (var child in entity.GetEntityChildren())
-                            entities.Add(child);
+                        if (entry2.GetEntity() is null)
+                            continue;
+
+                        Entity entity = FileResourcer.Get().GetFile<Entity>(entry2.GetEntity().Hash);
+                        if (entity.HasGeometry())
+                        {
+                            entities.Add(entity);
+                            //Just in case
+                            foreach (var child in entity.GetEntityChildren())
+                                entities.Add(child);
+                        }
                     }
                 }
             }
         }
 
+        return entities;
+    }
+
+    public List<Entity> GetEntityChildren2() // THIS SUCKS WHYYY BUNGIEEE
+    {
+        List<Entity> entities = new List<Entity>();
+        if (EntityChildren2 is null)
+            return entities;
+
+        foreach (var resource in EntityChildren2)
+        {
+            if (resource.TagData.Unk18.GetValue(resource.GetReader()) is D2Class_E9848080)
+            {
+                foreach (var entry in ((D2Class_E9848080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk168)
+                {
+                    if (entry.Unk10.GetValue(resource.GetReader()) is D2Class_81888080 entry2)
+                    {
+                        if (entry2.Entity is null)
+                            continue;
+#if DEBUG
+                        Console.WriteLine($"GetEntityChildren2: {resource.Hash} : {entry2.Entity.Hash}");
+#endif
+                        Entity entity = FileResourcer.Get().GetFile<Entity>(entry2.Entity.Hash);
+                        if (!entities.Contains(entity) && entity.HasGeometry())
+                        {
+                            entities.Add(entity);
+                            //Just in case
+                            foreach (var child in entity.GetEntityChildren())
+                                entities.Add(child);
+                        }
+                    }
+                }
+            }
+        }
         return entities;
     }
 }

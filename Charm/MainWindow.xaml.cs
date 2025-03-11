@@ -78,18 +78,18 @@ public partial class MainWindow
         if (config.GetPackagesPath(Strategy.CurrentStrategy) != "" && config.GetExportSavePath() != "")
         {
             MainMenuTab.Visibility = Visibility.Visible;
+
+            // Check version
+            CheckVersion();
+
+            // Log game version
+            CheckGameVersion();
         }
         else
         {
             MakeNewTab("Configuration", new ConfigView());
             SetNewestTabSelected();
         }
-
-        // Check version
-        CheckVersion();
-
-        // Log game version
-        CheckGameVersion();
 
         Strategy.AfterStrategyEvent += delegate (StrategyEventArgs args)
         {
@@ -102,28 +102,25 @@ public partial class MainWindow
             });
         };
 
-
-        // fuck you bungie leaks + anyone else using this to leak :)
-        // you're not cool, you get off to your 5 minutes of fame on twitter
         if (!ConfigSubsystem.Get().GetAcceptedAgreement())
         {
-            var a = MessageBox.Show($"Charm is NOT a datamining tool!\n" +
-                $"By using Charm, you agree to:" +
-                $"\n- Not use this to leak content." +
-                $"\n- Not use this to spread spoilers." +
-                $"\n\nSeriously, it's getting very annoying seeing this used for leaks/spoilers." +
-                $"\n\nSeeing leaks come from here makes public releases and updates less and less likely. Stop ruining it.",
-                $"Usage Agreement",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            PopupBanner warn = new();
+            warn.DarkenBackground = true;
+            warn.Icon = "⚠️";
+            warn.Title = "ATTENTION";
+            warn.Subtitle = "Charm is NOT a datamining tool!";
+            warn.Description = $"Charm's main purpose is focused towards 3D artists, content preservation and learning how the game works!" +
+                $"\n\nBy using Charm, you agree to:" +
+                $"\n• Not use this to leak content." +
+                $"\n• Not use this to spread spoilers." +
+                $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!";
 
-            if (a == MessageBoxResult.Yes)
-                ConfigSubsystem.Get().SetAcceptedAgreement(true);
-            else
-            {
-                ConfigSubsystem.Get().SetAcceptedAgreement(false);
-                MessageBox.Show("Womp Womp", "Well that's too bad.", MessageBoxButton.OK);
-                Environment.Exit(0);
-            }
+            warn.Style = PopupBanner.PopupStyle.Warning;
+            warn.UserInput = "Accept";
+            warn.HoldDuration = 4000;
+            warn.Progress = true;
+            warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
+            warn.Show();
         }
     }
 
@@ -225,7 +222,6 @@ public partial class MainWindow
         try
         {
             ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
-            config.checkagree(true);
             var path = config.GetPackagesPath(Strategy.CurrentStrategy).Split("packages")[0] + "destiny2.exe";
             var versionInfo = FileVersionInfo.GetVersionInfo(path);
             string version = versionInfo.FileVersion;
@@ -238,35 +234,54 @@ public partial class MainWindow
         }
     }
 
-
-    // Disabling update checking for now since the last github release is a fossil at this point
     private async void CheckVersion()
     {
-        var currentVersion = new ApplicationVersion("2.4.0");
-        Arithmic.Log.Info($"Charm Version: {currentVersion.Id}");
-        //var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/main/", currentVersion);
-        //versionChecker.LatestVersionName = "version";
-        //        try
-        //        {
-        //            var upToDate = await versionChecker.IsUpToDate();
-        //            if (!upToDate)
-        //            {
-        //                MessageBox.Show($"New version available on GitHub! (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id})");
-        //                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id}).");
-        //            }
-        //            else
-        //            {
-        //                Arithmic.Log.Info($"Version is up to date ({versionChecker.CurrentVersion.Id}).");
-        //            }
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            // Could not get or parse version file
-        //#if !DEBUG
-        //                    MessageBox.Show("Could not get version.");
-        //#endif
-        //            Arithmic.Log.Error($"Could not get version error {e}.");
-        //        }
+        Arithmic.Log.Info($"Charm Version: {App.CurrentVersion.Id}");
+        var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/delta/TFS", App.CurrentVersion);
+        versionChecker.LatestVersionName = "version";
+        try
+        {
+            var upToDate = await versionChecker.IsUpToDate();
+            if (!upToDate)
+            {
+                //MessageBox.Show($"New version available on GitHub! (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id})");
+                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id}).");
+
+                PopupBanner update = new();
+                update.DarkenBackground = true;
+                update.Icon = "";
+                update.Title = "UPDATE AVAILABLE";
+                update.Subtitle = "A new Charm version is available!";
+                update.Description =
+                    $"Current Version: v{App.CurrentVersion.Id}\n" +
+                    $"Latest Version: v{versionChecker.LatestVersion.Id}";
+                update.UserInput = "Update";
+                update.UserInputSecondary = "Dismiss";
+
+                update.MouseLeftButtonDown += OpenLatestRelease;
+                update.MouseRightButtonDown += update.WarningBanner_MouseDown;
+
+                update.Style = PopupBanner.PopupStyle.Information;
+                update.Show();
+            }
+            else
+            {
+                Arithmic.Log.Info($"Version is up to date ({versionChecker.CurrentVersion.Id}).");
+            }
+        }
+        catch (Exception e)
+        {
+            // Could not get or parse version file
+#if !DEBUG
+            MessageBox.Show("Could not get version.");
+#endif
+            Arithmic.Log.Error($"Could not get version error {e}.");
+        }
+    }
+
+    private void OpenLatestRelease(object sender, MouseButtonEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo { FileName = $"https://github.com/MontagueM/Charm/releases/latest", UseShellExecute = true });
     }
 
     private async void InitialiseHandlers()
@@ -398,9 +413,60 @@ public partial class MainWindow
             if (content is APIItemView || content is CategoryView)
                 MainTabControl.Items.Remove(tab);
         }
+        else if (e.Key == Key.W
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+        {
+            PopupBanner test = new();
+            test.DarkenBackground = false;
+            test.Icon = "ℹ️";
+            test.Title = "INFORMATION";
+            test.Subtitle = "Test Information Popup Subtitle";
+            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+            test.Style = PopupBanner.PopupStyle.Information;
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(test);
+        }
+        else if (e.Key == Key.E
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+        {
+            PopupBanner test = new();
+            test.DarkenBackground = false;
+            test.Icon = "⚠️";
+            test.Title = "ERROR";
+            test.Subtitle = "Test Error Popup Subtitle";
+            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nError code: Valumptious";
+
+            test.Style = PopupBanner.PopupStyle.Warning;
+            test.UserInput = "Hold To Accept";
+            test.HoldDuration = 1000;
+            test.Progress = true;
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(test);
+        }
+        else if (e.Key == Key.Q
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+        {
+            PopupBanner test = new();
+            test.DarkenBackground = false;
+            test.Icon = "💬";
+            test.Title = "GENERAL";
+            test.Subtitle = "Test General Popup Subtitle";
+            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+            test.UserInput = "Ok";
+            test.Style = PopupBanner.PopupStyle.Generic;
+
+            var rootPanel = Application.Current.MainWindow?.Content as Panel;
+            rootPanel.Children.Add(test);
+        }
     }
 
-    private BitmapSource GetBitmapSource(Icon icon)
+    public static BitmapSource GetBitmapSource(Icon icon)
     {
         return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
                  icon.Handle,

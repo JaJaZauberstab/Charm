@@ -106,7 +106,7 @@ public enum TfxExtern : byte
 
 public static class Externs
 {
-    public static string GetExternFloat(TfxExtern extern_, int element)
+    public static string GetExternFloat(TfxExtern extern_, int element, bool bInline = false)
     {
         switch (extern_)
         {
@@ -114,43 +114,43 @@ public static class Externs
                 switch (element)
                 {
                     case 0:
-                        return $"(Time)"; // game_time
+                        return bInline ? $"float4(g_flTime,g_flTime,g_flTime,g_flTime)" : "(Time)"; // game_time
                     case 0x04:
-                        return $"(Time)"; // render_time
+                        return bInline ? $"float4(g_flTime,g_flTime,g_flTime,g_flTime)" : "(Time)"; // render_time
                     case 0x10:
-                        return $"(0.5)";
+                        return bInline ? $"float4(FrameTimeOfDay.xxxx)" : $"(exists(FrameTimeOfDay) ? (FrameTimeOfDay) : (0.5))";
                     case 0x14:
-                        return $"(0.016)"; // delta_game_time
+                        return $"float4(0.016,0.016,0.016,0.016)"; // delta_game_time
                     case 0x1C:
-                        return $"(16)"; // exposure_scale
+                        return $"float4(16,16,16,16)"; // exposure_scale
 
                     default:
                         Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_}");
-                        return $"(1)";
+                        return $"float4(1,1,1,1)";
                 }
             case TfxExtern.Atmosphere:
                 switch (element)
                 {
                     case 0x70:
-                        return $"(exists(AtmosTimeOfDay) ? (AtmosTimeOfDay) : (0.5))";
+                        return bInline ? $"float4(AtmosTimeOfDay.xxxx)" : $"(exists(AtmosTimeOfDay) ? (AtmosTimeOfDay) : (0.5))";
                     case 0x198:
                     case 0x170:
-                        return $"(0.0001)";
+                        return $"float4(0.0001,0.0001,0.0001,0.0001)";
                     case 0x1b4:
-                        return $"(exists(AtmosRotation) ? (AtmosRotation) : (0))";
+                        return bInline ? $"float4(AtmosRotation.xxxx)" : $"(exists(AtmosRotation) ? (AtmosRotation) : (0))";
                     case 0x1b8:
-                        return $"(exists(AtmosTimeOfDay) ? (AtmosTimeOfDay) : (1))";
+                        return bInline ? $"float4(AtmosIntensity.xxxx)" : $"(exists(AtmosIntensity) ? (AtmosIntensity) : (0.5))";
                     case 0x1bc:
-                        return $"(0.5)";
+                        return $"float4(0.5,0.5,0.5,0.5)";
                     case 0x1e8:
-                        return $"(0)";
+                        return $"float4(0,0,0,0)";
                     default:
                         Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_} ");
-                        return $"(1)";
+                        return $"float4(1,1,1,1)";
                 }
             default:
                 Log.Error($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
-                return $"(1)";
+                return $"float4(1,1,1,1)";
         }
     }
 

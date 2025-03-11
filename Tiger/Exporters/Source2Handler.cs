@@ -89,7 +89,8 @@ public static class Source2Handler
         vmat.AppendLine("Layer0\n{");
 
         //Material parameters
-        vmat.AppendLine($"\tshader \"Shaders/Source2/ps_{material.Pixel.Shader.Hash}.shader\"");
+        var name = material.Pixel.GetBytecode().CanInlineBytecode() ? material.Hash : material.Pixel.Shader.Hash;
+        vmat.AppendLine($"\tshader \"Shaders/Source2/ps_{name}.shader\"");
 
         if ((material.EnumerateScopes().Contains(TfxScope.TRANSPARENT) || material.EnumerateScopes().Contains(TfxScope.TRANSPARENT_ADVANCED)) && material.RenderStates.BlendState() == -1)
             vmat.AppendLine($"\tF_ADDITIVE_BLEND 1");
@@ -169,19 +170,23 @@ public static class Source2Handler
             }
         }
 
-        vmat.AppendLine(PopulateCBuffers(material).ToString()); // PS
+        vmat.AppendLine(PopulateCBuffers(material).ToString()); // sPS
         vmat.AppendLine(PopulateCBuffers(material, true).ToString()); // VS
 
-        //PS Dynamic expressions
+        // PS Dynamic expressions
         TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(material.Pixel.TFX_Bytecode));
-        var bytecode_hlsl = bytecode.Evaluate(material.Pixel.TFX_Bytecode_Constants, false, material);
 
         vmat.AppendLine($"\tDynamicParams\r\n\t{{");
-        string temp_time_fix = $"CurTime = exists(CurrentTime) ? CurrentTime : Time;";
-        foreach (var entry in bytecode_hlsl)
+
+        if (!bytecode.CanInlineBytecode())
         {
-            var expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
-            vmat.AppendLine($"\t\tcb0_{entry.Key} \"{expression}\"");
+            var bytecode_hlsl = bytecode.Evaluate(material.Pixel.TFX_Bytecode_Constants, false, material);
+            string temp_time_fix = $"CurTime = exists(CurrentTime) ? CurrentTime : Time;";
+            foreach (var entry in bytecode_hlsl)
+            {
+                var expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
+                vmat.AppendLine($"\t\tcb0_{entry.Key} \"{expression}\"");
+            }
         }
 
         foreach (var scope in material.EnumerateScopes())
@@ -262,14 +267,16 @@ public static class Source2Handler
 
         if (material.Vertex.Unk64 != 0) // Vertex animation?
         {
-            //VS Dynamic expressions
             bytecode = new(TfxBytecodeOp.ParseAll(material.Vertex.TFX_Bytecode));
-            bytecode_hlsl = bytecode.Evaluate(material.Vertex.TFX_Bytecode_Constants, false, material);
-
-            foreach (var entry in bytecode_hlsl)
+            if (!bytecode.CanInlineBytecode())
             {
-                var expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
-                vmat.AppendLine($"\t\tvs_cb0_{entry.Key} \"{expression}\"");
+                var bytecode_hlsl = bytecode.Evaluate(material.Vertex.TFX_Bytecode_Constants, false, material);
+                string temp_time_fix = $"CurTime = exists(CurrentTime) ? CurrentTime : Time;";
+                foreach (var entry in bytecode_hlsl)
+                {
+                    var expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
+                    vmat.AppendLine($"\t\tvs_cb0_{entry.Key} \"{expression}\"");
+                }
             }
 
             foreach (var resource in material.Vertex.Shader.Resources)

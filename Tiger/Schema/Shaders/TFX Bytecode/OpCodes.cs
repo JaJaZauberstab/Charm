@@ -310,7 +310,7 @@ public static class TfxBytecodeOp
                 output = $"{DecodePermuteParam(((PermuteData)tfxData.data).fields).ToUpper()}";
                 break;
             case PushConstantVec4Data:
-                output = $"{constants[((PushConstantVec4Data)tfxData.data).constant_index].Vec.ToString()}";
+                output = $"{constants[((PushConstantVec4Data)tfxData.data).constant_index].Vec.ToString().Replace("Infinity", "1.#INF")}";
                 break;
             case LerpConstantData:
                 output = $"A: {constants[((LerpConstantData)tfxData.data).constant_start].Vec}: B: {constants[((LerpConstantData)tfxData.data).constant_start + 1].Vec}";

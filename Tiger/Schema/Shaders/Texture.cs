@@ -5,6 +5,7 @@ using Arithmic;
 using DirectXTex;
 using DirectXTexNet;
 using Newtonsoft.Json;
+using Tiger.Schema.Entity;
 
 namespace Tiger.Schema;
 
@@ -316,6 +317,67 @@ public class Texture : TigerReferenceFile<STextureHeader>
     private static int NearestPowerOfTwo(int value)
     {
         return 1 << (sizeof(uint) * 8 - BitOperations.LeadingZeroCount((uint)(value - 1)));
+    }
+}
+
+// todo move this
+public class TexturePlate : Tag<D2Class_919E8080>
+{
+    public TexturePlate(FileHash hash) : base(hash)
+    {
+    }
+
+    public ScratchImage? MakePlatedTexture()
+    {
+        var dimension = GetPlateDimensions();
+        if (dimension.X == 0)
+        {
+            return null;
+        }
+
+        using TigerReader reader = GetReader();
+        bool bSrgb = _tag.PlateTransforms[reader, 0].Texture.IsSrgb();
+        ScratchImage outputPlate = TexHelper.Instance.Initialize2D(bSrgb ? DXGI_FORMAT.B8G8R8A8_UNORM_SRGB : DXGI_FORMAT.B8G8R8A8_UNORM, dimension.X, dimension.Y, 1, 0, 0);
+
+        foreach (var transform in _tag.PlateTransforms.Enumerate(reader))
+        {
+            ScratchImage original = transform.Texture.GetScratchImage();
+            ScratchImage resizedOriginal = original.Resize(transform.Scale.X, transform.Scale.Y, TEX_FILTER_FLAGS.SEPARATE_ALPHA);
+            TexHelper.Instance.CopyRectangle(resizedOriginal.GetImage(0, 0, 0), 0, 0, transform.Scale.X, transform.Scale.Y, outputPlate.GetImage(0, 0, 0), bSrgb ? TEX_FILTER_FLAGS.SEPARATE_ALPHA : 0, transform.Translation.X, transform.Translation.Y);
+            original.Dispose();
+            resizedOriginal.Dispose();
+        }
+        return outputPlate;
+    }
+
+    public void SavePlatedTexture(string savePath)
+    {
+        var simg = MakePlatedTexture();
+        if (simg != null)
+        {
+            Texture.SavetoFile(savePath, simg);
+        }
+    }
+
+    public IntVector2 GetPlateDimensions()
+    {
+        int maxDimension = 0;  // plate must be square
+        foreach (var transform in _tag.PlateTransforms.Enumerate(GetReader()))
+        {
+            if (transform.Translation.X + transform.Scale.X > maxDimension)
+            {
+                maxDimension = transform.Translation.X + transform.Scale.X;
+            }
+            if (transform.Translation.Y + transform.Scale.Y > maxDimension)
+            {
+                maxDimension = transform.Translation.Y + transform.Scale.Y;
+            }
+        }
+
+        // Find power of two that fits this dimension, ie round up the exponent to nearest integer
+        maxDimension = (int)Math.Pow(2, Math.Ceiling(Math.Log2(maxDimension)));
+
+        return new IntVector2(maxDimension, maxDimension);
     }
 }
 

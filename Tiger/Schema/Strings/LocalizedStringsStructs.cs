@@ -73,19 +73,26 @@ public struct S50058080
     public LocalizedStrings CharacterNames; // content\sandbox\strings\character_names.localized_strings.tft
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "B7478080", 0x58)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "02218080", 0x68)]
 public struct D2Class_02218080
 {
-    [SchemaField(0x28)]
+    [SchemaField(0x20, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public DynamicArray<D2Class_0E3C8080> Unk28;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "C6478080", 0x8)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "0E3C8080", 0x28)]
 public struct D2Class_0E3C8080
 {
-    [Tag64]
-    public Tag Unk00; // Always FFFFFFFF?
-    [Tag64]
+    //[Tag64]
+    //public Tag Unk00; // Always FFFFFFFF?
+    [SchemaField(0x0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true)]
+    public Tag Unk00;
+
+    [SchemaField(0x10, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
     public Tag Unk10; // Can be string container or something else
 }
 

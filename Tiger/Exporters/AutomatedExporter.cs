@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Arithmic;
 using Newtonsoft.Json;
 using Tiger.Schema;
 
@@ -6,6 +7,7 @@ namespace Tiger.Exporters;
 
 public class AutomatedExporter
 {
+    public static object _lock = new object();
     public enum ImportType
     {
         Static,
@@ -48,48 +50,55 @@ public class AutomatedExporter
 
     public static void SaveBlenderApiFile(string saveDirectory, string meshName, TextureExportFormat outputTextureFormat, List<Dye> dyes, string fileSuffix = "")
     {
-        File.Copy($"Exporters/blender_api_template.py", $"{saveDirectory}/{meshName}{fileSuffix}.py", true);
-        string text = File.ReadAllText($"{saveDirectory}/{meshName}{fileSuffix}.py");
-
-        string[] components = { "X", "Y", "Z", "W" };
-
-        int dyeIndex = 1;
-        foreach (var dye in dyes)
+        try
         {
-            if (dye is null)
-                continue;
-
-            dye.ExportTextures($"{saveDirectory}/Textures", outputTextureFormat);
-            var dyeInfo = dye.GetDyeInfo();
-            foreach (var fieldInfo in dyeInfo.GetType().GetFields())
+            lock (_lock)
             {
-                Vector4 value = (Vector4)fieldInfo.GetValue(dyeInfo);
-                if (!fieldInfo.CustomAttributes.Any())
-                    continue;
-                string valueName = fieldInfo.CustomAttributes.First().ConstructorArguments[0].Value.ToString();
-                for (int i = 0; i < 4; i++)
+                string text = File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}/Exporters/blender_api_template.py");
+                string[] components = { "X", "Y", "Z", "W" };
+
+                int dyeIndex = 1;
+                foreach (var dye in dyes)
                 {
-                    text = text.Replace($"{valueName}{dyeIndex}.{components[i]}", $"{value[i].ToString().Replace(",", ".")}");
+                    if (dye is null)
+                        continue;
 
-                    // Rare case where dye list only has 1 dye?
-                    if (dyes.Count == 1)
+                    dye.ExportTextures($"{saveDirectory}/Textures", outputTextureFormat);
+                    var dyeInfo = dye.GetDyeInfo();
+                    foreach (var fieldInfo in dyeInfo.GetType().GetFields())
                     {
-                        text = text.Replace($"{valueName}{dyeIndex + 1}.{components[i]}", $"{value[i].ToString().Replace(",", ".")}");
-                        text = text.Replace($"{valueName}{dyeIndex + 2}.{components[i]}", $"{value[i].ToString().Replace(",", ".")}");
+                        Vector4 value = (Vector4)fieldInfo.GetValue(dyeInfo);
+                        if (!fieldInfo.CustomAttributes.Any())
+                            continue;
+                        string valueName = fieldInfo.CustomAttributes.First().ConstructorArguments[0].Value.ToString();
+                        for (int i = 0; i < 4; i++)
+                        {
+                            text = text.Replace($"{valueName}{dyeIndex}.{components[i]}", $"{value[i].ToString().Replace(",", ".")}");
+
+                            // Rare case where dye list only has 1 dye?
+                            if (dyes.Count == 1)
+                            {
+                                text = text.Replace($"{valueName}{dyeIndex + 1}.{components[i]}", $"{value[i].ToString().Replace(",", ".")}");
+                                text = text.Replace($"{valueName}{dyeIndex + 2}.{components[i]}", $"{value[i].ToString().Replace(",", ".")}");
+                            }
+                        }
                     }
+                    var diff = dye.TagData.Textures[0];
+                    text = text.Replace($"DiffMap{dyeIndex}", $"{diff.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
+                    var norm = dye.TagData.Textures[1];
+                    text = text.Replace($"NormMap{dyeIndex}", $"{norm.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
+                    dyeIndex++;
                 }
+
+                text = text.Replace("OUTPUTPATH", $"Textures");
+                text = text.Replace("SHADERNAMEENUM", $"{meshName}{fileSuffix}");
+                File.WriteAllText($"{saveDirectory}/{meshName}{fileSuffix}.py", text);
             }
-
-            var diff = dye.TagData.Textures[0];
-            text = text.Replace($"DiffMap{dyeIndex}", $"{diff.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
-            var norm = dye.TagData.Textures[1];
-            text = text.Replace($"NormMap{dyeIndex}", $"{norm.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
-            dyeIndex++;
         }
-
-        text = text.Replace("OUTPUTPATH", $"Textures");
-        text = text.Replace("SHADERNAMEENUM", $"{meshName}{fileSuffix}");
-        File.WriteAllText($"{saveDirectory}/{meshName}{fileSuffix}.py", text);
+        catch (Exception e)
+        {
+            Log.Error($"{e.Message}");
+        }
     }
 
     public static void SaveD1ShaderInfo(string saveDirectory, string meshName, TextureExportFormat outputTextureFormat, List<DyeD1> dyes, string fileSuffix = "")

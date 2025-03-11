@@ -36,35 +36,34 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AtlasSharp\AtlasSharp.csproj" />
       <ProjectReference Include="..\Tiger\Tiger.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Page Update="Collections View\CollectionItemControl.xaml">
+      <Page Update="API\Collections View\CollectionItemControl.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
       <Page Update="Settings\ConfigSettingControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ConfigView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityMapView.xaml">
+      <Page Update="Activity\ActivityMapView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityDialogueView.xaml">
+      <Page Update="Activity\ActivityDialogueView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityDirectiveView.xaml">
+      <Page Update="Activity\ActivityDirectiveView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="ActivityMusicView.xaml">
+      <Page Update="Activity\ActivityMusicView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ActivityView.xaml</DependentUpon>
       </Page>
-      <Page Update="TagListView.xaml">
+      <Page Update="Views\TagListView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>TagListViewerView.xaml</DependentUpon>
       </Page>
@@ -72,20 +71,20 @@
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>ConfigView.xaml</DependentUpon>
       </Page>
-      <Page Update="TagView.xaml">
+      <Page Update="Views\TagView.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>TagListViewerView.xaml</DependentUpon>
       </Page>
-      <Page Update="MusicWemsControl.xaml">
+      <Page Update="Music\MusicWemsControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>MusicView.xaml</DependentUpon>
       </Page>
-      <Page Update="MusicEventsControl.xaml">
+      <Page Update="Music\MusicEventsControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>MusicView.xaml</DependentUpon>
       </Page>
 
-      <Page Update="DareItemControl.xaml">
+      <Page Update="API\DareItemControl.xaml">
         <Generator>MSBuild:Compile</Generator>
         <DependentUpon>DareView.xaml</DependentUpon>
       </Page>
@@ -120,8 +119,8 @@
 
 
     <ItemGroup>
-      <Content Include="..\Atlas\Shaders\Lighting.hlsl">
-        <Link>Shaders\Lighting.hlsl</Link>
+      <Content Include="..\Tiger\Exporters\Shaders\TFXFunctions.hlsl">
+        <Link>Shaders\TFXFunctions.hlsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
@@ -138,13 +137,9 @@
 
 
     <ItemGroup>
-      <Compile Update="Collections View\CategoryView.xaml.cs">
+      <Compile Update="API\Collections View\CategoryView.xaml.cs">
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>
-
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="xcopy &quot;$(SolutionDir)x64\$(Configuration)\Atlas.dll&quot; &quot;$(TargetDir)&quot; /y /i&#xA;xcopy &quot;$(SolutionDir)x64\$(Configuration)\Atlas.pdb&quot; &quot;$(TargetDir)&quot; /y /i" />
-    </Target>
 
 </Project>
