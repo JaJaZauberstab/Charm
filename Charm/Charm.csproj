@@ -135,11 +135,4 @@
       </Resource>
     </ItemGroup>
 
-
-    <ItemGroup>
-      <Compile Update="API\Collections View\CategoryView.xaml.cs">
-        <SubType>Code</SubType>
-      </Compile>
-    </ItemGroup>
-
 </Project>

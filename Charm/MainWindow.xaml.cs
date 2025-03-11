@@ -241,11 +241,15 @@ public partial class MainWindow
         versionChecker.LatestVersionName = "version";
         try
         {
-            var upToDate = await versionChecker.IsUpToDate();
+            var latestVersion = await versionChecker.GetLatestVersion();
+            var latestID = int.Parse(latestVersion.Id.Replace(".", ""));
+            var currentID = int.Parse(App.CurrentVersion.Id.Replace(".", ""));
+
+            bool upToDate = currentID >= latestID;
             if (!upToDate)
             {
                 //MessageBox.Show($"New version available on GitHub! (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id})");
-                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id}).");
+                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {latestVersion.Id}).");
 
                 PopupBanner update = new();
                 update.DarkenBackground = true;
@@ -254,7 +258,7 @@ public partial class MainWindow
                 update.Subtitle = "A new Charm version is available!";
                 update.Description =
                     $"Current Version: v{App.CurrentVersion.Id}\n" +
-                    $"Latest Version: v{versionChecker.LatestVersion.Id}";
+                    $"Latest Version: v{latestVersion.Id}";
                 update.UserInput = "Update";
                 update.UserInputSecondary = "Dismiss";
 
@@ -266,7 +270,7 @@ public partial class MainWindow
             }
             else
             {
-                Arithmic.Log.Info($"Version is up to date ({versionChecker.CurrentVersion.Id}).");
+                Arithmic.Log.Info($"Version is up to date (v{versionChecker.CurrentVersion.Id}, Github v{latestVersion.Id}).");
             }
         }
         catch (Exception e)
