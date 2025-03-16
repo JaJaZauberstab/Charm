@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Tiger;
 using Tiger.Schema;
+using VersionChecker;
 
 namespace Charm;
 /// <summary>
@@ -77,18 +78,18 @@ public partial class MainWindow
         if (config.GetPackagesPath(Strategy.CurrentStrategy) != "" && config.GetExportSavePath() != "")
         {
             MainMenuTab.Visibility = Visibility.Visible;
+
+            // Check version
+            CheckVersion();
+
+            // Log game version
+            CheckGameVersion();
         }
         else
         {
             MakeNewTab("Configuration", new ConfigView());
             SetNewestTabSelected();
         }
-
-        // Check version
-        CheckVersion();
-
-        // Log game version
-        CheckGameVersion();
 
         Strategy.AfterStrategyEvent += delegate (StrategyEventArgs args)
         {
@@ -101,9 +102,6 @@ public partial class MainWindow
             });
         };
 
-
-        // fuck you bungie leaks + anyone else using this to leak :)
-        // you're not cool, you get off to your 5 minutes of fame on twitter
         if (!ConfigSubsystem.Get().GetAcceptedAgreement())
         {
             PopupBanner warn = new();
@@ -123,24 +121,6 @@ public partial class MainWindow
             warn.Progress = true;
             warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
             warn.Show();
-
-            //var a = MessageBox.Show($"Charm is NOT a datamining tool!\n" +
-            //    $"By using Charm, you agree to:" +
-            //    $"\n- Not use this to leak content." +
-            //    $"\n- Not use this to spread spoilers." +
-            //    $"\n\nSeriously, it's getting very annoying seeing this used for leaks/spoilers." +
-            //    $"\n\nSeeing leaks come from here makes public releases and updates less and less likely. Stop ruining it.",
-            //    $"Usage Agreement",
-            //    MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-            //if (a == MessageBoxResult.Yes)
-            //    ConfigSubsystem.Get().SetAcceptedAgreement(true);
-            //else
-            //{
-            //    ConfigSubsystem.Get().SetAcceptedAgreement(false);
-            //    MessageBox.Show("Womp Womp", "Well that's too bad.", MessageBoxButton.OK);
-            //    Environment.Exit(0);
-            //}
         }
     }
 
@@ -254,34 +234,58 @@ public partial class MainWindow
         }
     }
 
-
-    // Disabling update checking for now since the last github release is a fossil at this point
     private async void CheckVersion()
     {
         Arithmic.Log.Info($"Charm Version: {App.CurrentVersion.Id}");
-        //var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/main/", currentVersion);
-        //versionChecker.LatestVersionName = "version";
-        //        try
-        //        {
-        //            var upToDate = await versionChecker.IsUpToDate();
-        //            if (!upToDate)
-        //            {
-        //                MessageBox.Show($"New version available on GitHub! (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id})");
-        //                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id}).");
-        //            }
-        //            else
-        //            {
-        //                Arithmic.Log.Info($"Version is up to date ({versionChecker.CurrentVersion.Id}).");
-        //            }
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            // Could not get or parse version file
-        //#if !DEBUG
-        //                    MessageBox.Show("Could not get version.");
-        //#endif
-        //            Arithmic.Log.Error($"Could not get version error {e}.");
-        //        }
+        var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/delta/TFS", App.CurrentVersion);
+        versionChecker.LatestVersionName = "version";
+        try
+        {
+            var latestVersion = await versionChecker.GetLatestVersion();
+            var latestID = int.Parse(latestVersion.Id.Replace(".", ""));
+            var currentID = int.Parse(App.CurrentVersion.Id.Replace(".", ""));
+
+            bool upToDate = currentID >= latestID;
+            if (!upToDate)
+            {
+                //MessageBox.Show($"New version available on GitHub! (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id})");
+                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {latestVersion.Id}).");
+
+                PopupBanner update = new();
+                update.DarkenBackground = true;
+                update.Icon = "";
+                update.Title = "UPDATE AVAILABLE";
+                update.Subtitle = "A new Charm version is available!";
+                update.Description =
+                    $"Current Version: v{App.CurrentVersion.Id}\n" +
+                    $"Latest Version: v{latestVersion.Id}";
+                update.UserInput = "Update";
+                update.UserInputSecondary = "Dismiss";
+
+                update.MouseLeftButtonDown += OpenLatestRelease;
+                update.MouseRightButtonDown += update.WarningBanner_MouseDown;
+
+                update.Style = PopupBanner.PopupStyle.Information;
+                update.Show();
+            }
+            else
+            {
+                Arithmic.Log.Info($"Version is up to date (v{versionChecker.CurrentVersion.Id}, Github v{latestVersion.Id}).");
+            }
+        }
+        catch (Exception e)
+        {
+            // Could not get or parse version file
+#if !DEBUG
+            MessageBox.Show("Could not get version.");
+#endif
+            Arithmic.Log.Error($"Could not get version error {e}.");
+        }
+    }
+
+    private void OpenLatestRelease(object sender, MouseButtonEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo { FileName = $"https://github.com/MontagueM/Charm/releases/latest", UseShellExecute = true });
     }
 
     private async void InitialiseHandlers()

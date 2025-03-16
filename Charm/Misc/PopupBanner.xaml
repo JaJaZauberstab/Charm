@@ -191,7 +191,10 @@
                         Margin="20,5,20,5"
                         Background="Transparent">
                         <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal">
-                            <Grid Margin="0,5,5,5" Background="Transparent">
+                            <Grid
+                                x:Name="MainUserInput"
+                                Margin="0,5,5,5"
+                                Background="Transparent">
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     d:FontFamily="Haas Grot Text 55 Roman"
@@ -218,6 +221,38 @@
                                 FontSize="20"
                                 Foreground="{StaticResource ForegroundColour80}"
                                 Text="{Binding UserInput}"
+                                TextWrapping="WrapWithOverflow" />
+
+                            <Grid
+                                x:Name="SecondaryUserInput"
+                                Margin="15,5,5,5"
+                                Background="Transparent">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    d:FontFamily="Haas Grot Text 55 Roman"
+                                    FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
+                                    FontSize="20"
+                                    Foreground="{StaticResource ForegroundColour80}"
+                                    Text=""
+                                    TextWrapping="WrapWithOverflow" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    d:FontFamily="Haas Grot Text 55 Roman"
+                                    FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
+                                    FontSize="20"
+                                    Foreground="#3396DA"
+                                    Text=""
+                                    TextWrapping="WrapWithOverflow" />
+                            </Grid>
+
+                            <TextBlock
+                                Margin="0,0,0,0"
+                                VerticalAlignment="Center"
+                                d:FontFamily="Haas Grot Text 55 Roman"
+                                FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
+                                FontSize="20"
+                                Foreground="{StaticResource ForegroundColour80}"
+                                Text="{Binding UserInputSecondary}"
                                 TextWrapping="WrapWithOverflow" />
                         </StackPanel>
 

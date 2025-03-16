@@ -551,10 +551,15 @@ public struct Vector4
     }
 
     public override string ToString() =>
-        $"({Decimal.Parse(X.ToString(), NumberStyles.Float)}, " +
-        $"{Decimal.Parse(Y.ToString(), NumberStyles.Float)}, " +
-        $"{Decimal.Parse(Z.ToString(), NumberStyles.Float)}, " +
-        $"{Decimal.Parse(W.ToString(), NumberStyles.Float)})";
+    $"({FormatFloat(X)}, {FormatFloat(Y)}, {FormatFloat(Z)}, {FormatFloat(W)})";
+
+    private static string FormatFloat(float value)
+    {
+        if (float.IsInfinity(value) || float.IsNaN(value))
+            return value.ToString(); // This will return "Infinity", "-Infinity", or "NaN"
+
+        return Decimal.Parse(value.ToString(), NumberStyles.Float).ToString();
+    }
 
     public bool IsZero()
     {

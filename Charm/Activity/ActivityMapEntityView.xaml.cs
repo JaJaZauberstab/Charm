@@ -459,8 +459,8 @@ public partial class ActivityMapEntityView : UserControl
                     switch (entry.DataResource.GetValue(dataTable.GetReader()))
                     {
                         case SMapSkyEntResource skyResource:
-                            skyResource.SkyEntities.Load();
-                            if (skyResource.SkyEntities.TagData.Entries is null)
+                            skyResource.SkyEntities?.Load();
+                            if (skyResource.SkyEntities is null || skyResource.SkyEntities.TagData.Entries is null)
                                 return;
 
                             foreach (var element in skyResource.SkyEntities.TagData.Entries)
@@ -525,10 +525,16 @@ public partial class ActivityMapEntityView : UserControl
 
                         case SDecoratorMapResource decorator:
                             decorator.Decorator?.Load();
+                            if (decorator.Decorator is null)
+                                return;
+
                             decorator.Decorator.LoadIntoExporter(decoratorScene, savePath);
                             break;
 
                         case SMapWaterDecal waterDecal:
+                            if (waterDecal.Model is null)
+                                return;
+
                             dynamicScene.AddMapModel(waterDecal.Model,
                             entry.Translation,
                             entry.Rotation,

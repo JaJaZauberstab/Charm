@@ -338,7 +338,21 @@ public partial class MaterialView : UserControl
         //float g = dc.Color.R / 255;
         //float b = dc.Color.R / 255;
 
-        Clipboard.SetText($"[{dc.Vector.X}, {dc.Vector.Y}, {dc.Vector.Z}, 1.0]");
+        try
+        {
+            Clipboard.SetText($"[{dc.Vector.X}, {dc.Vector.Y}, {dc.Vector.Z}, 1.0]");
+        }
+        catch (Exception ex)
+        {
+            PopupBanner test = new();
+            test.Icon = "⚠️";
+            test.Title = "ERROR";
+            test.Subtitle = "Idk why this breaks sometimes but it can...try again.";
+            test.Description = $"{ex.Message}";
+
+            test.Style = PopupBanner.PopupStyle.Warning;
+            test.Show();
+        }
     }
 
     private void OpenMaterial_OnClick(object sender, RoutedEventArgs e)

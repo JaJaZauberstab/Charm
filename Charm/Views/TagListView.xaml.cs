@@ -925,7 +925,7 @@ public partial class TagListView : UserControl
                 if (entity.HasGeometry())
                 {
                     var entityName = entity.EntityName != null ? entity.EntityName : entity.Hash;
-                    string subname = $"{Helpers.GetReadableSize(entity.GetStream().Length)} | {entity.TagData.EntityResources.Count} Resources";
+                    string subname = $"{entity.TagData.EntityResources.Count} Resources";
 
                     // Most of the time the most specific entity name comes from a map resource (bosses usually)
                     if (NamedEntities.ContainsKey(entity.Hash))
@@ -991,7 +991,7 @@ public partial class TagListView : UserControl
         else
         {
             Ents.EntityNames[Strategy.CurrentStrategy] = new();
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (Strategy.IsD1())
             {
                 // Name and entity is in a map data table
                 var vals = await PackageResourcer.Get().GetAllHashesAsync<SD9128080>();
@@ -1043,7 +1043,49 @@ public partial class TagListView : UserControl
                     }
                 });
             }
-            else if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307)
+            else if (Strategy.IsPreBL()) // SK
+            {
+                var vals = await PackageResourcer.Get().GetAllHashesAsync<D2Class_149B8080>();
+                Parallel.ForEach(vals, val =>
+                {
+                    //Console.WriteLine($"Resource {val}");
+                    var entry = FileResourcer.Get().GetSchemaTag<D2Class_149B8080>(val);
+                    if (entry.TagData.EntityResource is not null)
+                    {
+                        var resource = entry.TagData.EntityResource;
+                        if (resource.TagData.Unk10.GetValue(resource.GetReader()) is D2Class_3B9A8080)
+                        {
+                            var D2Class8F948080 = (D2Class_8F948080)resource.TagData.Unk18.GetValue(resource.GetReader());
+                            foreach (var entry2 in D2Class8F948080.UnkA8)
+                            {
+                                List<DynamicArray<D2Class_58838080>> tables = new() { entry2.Table1, entry2.Table2, entry2.Table3, entry2.Table4, entry2.Table5, entry2.Table6 };
+
+                                foreach (var datatable in tables)
+                                {
+                                    foreach (var dataEntry in datatable)
+                                    {
+                                        var value = dataEntry.Datatable.Value;
+                                        if (value is null)
+                                            continue;
+
+                                        if (value.Value.DataResource.GetValue(resource.GetReader()) is D2Class_B67E8080 name)
+                                        {
+                                            if (name.EntityName.IsValid())
+                                            {
+                                                var entityHash = value.Value.GetEntityHash();
+                                                var entityName = GlobalStrings.Get().GetString(name.EntityName);
+
+                                                Ents.AddEntityName(Strategy.CurrentStrategy, entityHash, entityName);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            else if (Strategy.IsPostBL()) // WQ+
             {
                 // Name and entity is in a map data table
                 var vals = await PackageResourcer.Get().GetAllHashesAsync<SMapDataTable>();

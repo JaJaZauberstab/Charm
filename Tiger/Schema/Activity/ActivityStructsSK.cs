@@ -1,4 +1,5 @@
-﻿using Tiger.Schema.Strings;
+﻿using Tiger.Schema.Entity;
+using Tiger.Schema.Strings;
 
 namespace Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601;
 
@@ -169,4 +170,19 @@ public struct S68948080
 {
     public long FileSize;
     public Tag<SMapDataTable> DataTable;
+    [SchemaField(0x10)]
+    public DynamicArray<D2Class_139B8080> Unk10;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "139B8080", 0x4)]
+public struct D2Class_139B8080
+{
+    public Tag<D2Class_149B8080> Unk00;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "149B8080", 0x50)]
+public struct D2Class_149B8080
+{
+    [SchemaField(0xC)]
+    public EntityResource EntityResource; // Theres another after but its always the same as this one?
 }

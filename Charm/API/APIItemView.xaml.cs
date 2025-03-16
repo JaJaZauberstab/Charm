@@ -94,7 +94,7 @@ public partial class APIItemView : UserControl
         //KeyUp += UserControl_KeyDown;
 
 #if DEBUG
-        Console.WriteLine($"Item {ApiItem.ItemName} {ApiItem.Item.Hash}");
+        Console.WriteLine($"Item {ApiItem.ItemName} {ApiItem.Item.Hash} : API Hash {ApiItem.Item.TagData.InventoryItemHash.Hash32}");
         Console.WriteLine($"Strings {Investment.Get().GetItemStrings(ApiItem.Item.TagData.InventoryItemHash)?.Hash}");
         Console.WriteLine($"Icons {Investment.Get().GetItemIconContainer(ApiItem.Item.TagData.InventoryItemHash)?.Hash}");
 #endif

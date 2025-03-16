@@ -21,6 +21,7 @@ public class TextureExtractor
             {
                 if (savePath.Contains('.')) // TODO: Figure this out
                 {
+                    Log.Error($"[BUG] Save Path {savePath} contains a period, cant export texture!");
                     scratchImage.Dispose();
                     return false;
                 }

@@ -14,17 +14,6 @@ public enum ExportDetailLevel
 }
 
 /// <summary>
-/// Mesh data represented in the raw form the game will use.
-/// Used to have the most control over the mesh data.
-/// </summary>
-public class RawMeshPart
-{
-    // public List<VertexBuffer> VertexBuffers;
-    // public List<IndexBuffer> IndexBuffers;
-    // public RawMaterial Material;
-}
-
-/// <summary>
 /// A processed form of RawMeshPart that is ready to be exported.
 /// </summary>
 public class MeshPart
@@ -134,11 +123,6 @@ public struct VertexWeight
 public class StaticMesh : Tag<SStaticMesh>
 {
     public StaticMesh(FileHash hash) : base(hash) { }
-
-    // We cache here so we don't have to recompute this every time we want to export.
-    // private List<RawMeshPart>? _rawMeshParts;
-    // private List<MeshPart>? _meshParts;
-    // public static event EventHandler<
 
     public void SaveMaterialsFromParts(ExporterScene scene, List<StaticPart> parts)
     {
