@@ -57,19 +57,19 @@ public partial class PopupBanner : UserControl
         switch (Style)
         {
             case PopupStyle.Warning:
-                ExpanderColor = new SolidColorBrush(Color.FromArgb(0x88, 0xBE, 0x25, 0x00));
-                BodyColor = new SolidColorBrush(Color.FromArgb(0x4B, 0x90, 0x00, 0x00));
-                IconColor = new SolidColorBrush(Color.FromArgb(0xC9, 0xBE, 0x00, 0x00));
+                ExpanderColor = new SolidColorBrush(Color.FromArgb(0xBF, 0x96, 0x30, 0x30));
+                BodyColor = new SolidColorBrush(Color.FromArgb(0x7F, 0x96, 0x30, 0x30));
+                IconColor = new SolidColorBrush(Color.FromArgb(0xFF, 0x96, 0x30, 0x30));
                 break;
             case PopupStyle.Information:
-                ExpanderColor = new SolidColorBrush(Color.FromArgb(0x88, 0x00, 0x74, 0x90));
-                BodyColor = new SolidColorBrush(Color.FromArgb(0x4B, 0x00, 0x74, 0x90));
-                IconColor = new SolidColorBrush(Color.FromArgb(0xC9, 0x00, 0x92, 0xB6));
+                ExpanderColor = new SolidColorBrush(Color.FromArgb(0xBF, 0x2F, 0x7F, 0x96));
+                BodyColor = new SolidColorBrush(Color.FromArgb(0x7F, 0x2F, 0x7F, 0x96));
+                IconColor = new SolidColorBrush(Color.FromArgb(0xFF, 0x2F, 0x7F, 0x96));
                 break;
             case PopupStyle.Generic:
-                ExpanderColor = new SolidColorBrush(Color.FromArgb(0x88, 0xBE, 0xBE, 0xBE));
-                BodyColor = new SolidColorBrush(Color.FromArgb(0x4B, 0x90, 0x90, 0x90));
-                IconColor = new SolidColorBrush(Color.FromArgb(0xC9, 0xBE, 0xBE, 0xBE));
+                ExpanderColor = new SolidColorBrush(Color.FromArgb(0xBF, 0x96, 0x96, 0x96));
+                BodyColor = new SolidColorBrush(Color.FromArgb(0x7F, 0x96, 0x96, 0x96));
+                IconColor = new SolidColorBrush(Color.FromArgb(0xFF, 0x96, 0x96, 0x96));
                 break;
         }
 

@@ -104,24 +104,29 @@ public partial class MainWindow
 
         if (!ConfigSubsystem.Get().GetAcceptedAgreement())
         {
-            PopupBanner warn = new();
-            warn.DarkenBackground = true;
-            warn.Icon = "⚠️";
-            warn.Title = "ATTENTION";
-            warn.Subtitle = "Charm is NOT a datamining tool!";
-            warn.Description = $"Charm's main purpose is focused towards 3D artists, content preservation and learning how the game works!" +
-                $"\n\nBy using Charm, you agree to:" +
-                $"\n• Not use this to leak content." +
-                $"\n• Not use this to spread spoilers." +
-                $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!";
-
-            warn.Style = PopupBanner.PopupStyle.Warning;
-            warn.UserInput = "Accept";
-            warn.HoldDuration = 4000;
-            warn.Progress = true;
-            warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
-            warn.Show();
+            ShowAgreement();
         }
+    }
+
+    private void ShowAgreement()
+    {
+        PopupBanner warn = new();
+        warn.DarkenBackground = true;
+        warn.Icon = "⚠️";
+        warn.Title = "ATTENTION";
+        warn.Subtitle = "Charm is NOT a datamining tool!";
+        warn.Description = $"Charm's main purpose is focused towards 3D artists, content preservation and learning how the game works!" +
+            $"\n\nBy using Charm, you agree to:" +
+            $"\n• Not use this to leak content." +
+            $"\n• Not use this to spread spoilers." +
+            $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!";
+
+        warn.Style = PopupBanner.PopupStyle.Warning;
+        warn.UserInput = "Accept";
+        warn.HoldDuration = 4000;
+        warn.Progress = true;
+        warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
+        warn.Show();
     }
 
 
@@ -427,11 +432,8 @@ public partial class MainWindow
             test.Title = "INFORMATION";
             test.Subtitle = "Test Information Popup Subtitle";
             test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-
             test.Style = PopupBanner.PopupStyle.Information;
-
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(test);
+            test.Show();
         }
         else if (e.Key == Key.E
             && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
@@ -443,14 +445,11 @@ public partial class MainWindow
             test.Title = "ERROR";
             test.Subtitle = "Test Error Popup Subtitle";
             test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nError code: Valumptious";
-
             test.Style = PopupBanner.PopupStyle.Warning;
             test.UserInput = "Hold To Accept";
             test.HoldDuration = 1000;
             test.Progress = true;
-
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(test);
+            test.Show();
         }
         else if (e.Key == Key.Q
             && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
@@ -464,9 +463,14 @@ public partial class MainWindow
             test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
             test.UserInput = "Ok";
             test.Style = PopupBanner.PopupStyle.Generic;
-
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(test);
+            test.Show();
+        }
+        else if (e.Key == Key.A
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt
+            && (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+        {
+            ShowAgreement();
         }
     }
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -125,14 +125,13 @@
       </Content>
     </ItemGroup>
 
-
     <ItemGroup>
-      <Resource Include="Shaders\Spinner.fx">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Resource>
-      <Resource Include="Shaders\Spinner.hlsl">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Resource>
+      <Content Include="Shaders\Spinner.fx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="Shaders\Spinner.hlsl">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
