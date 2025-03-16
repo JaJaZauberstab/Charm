@@ -926,7 +926,7 @@ public struct SStaticAmbientOcclusionMappings
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "E8688080", 0x18)]
 public struct SMapRoadDecalsResource
 {
-    [SchemaField(0x10)]
+    [SchemaField(0x10), NoLoad]
     public Tag<SMapRoadDecals> RoadDecals; // Contrary to the name, it is more than just decals on roads
 }
 

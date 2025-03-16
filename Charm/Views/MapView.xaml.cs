@@ -176,7 +176,10 @@ public partial class MapView : UserControl
             {
                 if (data.MapDataTable.TagData.DataEntries[0].DataResource.GetValue(data.MapDataTable.GetReader()) is SMapDataResource staticMapResource)
                 {
-                    staticMapResource.StaticMapParent.Load();
+                    staticMapResource.StaticMapParent?.Load();
+                    if (staticMapResource.StaticMapParent is null)
+                        return;
+
                     staticMapResource.StaticMapParent.TagData.StaticMap.LoadDecalsIntoExporterScene(scene);
                 }
             }
@@ -186,17 +189,30 @@ public partial class MapView : UserControl
                 switch (entry.DataResource.GetValue(data.MapDataTable.GetReader()))
                 {
                     case SMapDataResource staticMapResource:
-                        staticMapResource.StaticMapParent.Load();
+                        staticMapResource.StaticMapParent?.Load();
+                        if (staticMapResource.StaticMapParent is null)
+                            return;
+
                         staticMapResource.StaticMapParent.TagData.StaticMap.LoadIntoExporterScene(scene);
                         break;
+
                     case SStaticAOResource AO:
                         Exporter.Get().GetOrCreateGlobalScene().AddToGlobalScene(AO);
                         break;
+
                     case SMapTerrainResource terrain:
                         terrain.Terrain?.Load();
+                        if (terrain.Terrain is null)
+                            return;
+
                         terrain.Terrain.LoadIntoExporter(terrainScene, savePath, terrain.Identifier);
                         break;
+
                     case SMapRoadDecalsResource roadDecals:
+                        roadDecals.RoadDecals?.Load();
+                        if (roadDecals.RoadDecals is null)
+                            return;
+
                         foreach (var a in roadDecals.RoadDecals.TagData.Entries)
                         {
                             Transform transform = new Transform

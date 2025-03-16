@@ -389,12 +389,15 @@ public struct SEntityModelMesh
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     public Vector4 ModelScale;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     public Vector4 ModelTranslation;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     public Vector2 TexcoordScale;
+
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     public Vector2 TexcoordTranslation;
@@ -406,8 +409,10 @@ public struct SEntityModelMesh
     public VertexBuffer OldWeights;  // old weights
     public TigerHash Unk0C;  // nothing ever
     public IndexBuffer Indices;  // indices
+
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public VertexBuffer VertexColour;  // vertex colour
+
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public VertexBuffer SinglePassSkinningBuffer;  // single pass skinning buffer
     public int Zeros1C;
