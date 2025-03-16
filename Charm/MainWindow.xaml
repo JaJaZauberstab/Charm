@@ -11,6 +11,7 @@
     Height="1080"
     Loaded="OnControlLoaded"
     PreviewKeyDown="MainWindow_PreviewKeyDown"
+    WindowState="Maximized"
     mc:Ignorable="d">
     <Grid Background="Transparent">
         <StackPanel
@@ -61,8 +62,6 @@
         <local:ProgressView
             x:Name="ProgressView"
             Grid.Row="0"
-            Grid.RowSpan="2"
-            Width="1920"
-            Height="1080" />
+            Grid.RowSpan="2" />
     </Grid>
 </Window>

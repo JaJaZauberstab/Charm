@@ -201,6 +201,12 @@ public class DynamicMeshPart : MeshPart
             VertexIndexMap.Add(VertexIndices[i], i);
         }
 
+        //Dictionary<uint, int> lookup = new Dictionary<uint, int>();
+        //for (int i = 0; i < VertexIndices.Count; i++)
+        //{
+        //    lookup[VertexIndices[i]] = i;
+        //}
+
         Log.Debug($"Reading vertex buffers {mesh.Vertices1.Hash}/{mesh.Vertices1.TagData.Stride} and {mesh.Vertices2?.Hash}/{mesh.Vertices2?.TagData.Stride}");
         mesh.Vertices1.ReadVertexDataFromLayout(this, uniqueVertexIndices, 0);
         mesh.Vertices2?.ReadVertexDataFromLayout(this, uniqueVertexIndices, 1);
@@ -236,13 +242,14 @@ public class DynamicMeshPart : MeshPart
         }
 
         // Detail UVs
+        //TODO: Make outputs match what renderdoc says they actually are
         if (mesh.SinglePassSkinningBuffer != null)
         {
             try
             {
                 var stride = mesh.SinglePassSkinningBuffer.TagData.Stride;
                 using TigerReader handle = mesh.SinglePassSkinningBuffer.GetReferenceReader();
-                //var data = mesh.SinglePassSkinningBuffer.GetReferenceData();
+
                 for (int i = 0; i < VertexPositions.Count; i++)
                 {
                     int normW = (int)(32767.0996f * VertexNormals[i].W);

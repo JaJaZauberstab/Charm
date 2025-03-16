@@ -925,7 +925,7 @@ public partial class TagListView : UserControl
                 if (entity.HasGeometry())
                 {
                     var entityName = entity.EntityName != null ? entity.EntityName : entity.Hash;
-                    string subname = $"{Helpers.GetReadableSize(entity.GetStream().Length)} | {entity.TagData.EntityResources.Count} Resources";
+                    string subname = $"{entity.TagData.EntityResources.Count} Resources";
 
                     // Most of the time the most specific entity name comes from a map resource (bosses usually)
                     if (NamedEntities.ContainsKey(entity.Hash))
