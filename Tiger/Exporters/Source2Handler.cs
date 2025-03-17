@@ -406,13 +406,61 @@ public class VTEX
     {
         if (vtexPath != "" && !vtexPath.EndsWith('/'))
             vtexPath = $"{vtexPath}/";
+
+        ImageFormatType outputFormat = ImageFormatType.RGBA8888;
+        GammaType inColorSpace = texture.IsSrgb() ? GammaType.SRGB : GammaType.Linear;
+        GammaType outColorSpace = inColorSpace;
+
+        switch (texture.TagData.GetFormat())
+        {
+            case DirectXTexNet.DXGI_FORMAT.R32G32B32A32_FLOAT:
+                outputFormat = ImageFormatType.RGBA32323232F;
+                inColorSpace = GammaType.SRGB;
+                outColorSpace = GammaType.Linear;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.R16G16B16A16_FLOAT:
+            case DirectXTexNet.DXGI_FORMAT.R16G16B16A16_TYPELESS:
+                outputFormat = ImageFormatType.RGBA16161616F;
+                inColorSpace = GammaType.SRGB;
+                outColorSpace = GammaType.Linear;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.R16G16B16A16_UNORM:
+                outputFormat = ImageFormatType.RGBA16161616;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.R32_TYPELESS:
+            case DirectXTexNet.DXGI_FORMAT.R32_FLOAT:
+                outputFormat = ImageFormatType.R32F;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC7_TYPELESS:
+            case DirectXTexNet.DXGI_FORMAT.BC7_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC7_UNORM_SRGB:
+                outputFormat = ImageFormatType.BC7;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC6H_TYPELESS:
+            case DirectXTexNet.DXGI_FORMAT.BC6H_SF16:
+            case DirectXTexNet.DXGI_FORMAT.BC6H_UF16:
+                outputFormat = ImageFormatType.BC6H;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC1_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC1_TYPELESS:
+                outputFormat = ImageFormatType.DXT1;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC3_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC3_TYPELESS:
+                outputFormat = ImageFormatType.DXT5;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC2_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC2_TYPELESS:
+                outputFormat = ImageFormatType.DXT3;
+                break;
+        }
+
         return new VTEX
         {
             Images = new List<string> { $"textures/{vtexPath}{texture.Hash}.png" },
-            OutputFormat = dimension == TextureDimension.CUBE
-            ? ImageFormatType.BC6H.ToString() : ImageFormatType.RGBA8888.ToString(),
-            OutputColorSpace = (texture.IsSrgb() ? GammaType.SRGB : GammaType.Linear).ToString(),
-            InputColorSpace = (texture.IsSrgb() ? GammaType.SRGB : GammaType.Linear).ToString(),
+            OutputFormat = outputFormat.ToString(),
+            OutputColorSpace = outColorSpace.ToString(),
+            InputColorSpace = inColorSpace.ToString(),
             OutputTypeString = dimension == TextureDimension.CUBE ? "CUBE" : "2D"
         };
     }
@@ -427,10 +475,13 @@ public enum GammaType
 public enum ImageFormatType
 {
     DXT5,
+    DXT3,
     DXT1,
     RGBA8888,
     RGBA16161616,
     RGBA16161616F,
+    RGBA32323232F,
+    R32F,
     BC7,
     BC6H,
 }

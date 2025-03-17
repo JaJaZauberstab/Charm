@@ -83,7 +83,7 @@ public partial class PopupBanner : UserControl
         }
         else
         {
-            this.MouseLeftButtonDown += WarningBanner_MouseDown;
+            this.MouseLeftButtonDown += Remove;
         }
 
         if (Subtitle is null || Subtitle == string.Empty)
@@ -96,7 +96,7 @@ public partial class PopupBanner : UserControl
         DataContext = this;
     }
 
-    public void WarningBanner_MouseDown(object sender, MouseButtonEventArgs e)
+    public void Remove(object sender, MouseButtonEventArgs e)
     {
         Remove();
     }

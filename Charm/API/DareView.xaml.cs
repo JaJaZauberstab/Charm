@@ -195,12 +195,13 @@ public partial class DareView : UserControl
 
             Dispatcher.Invoke(() =>
             {
-                PopupBanner notify = new();
-                notify.DarkenBackground = true;
-                notify.Icon = "☑️";
-                notify.Title = "EXPORT COMPLETE";
-                notify.Description = $"Exported {_selectedItems.Count} item(s) to \"{config.GetExportSavePath()}\"";
-                notify.Style = PopupBanner.PopupStyle.Information;
+                NotificationBanner notify = new()
+                {
+                    Icon = "☑️",
+                    Title = "EXPORT COMPLETE",
+                    Description = $"Exported {_selectedItems.Count} item(s) to \"{config.GetExportSavePath()}\"",
+                    Style = NotificationBanner.PopupStyle.Information
+                };
                 notify.Show();
             });
         });

@@ -344,13 +344,15 @@ public partial class MaterialView : UserControl
         }
         catch (Exception ex)
         {
-            PopupBanner test = new();
-            test.Icon = "⚠️";
-            test.Title = "ERROR";
-            test.Subtitle = "Idk why this breaks sometimes but it can...try again.";
-            test.Description = $"{ex.Message}";
+            PopupBanner test = new()
+            {
+                Icon = "⚠️",
+                Title = "ERROR",
+                Subtitle = "Idk why this breaks sometimes but it can...try again.",
+                Description = $"{ex.Message}",
 
-            test.Style = PopupBanner.PopupStyle.Warning;
+                Style = PopupBanner.PopupStyle.Warning
+            };
             test.Show();
         }
     }

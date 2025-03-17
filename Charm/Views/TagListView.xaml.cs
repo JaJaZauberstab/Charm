@@ -540,12 +540,14 @@ public partial class TagListView : UserControl
                 //MessageBox.Show($"No decryption key found, can not display content.", $"This item belongs to a redacted package.", MessageBoxButton.OK);
 
                 // This could be a lot better probably but oh well
-                PopupBanner warn = new();
-                warn.Icon = "🔐";
-                warn.Title = "ERROR";
-                warn.Subtitle = "No decryption key found, can not display content.";
-                warn.Description = "This item belongs to a redacted package, which means its content can not be shown.";
-                warn.Style = PopupBanner.PopupStyle.Warning;
+                PopupBanner warn = new()
+                {
+                    Icon = "🔐",
+                    Title = "ERROR",
+                    Subtitle = "No decryption key found, can not display content.",
+                    Description = "This item belongs to a redacted package, which means its content can not be shown.",
+                    Style = PopupBanner.PopupStyle.Warning
+                };
                 warn.Show();
 
                 btn.IsChecked = false;
@@ -878,11 +880,13 @@ public partial class TagListView : UserControl
 
         Dispatcher.Invoke(() =>
         {
-            PopupBanner notify = new();
-            notify.Icon = "☑️";
-            notify.Title = "Export Complete";
-            notify.Description = $"Exported Entity {info.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}\\{info.Name}\\\"";
-            notify.Style = PopupBanner.PopupStyle.Information;
+            NotificationBanner notify = new()
+            {
+                Icon = "☑️",
+                Title = "Export Complete",
+                Description = $"Exported Entity {info.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}\\{info.Name}\\\"",
+                Style = NotificationBanner.PopupStyle.Information
+            };
             notify.OnProgressComplete += () => Dispatcher.Invoke(() => viewer.EntityControl.ModelView.Visibility = Visibility.Visible);
             notify.Show();
         });

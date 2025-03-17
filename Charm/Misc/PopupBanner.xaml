@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:Charm"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="400"
-    d:DesignWidth="1080"
+    d:DesignWidth="1920"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -69,14 +69,14 @@
         Panel.ZIndex="100"
         d:Background="#7F7F7F"
         Background="Transparent">
-        <Grid.Effect>
-            <DropShadowEffect BlurRadius="100" ShadowDepth="0" />
-        </Grid.Effect>
 
         <Border
             x:Name="ElementStack"
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="100" ShadowDepth="0" />
+            </Border.Effect>
 
             <StackPanel Orientation="Vertical">
                 <Grid
@@ -332,7 +332,7 @@
                             Storyboard.TargetName="LeftPiece"
                             Storyboard.TargetProperty="Width"
                             From="0"
-                            To="2000"
+                            To="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                             Duration="0:0:0.35" />
 
 
@@ -342,7 +342,7 @@
                             Storyboard.TargetName="RightPiece"
                             Storyboard.TargetProperty="Width"
                             From="0"
-                            To="2000"
+                            To="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                             Duration="0:0:0.35" />
 
                         <!--  Defaults  -->

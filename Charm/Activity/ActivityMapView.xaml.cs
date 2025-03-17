@@ -228,11 +228,13 @@ public partial class ActivityMapView : UserControl
         //MessageBox.Show("Export Complete.");
 
         Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Hidden);
-        PopupBanner notify = new();
-        notify.Icon = "☑️";
-        notify.Title = "Export Complete";
-        notify.Description = $"Exported {_currentBubble.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}/Maps/{_currentActivity.DestinationName}/\"";
-        notify.Style = PopupBanner.PopupStyle.Information;
+        NotificationBanner notify = new()
+        {
+            Icon = "☑️",
+            Title = "Export Complete",
+            Description = $"Exported {_currentBubble.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}/Maps/{_currentActivity.DestinationName}/\"",
+            Style = NotificationBanner.PopupStyle.Information
+        };
         notify.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
         notify.Show();
     }
@@ -365,11 +367,13 @@ public partial class ActivityMapView : UserControl
             {
                 MapControl.Visibility = Visibility.Hidden;
 
-                PopupBanner warn = new();
-                warn.Icon = "⚠️";
-                warn.Title = "WARNING";
-                warn.Description = $"No map parts selected for export!";
-                warn.Style = PopupBanner.PopupStyle.Warning;
+                NotificationBanner warn = new()
+                {
+                    Icon = "⚠️",
+                    Title = "WARNING",
+                    Description = $"No map parts selected for export!",
+                    Style = NotificationBanner.PopupStyle.Warning
+                };
                 warn.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
                 warn.Show();
             });
@@ -402,11 +406,13 @@ public partial class ActivityMapView : UserControl
         Dispatcher.Invoke(() =>
         {
             MapControl.Visibility = Visibility.Hidden;
-            PopupBanner notify = new();
-            notify.Icon = "☑️";
-            notify.Title = "Export Complete";
-            notify.Description = $"Exported activity data from {PackageResourcer.Get().GetActivityName(activity.FileHash)} to \"{ConfigSubsystem.Get().GetExportSavePath()}/Maps/{_currentActivity.DestinationName}/\"";
-            notify.Style = PopupBanner.PopupStyle.Information;
+            NotificationBanner notify = new()
+            {
+                Icon = "☑️",
+                Title = "Export Complete",
+                Description = $"Exported activity data from {PackageResourcer.Get().GetActivityName(activity.FileHash)} to \"{ConfigSubsystem.Get().GetExportSavePath()}/Maps/{_currentActivity.DestinationName}/\"",
+                Style = NotificationBanner.PopupStyle.Information
+            };
             notify.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
             notify.Show();
         });
@@ -435,11 +441,13 @@ public partial class ActivityMapView : UserControl
                 Dispatcher.Invoke(() =>
                 {
                     MapControl.Visibility = Visibility.Hidden;
-                    PopupBanner warn = new();
-                    warn.Icon = "⚠️";
-                    warn.Title = "WARNING";
-                    warn.Subtitle = $"No maps available for viewing!";
-                    warn.Style = PopupBanner.PopupStyle.Warning;
+                    NotificationBanner warn = new()
+                    {
+                        Icon = "⚠️",
+                        Title = "WARNING",
+                        Description = $"No maps available for viewing!",
+                        Style = NotificationBanner.PopupStyle.Warning
+                    };
                     warn.OnProgressComplete += () => Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
                     warn.Show();
                 });

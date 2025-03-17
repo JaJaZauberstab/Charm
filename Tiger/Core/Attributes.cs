@@ -216,3 +216,13 @@ public class StrategyMetadataAttribute : Attribute
         }
     }
 }
+
+[AttributeUsage(AttributeTargets.Field)]
+public class StrategyCleanNameAttribute : Attribute
+{
+    public string CleanName { get; }
+    public StrategyCleanNameAttribute(string name)
+    {
+        CleanName = name;
+    }
+}
