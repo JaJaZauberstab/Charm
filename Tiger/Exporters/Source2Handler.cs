@@ -170,7 +170,7 @@ public static class Source2Handler
             }
         }
 
-        vmat.AppendLine(PopulateCBuffers(material).ToString()); // sPS
+        vmat.AppendLine(PopulateCBuffers(material).ToString()); // PS
         vmat.AppendLine(PopulateCBuffers(material, true).ToString()); // VS
 
         // PS Dynamic expressions
@@ -256,6 +256,7 @@ public static class Source2Handler
                         vmat.AppendLine($"\t\tcb13_0 \"float4(Time, Time, 0.05, 0.016)\"");
                         vmat.AppendLine($"\t\tcb13_1 \"float4(0.65,16,0.65,1.5)\"");
                         vmat.AppendLine($"\t\tcb13_2 \"float4((Time + 33.75) * 1.258699, (Time + 60.0) * 0.9583125, (Time + 60.0) * 8.789123, (Time + 33.75) * 2.311535)\"");
+                        vmat.AppendLine($"\t\tcb13_3 \"float4(0.5,0.5,0,0)\"");
                         vmat.AppendLine($"\t\tcb13_4 \"float4(1,1,0,1)\"");
                         vmat.AppendLine($"\t\tcb13_5 \"float4(0,0,512,0)\"");
                         vmat.AppendLine($"\t\tcb13_6 \"float4(0,1,sin(Time * 6.0) * 0.5 + 0.5,0)\"");

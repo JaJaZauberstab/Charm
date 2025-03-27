@@ -197,7 +197,7 @@ public partial class MapView : UserControl
                         break;
 
                     case SStaticAOResource AO:
-                        Exporter.Get().GetOrCreateGlobalScene().AddToGlobalScene(AO);
+                        Exporter.Get().GetOrCreateGlobalScene().AddToGlobalScene(AO, true);
                         break;
 
                     case SMapTerrainResource terrain:
@@ -213,24 +213,7 @@ public partial class MapView : UserControl
                         if (roadDecals.RoadDecals is null)
                             return;
 
-                        foreach (var a in roadDecals.RoadDecals.TagData.Entries)
-                        {
-                            Transform transform = new Transform
-                            {
-                                Position = a.Position.ToVec3(),
-                                Quaternion = a.Rotation,
-                                Rotation = Vector4.QuaternionToEulerAngles(a.Rotation),
-                                Scale = new(a.Position.W)
-                            };
-
-                            var len = a.IndexCount * 3; //  Is actually face count
-                            var part = MeshPart.CreateFromBuffers<DynamicMeshPart>(a.IndexBuffer, a.VertexBuffer, a.Material, PrimitiveType.Triangles, 9, (uint)len, a.IndexOffset);
-                            part.TransformPosition(a.Offset, a.Scale);
-                            part.TransformTexcoord(a.TexcoordOffset, a.TexcoordScale);
-
-                            scene.AddMapModelParts($"{a.VertexBuffer.Hash}", new List<MeshPart> { part }, transform);
-                            scene.Materials.Add(new ExportMaterial(part.Material));
-                        }
+                        roadDecals.RoadDecals.LoadIntoExporter(scene);
                         break;
                     default:
                         break;
@@ -349,9 +332,9 @@ public partial class MapView : UserControl
                     {
                         MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
                         displayPart.BasePart = part;
-                        displayPart.Translations.Add(entry.Translation.ToVec3());
-                        displayPart.Rotations.Add(entry.Rotation);
-                        displayPart.Scales.Add(new Tiger.Schema.Vector3(entry.Translation.W, entry.Translation.W, entry.Translation.W));
+                        displayPart.Translations.Add(entry.Transfrom.Translation.ToVec3());
+                        displayPart.Rotations.Add(entry.Transfrom.Rotation);
+                        displayPart.Scales.Add(new Tiger.Schema.Vector3(entry.Transfrom.Translation.W, entry.Transfrom.Translation.W, entry.Transfrom.Translation.W));
                         displayParts.Add(displayPart);
                     }
                 }

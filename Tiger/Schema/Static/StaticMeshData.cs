@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Tiger.Schema.Model;
 
 namespace Tiger.Schema.Static
 {
@@ -66,6 +65,7 @@ namespace Tiger.Schema.Static.DESTINY2_SHADOWKEEP_2601
                 StaticPart part = new StaticPart(staticPartEntry);
                 part.VertexLayoutIndex = _tag.MaterialAssignments[i].VertexLayoutIndex;
                 part.Material = material;
+                part.Material.RenderStage = (TfxRenderStage)_tag.MaterialAssignments[i].RenderStage;
                 part.GetAllData(_tag.Buffers[staticPartEntry.BufferIndex], parent);
                 parts.Add(part);
             }
@@ -82,7 +82,7 @@ namespace Tiger.Schema.Static.DESTINY2_SHADOWKEEP_2601
                 var mat = _tag.MaterialAssignments[i];
                 var part = _tag.Parts[mat.PartIndex];
 
-                if (!Globals.Get().ExportRenderStages.Contains((TfxRenderStage)mat.RenderStage))
+                if (!Globals.Get().GetExportStages().Contains((TfxRenderStage)mat.RenderStage))
                     continue;
 
                 switch (detailLevel)
@@ -183,6 +183,7 @@ namespace Tiger.Schema.Static.DESTINY2_BEYONDLIGHT_3402
                 StaticPart part = new StaticPart(staticPartEntry);
                 part.VertexLayoutIndex = _tag.MaterialAssignments[i].VertexLayoutIndex;
                 part.Material = material;
+                part.Material.RenderStage = (TfxRenderStage)_tag.MaterialAssignments[i].RenderStage;
                 part.MaxVertexColorIndex = (int)_tag.MaxVertexColorIndex;
                 part.GetAllData(mesh, parent);
                 parts.Add(part);
@@ -199,7 +200,7 @@ namespace Tiger.Schema.Static.DESTINY2_BEYONDLIGHT_3402
                 var mat = _tag.MaterialAssignments[i];
                 var part = _tag.Parts[mat.PartIndex];
 
-                if (!Globals.Get().ExportRenderStages.Contains((TfxRenderStage)mat.RenderStage))
+                if (!Globals.Get().GetExportStages().Contains((TfxRenderStage)mat.RenderStage))
                     continue;
 
                 Debug.Assert(part.BufferIndex == 0, $"{Hash} has part with buffer index {part.BufferIndex}");

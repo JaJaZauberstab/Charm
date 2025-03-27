@@ -1,6 +1,4 @@
 ﻿using ConcurrentCollections;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Tiger.Schema;
 
 namespace Tiger.Exporters;
@@ -17,7 +15,6 @@ public class MaterialExporter : AbstractExporter
         ConcurrentHashSet<ExportMaterial> materials = new();
 
         bool saveMats = _config.GetExportMaterials();
-        bool saveIndiv = _config.GetIndvidualStaticsEnabled();
 
         Parallel.ForEach(args.Scenes, scene =>
         {
@@ -80,21 +77,6 @@ public class MaterialExporter : AbstractExporter
                         mapTextures.Add(texture.GetTexture());
                     }
                 }
-
-                foreach (var cubemap in scene.Cubemaps)
-                {
-                    if (cubemap.CubemapTexture is null)
-                        continue;
-
-                    mapTextures.Add(cubemap.CubemapTexture);
-
-                    if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
-                    {
-                        string saveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, $"Maps");
-                        saveDirectory = $"{saveDirectory}/Textures";
-                        Source2Handler.SaveVTEX(cubemap.CubemapTexture, saveDirectory);
-                    }
-                }
             }
         });
 
@@ -118,45 +100,6 @@ public class MaterialExporter : AbstractExporter
                 Directory.CreateDirectory(shaderSaveDirectory);
                 material.Material.Export(shaderSaveDirectory);
             }
-        }
-
-        // TODO?: Move this to a global AbstractExporter?
-
-        if (Exporter.Get().GetOrCreateGlobalScene().TryGetItem<SMapAtmosphere>(out SMapAtmosphere atmosphere))
-        {
-            List<Texture> AtmosTextures = new();
-            if (atmosphere.Lookup0 != null)
-                AtmosTextures.Add(atmosphere.Lookup0);
-            if (atmosphere.Lookup1 != null)
-                AtmosTextures.Add(atmosphere.Lookup1);
-            if (atmosphere.Lookup2 != null)
-                AtmosTextures.Add(atmosphere.Lookup2);
-            if (atmosphere.Lookup3 != null)
-                AtmosTextures.Add(atmosphere.Lookup3);
-            if (atmosphere.Lookup4 != null)
-                AtmosTextures.Add(atmosphere.Lookup4);
-
-            string savePath = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, $"Maps");
-            string texSavePath = $"{savePath}/Textures/Atmosphere";
-            Directory.CreateDirectory(texSavePath);
-
-            foreach (var tex in AtmosTextures)
-            {
-                // Not ideal but it works
-                TextureExtractor.SaveTextureToFile($"{texSavePath}/{tex.Hash}", tex.IsVolume() ? Texture.FlattenVolume(tex.GetScratchImage(true)) : tex.GetScratchImage());
-                if (_config.GetS2ShaderExportEnabled())
-                    Source2Handler.SaveVTEX(tex, $"{texSavePath}", "Atmosphere");
-            }
-
-            string dataSavePath = $"{savePath}/Rendering";
-            Directory.CreateDirectory(dataSavePath);
-
-            var jsonSettings = new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                Converters = new List<JsonConverter> { new StringEnumConverter() }
-            };
-            File.WriteAllText($"{dataSavePath}/Atmosphere.json", JsonConvert.SerializeObject(atmosphere, jsonSettings));
         }
     }
 }

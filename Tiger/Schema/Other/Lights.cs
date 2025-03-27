@@ -1,15 +1,15 @@
 ﻿using Tiger.Exporters;
-using Tiger.Schema.Shaders;
 
 namespace Tiger.Schema;
 
 public class Lights : Tag<D2Class_656C8080>
 {
+    public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.ChunkedLights;
     public Lights(FileHash hash) : base(hash)
     {
     }
 
-    public void LoadIntoExporter(ExporterScene scene, string savePath)
+    public void LoadIntoExporter()
     {
         using TigerReader reader = GetReader();
         for (int i = 0; i < _tag.LightData.Count; i++)
@@ -31,19 +31,12 @@ public class Lights : Tag<D2Class_656C8080>
             Texture cookie = null;
             if (lightType == LightType.Spot)
             {
-                Material shading = FileResourcer.Get().GetFile<Material>(data.Shading);
-                if (shading is null)
+                if (data.Shading is null)
                     continue;
 
-                if (shading.Pixel.EnumerateTextures().Any())
+                if (data.Shading.Pixel.EnumerateTextures().Any())
                 {
-                    if (!Directory.Exists($"{savePath}/Textures"))
-                        Directory.CreateDirectory($"{savePath}/Textures");
-
-                    cookie = shading.Pixel.EnumerateTextures().First().GetTexture();
-                    cookie.SavetoFile($"{savePath}/Textures/{cookie.Hash}");
-                    if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
-                        Source2Handler.SaveVTEX(cookie, $"{savePath}/Textures");
+                    cookie = data.Shading.Pixel.EnumerateTextures().First().GetTexture();
                 }
             }
 
@@ -53,23 +46,22 @@ public class Lights : Tag<D2Class_656C8080>
             LightData lightData = new()
             {
                 Hash = bufferData.Hash,
+                Material = data.Shading.Hash,
                 LightType = lightType,
                 Color = color,
-                Size = new(size.X, size.Y),
-                Range = size.Z,
-                Attenuation = data.BufferData.TagData.Buffer2[1].Vec.W, // Completely unsure, just testing
+                Size = size,
+                Attenuation = 1, // Don't know
                 Transform = new()
                 {
                     Position = transforms.Translation.ToVec3(),
                     Quaternion = transforms.Rotation
                 },
-                Cookie = cookie != null ? cookie.Hash : null
+                Cookie = cookie != null ? cookie.Hash : null,
+                Bytecode = bufferData.TagData.Bytecode.Select(x => x.Value).ToArray(),
+                BytecodeConstants = bufferData.TagData.Buffer1.Select(x => x.Vec).ToArray()
             };
 
-            scene.AddMapLight(lightData);
-
-            if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
-                bufferData.Dump($"{savePath}/Shaders/Source2/Lights");
+            Exporter.Get().GetGlobalScene().AddToGlobalScene(lightData);
         }
     }
 
@@ -150,13 +142,15 @@ public class Lights : Tag<D2Class_656C8080>
     public struct LightData
     {
         public FileHash Hash;
+        public FileHash Material;
         public LightType LightType;
         public Transform Transform;
-        public Vector2 Size;
+        public Vector3 Size;
         public Vector4 Color;
         public FileHash Cookie;
-        public float Range;
         public float Attenuation;
+        public byte[] Bytecode;
+        public Vector4[] BytecodeConstants;
     }
 
     public enum LightType

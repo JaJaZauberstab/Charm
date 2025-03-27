@@ -1197,8 +1197,8 @@ public struct SMapCubemapResource //Dataresource for cubemaps
     public Vector4 CubemapSize; //XYZ, no W
     public Vector4 CubemapPosition; // Not actually right afaik
 
-    [SchemaField(0xF0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public Vector4 UnkF0; // This is 98% position but its rarely sometimes not?? Just use the datatable position instead
+    [SchemaField(0xB0)]
+    public long WorldID; // Same as the ID in the datatable entry
 
     [SchemaField(0x140, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x140, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
@@ -1217,11 +1217,11 @@ public struct SMapCubemapResource //Dataresource for cubemaps
     [SchemaField(0x1AC, TigerStrategy.DESTINY2_LATEST)]
     public Texture CubemapTexture;
 
-    //[SchemaField(0x1A0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    //[SchemaField(0x1A0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
-    //[SchemaField(0x1C0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    //[SchemaField(0x1B4, TigerStrategy.DESTINY2_LATEST)]
-    //public Texture Unk1C0; //Sometype of reflection tint texture idk
+    [SchemaField(0x1A0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x1A0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x1C0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0x1B4, TigerStrategy.DESTINY2_LATEST)]
+    public Texture CubemapIBLTexture; //Sometype of reflection tint texture idk
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "D99B8080", 0x190)]

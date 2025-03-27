@@ -4,7 +4,6 @@ using Tiger.Schema;
 using Tiger.Schema.Entity;
 using Tiger.Schema.Shaders;
 using Tiger.Schema.Static;
-using static Tiger.Schema.Lights;
 using static Tiger.Schema.StaticMapData_D1;
 
 namespace Tiger.Exporters;
@@ -48,7 +47,7 @@ public class Exporter : Subsystem<Exporter>
     /// Gets or creates a Global Exporter scene. 
     /// A Global scene can be used to store anything that needs to be accessed across other scenes.
     /// Map Vertex AO for Terrain being one example. (Map AO and Terrain are stored in different data tables)
-    /// The Global Scene gets reset with each full export, and does not actually export anything itself.
+    /// The Global Scene gets reset with each full export, and anything added to can be exported if implemented in GlobalExporter
     /// </summary>
     /// <returns>The Global Scene</returns>
     public GlobalExporterScene GetOrCreateGlobalScene()
@@ -74,6 +73,7 @@ public class Exporter : Subsystem<Exporter>
     public void Reset()
     {
         _scenes.Clear();
+        _globalScene?.Clear();
         _globalScene = null;
     }
 
@@ -92,25 +92,69 @@ public class Exporter : Subsystem<Exporter>
     }
 }
 
-public struct ExportMaterial
+public class GlobalExporterScene : ExporterScene
 {
-    public readonly Material Material;
-    public readonly bool IsTerrain;
+    private ConcurrentBag<dynamic> _objects = new();
 
-    public ExportMaterial(Material material, bool isTerrain = false)
+    public GlobalExporterScene()
     {
-        Material = material;
-        IsTerrain = isTerrain;
+        Name = "Global";
+        Type = ExportType.Global;
     }
 
-    public override int GetHashCode()
+    /// <summary>
+    /// Adds an item to the Global Scene's objects.
+    /// </summary>
+    /// <param name="item">The dynamic item to add.</param>
+    /// <param name="isUnique">Should only one of this item exist?</param>
+    public void AddToGlobalScene(dynamic item, bool isUnique = false)
     {
-        return (int)Material.Hash.Hash32;
+        if (_objects == null)
+            _objects = new ConcurrentBag<dynamic>();
+
+        // Check if an item of the same type already exists (if there should only be one)
+        var type = item.GetType();
+        if (isUnique && _objects.Any(existing => existing.GetType() == type))
+            throw new InvalidOperationException($"A unique item of type {type.Name} already exists in the Global Scene.");
+
+        _objects.Add(item);
     }
 
-    public override bool Equals(object? obj)
+    /// <summary>
+    /// Attempts to get an item of a specific type from the Global Scene's objects.
+    /// </summary>
+    /// <typeparam name="T">The type of the item to retrieve.</typeparam>
+    /// <param name="item">The retrieved item if found.</param>
+    /// <returns>True if an item of the specified type was found; otherwise, false.</returns>
+    public bool TryGetItem<T>(out T item)
     {
-        return obj is ExportMaterial material && material.Material.Hash == Material.Hash;
+        item = default;
+
+        foreach (var existing in _objects)
+        {
+            if (existing is T)
+            {
+                item = (T)existing; // Safely cast to T
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public IEnumerable<T> GetAllOfType<T>()
+    {
+        return _objects.OfType<T>();
+    }
+
+    public bool Any<T>()
+    {
+        return _objects.Any(item => item is T);
+    }
+
+    public void Clear()
+    {
+        _objects.Clear();
     }
 }
 
@@ -126,9 +170,6 @@ public class ExporterScene
     public ConcurrentDictionary<string, List<Transform>> EntityInstances = new();
     public ConcurrentBag<MaterialTexture> ExternalMaterialTextures = new();
     public ConcurrentBag<SMapDataEntry> EntityPoints = new();
-    public ConcurrentBag<SMapCubemapResource> Cubemaps = new();
-    public ConcurrentBag<LightData> MapLights = new();
-    public ConcurrentBag<SMapDecalsResource> Decals = new();
     public ConcurrentHashSet<Texture> Textures = new();
     public ConcurrentHashSet<ExportMaterial> Materials = new();
     public ConcurrentDictionary<string, List<FileHash>> TerrainDyemaps = new();
@@ -275,10 +316,10 @@ public class ExporterScene
         {
             transform = new Transform
             {
-                Position = dynamicResource.Translation.ToVec3(),
-                Rotation = Vector4.QuaternionToEulerAngles(dynamicResource.Rotation),
-                Quaternion = dynamicResource.Rotation,
-                Scale = new Vector3(dynamicResource.Translation.W, dynamicResource.Translation.W, dynamicResource.Translation.W)
+                Position = dynamicResource.Transfrom.Translation.ToVec3(),
+                Rotation = Vector4.QuaternionToEulerAngles(dynamicResource.Transfrom.Rotation),
+                Quaternion = dynamicResource.Transfrom.Rotation,
+                Scale = new Vector3(dynamicResource.Transfrom.Translation.W, dynamicResource.Transfrom.Translation.W, dynamicResource.Transfrom.Translation.W)
             };
         }
         EntityInstances[dynamicResource.GetEntityHash()].Add((Transform)transform);
@@ -319,21 +360,6 @@ public class ExporterScene
             mesh.AddPart(model.Hash, part, i);
         }
         Entities.Add(new ExporterEntity { Mesh = mesh, BoneNodes = null });
-    }
-
-    public void AddCubemap(SMapCubemapResource cubemap)
-    {
-        Cubemaps.Add(cubemap);
-    }
-
-    public void AddMapLight(LightData light) // Point
-    {
-        MapLights.Add(light);
-    }
-
-    public void AddDecals(SMapDecalsResource decal)
-    {
-        Decals.Add(decal);
     }
 
     public void AddTerrainDyemap(FileHash modelHash, FileHash dyemapHash)
@@ -391,57 +417,6 @@ public class ExporterScene
     }
 }
 
-public class GlobalExporterScene : ExporterScene
-{
-    private ConcurrentBag<dynamic> _objects = new();
-
-    public GlobalExporterScene()
-    {
-        Name = "Global";
-        Type = ExportType.Global;
-    }
-
-    /// <summary>
-    /// Adds an item to the Global Scene's objects.
-    /// Ensures only one of each type exists in the bag.
-    /// </summary>
-    /// <param name="item">The dynamic item to add.</param>
-    public void AddToGlobalScene(dynamic item)
-    {
-        if (_objects == null)
-            _objects = new ConcurrentBag<dynamic>();
-
-        // Check if an item of the same type already exists
-        var type = item.GetType();
-        if (_objects.Any(existing => existing.GetType() == type))
-            throw new InvalidOperationException($"An item of type {type.Name} already exists in the Global Scene.");
-
-        _objects.Add(item);
-    }
-
-    /// <summary>
-    /// Attempts to get an item of a specific type from the Global Scene's objects.
-    /// </summary>
-    /// <typeparam name="T">The type of the item to retrieve.</typeparam>
-    /// <param name="item">The retrieved item if found.</param>
-    /// <returns>True if an item of the specified type was found; otherwise, false.</returns>
-    public bool TryGetItem<T>(out T item)
-    {
-        item = default;
-
-        foreach (var existing in _objects)
-        {
-            if (existing is T)
-            {
-                item = (T)existing; // Safely cast to T
-                return true;
-            }
-        }
-
-        return false;
-    }
-}
-
 public class ExporterEntity
 {
     public ExporterMesh Mesh { get; set; }
@@ -493,6 +468,28 @@ public class ExporterPart
         SubName = name;
         Name = $"{name}_Group{meshPart.GroupIndex}_Index{meshPart.Index}_{index}_{meshPart.LodCategory}";
         Index = index;
+    }
+}
+
+public struct ExportMaterial
+{
+    public readonly Material Material;
+    public readonly bool IsTerrain;
+
+    public ExportMaterial(Material material, bool isTerrain = false)
+    {
+        Material = material;
+        IsTerrain = isTerrain;
+    }
+
+    public override int GetHashCode()
+    {
+        return (int)Material.Hash.Hash32;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is ExportMaterial material && material.Material.Hash == Material.Hash;
     }
 }
 

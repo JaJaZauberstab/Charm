@@ -4,6 +4,7 @@ namespace Tiger.Schema.Entity;
 
 public class Entity : Tag<SEntity>
 {
+    public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.DynamicObjects;
     // Entity features, todo clean this up
     public EntitySkeleton? Skeleton { get; set; }
     public EntityModel? Model { get; private set; }

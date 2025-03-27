@@ -340,7 +340,7 @@ public class TfxBytecodeInterpreter
                         StackPush(v);
                         break;
                     case TfxBytecode.PushExternInputVec4:
-                        var PushExternInputVec4 = Externs.GetExternVec4(((PushExternInputVec4Data)op.data).extern_, ((PushExternInputVec4Data)op.data).element * 16);
+                        var PushExternInputVec4 = Externs.GetExternVec4(((PushExternInputVec4Data)op.data).extern_, ((PushExternInputVec4Data)op.data).element * 16, bInline);
                         StackPush(PushExternInputVec4);
                         break;
                     case TfxBytecode.PushExternInputMat4:

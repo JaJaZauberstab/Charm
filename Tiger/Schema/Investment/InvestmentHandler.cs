@@ -1042,6 +1042,17 @@ public class InventoryItem : Tag<D2Class_9D798080>
                 if (socket.SocketTypeIndex == -1 || Investment.Get().SocketCategoryStringThings[Investment.Get().GetSocketCategoryIndex(socket.SocketTypeIndex)].SocketName.Value != "WEAPON COSMETICS")
                     continue;
 
+                if (socket.PlugItems.Count == 0 && socket.ReusablePlugSetIndex1 != -1) // huh?
+                {
+                    foreach (var randomPlugs in Investment.Get().GetRandomizedPlugSet(socket.ReusablePlugSetIndex1))
+                    {
+                        if (randomPlugs.PlugInventoryItemIndex == -1)
+                            continue;
+
+                        ornaments.Add(Investment.Get().GetInventoryItem(randomPlugs.PlugInventoryItemIndex));
+                    }
+                }
+
                 foreach (var plug in socket.PlugItems)
                 {
                     if (plug.PlugInventoryItemIndex == -1)

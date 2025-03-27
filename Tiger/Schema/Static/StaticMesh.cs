@@ -154,7 +154,7 @@ public class StaticMesh : Tag<SStaticMesh>
         List<StaticPart> parts = new List<StaticPart>();
         foreach (var decalPartEntry in _tag.Decals)
         {
-            if (!Globals.Get().ExportRenderStages.Contains((TfxRenderStage)decalPartEntry.GetRenderStage()))
+            if (!Globals.Get().GetExportStages().Contains((TfxRenderStage)decalPartEntry.GetRenderStage()))
                 continue;
 
             if (detailLevel == ExportDetailLevel.MostDetailed)
@@ -174,6 +174,7 @@ public class StaticMesh : Tag<SStaticMesh>
             StaticPart part = new StaticPart(decalPartEntry);
             part.GetDecalData(decalPartEntry, _tag);
             part.Material = decalPartEntry.Material;
+            part.Material.RenderStage = (TfxRenderStage)decalPartEntry.GetRenderStage();
             parts.Add(part);
         }
 

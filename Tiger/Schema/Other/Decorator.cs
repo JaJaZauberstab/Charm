@@ -2,10 +2,11 @@
 using Tiger.Schema.Entity;
 using Tiger.Schema.Model;
 
-namespace Tiger.Schema.Static;
+namespace Tiger.Schema;
 
 public class Decorator : Tag<SDecorator>
 {
+    public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.SpeedtreeTrees;
     public Decorator(FileHash hash) : base(hash)
     {
 

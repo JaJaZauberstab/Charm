@@ -148,9 +148,9 @@ public class FbxExporter : AbstractExporter
     private void AddDynamicPoint(FbxScene fbxScene, SMapDataEntry point)
     {
         FbxNode node = FbxNode.Create(_manager, $"{point.GetEntityHash()}");
-        Vector3 eulerRot = Vector4.QuaternionToEulerAngles(point.Rotation);
+        Vector3 eulerRot = Vector4.QuaternionToEulerAngles(point.Transfrom.Rotation);
 
-        node.LclTranslation.Set(new FbxDouble3(point.Translation.X * 100, point.Translation.Z * 100, -point.Translation.Y * 100));
+        node.LclTranslation.Set(new FbxDouble3(point.Transfrom.Translation.X * 100, point.Transfrom.Translation.Z * 100, -point.Transfrom.Translation.Y * 100));
         node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
         node.LclScaling.Set(new FbxDouble3(100, 100, 100));
 

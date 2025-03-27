@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,7 +15,6 @@ using Tiger.Schema.Activity;
 using Tiger.Schema.Activity.DESTINY1_RISE_OF_IRON;
 using Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601;
 using Tiger.Schema.Entity;
-using Tiger.Schema.Static;
 
 namespace Charm;
 
@@ -458,96 +456,61 @@ public partial class ActivityMapEntityView : UserControl
 
                     switch (entry.DataResource.GetValue(dataTable.GetReader()))
                     {
-                        case SMapSkyEntResource skyResource:
-                            skyResource.SkyEntities?.Load();
-                            if (skyResource.SkyEntities is null || skyResource.SkyEntities.TagData.Entries is null)
-                                return;
-
-                            foreach (var element in skyResource.SkyEntities.TagData.Entries)
-                            {
-                                if (element.Model.TagData.Model is null || (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 && element.Unk70 == 5))
-                                    continue;
-
-                                System.Numerics.Matrix4x4 matrix = element.Transform.ToSys();
-
-                                System.Numerics.Vector3 scale = new();
-                                System.Numerics.Vector3 trans = new();
-                                Quaternion quat = new();
-                                System.Numerics.Matrix4x4.Decompose(matrix, out scale, out quat, out trans);
-
-                                skyScene.AddMapModel(element.Model.TagData.Model,
-                                    new Tiger.Schema.Vector4(trans.X, trans.Y, trans.Z, 1.0f),
-                                    new Tiger.Schema.Vector4(quat.X, quat.Y, quat.Z, quat.W),
-                                    new Tiger.Schema.Vector3(scale.X, scale.Y, scale.Z));
-
-                                foreach (DynamicMeshPart part in element.Model.TagData.Model.Load(ExportDetailLevel.MostDetailed, null))
-                                {
-                                    if (part.Material == null) continue;
-                                    skyScene.Materials.Add(new ExportMaterial(part.Material));
-                                }
-                            }
+                        case SMapSkyObjectsResource skyResource:
+                            skyResource.SkyObjects?.Load();
+                            if (skyResource.SkyObjects is not null)
+                                skyResource.SkyObjects.LoadIntoExporter(skyScene);
                             break;
 
-                        case SMapCubemapResource cubemap:
-                            cubemap.CubemapPosition = entry.Translation; // Shouldn't be modifiying things like this but eh
-                            dynamicScene.AddCubemap(cubemap);
+                        case SMapCubemapResource cubemapResource:
+                            Cubemap cubemap = new(cubemapResource);
+                            cubemap.CubemapTransform = entry.Transfrom;
+                            cubemap.LoadIntoExporter();
                             break;
 
                         case SMapLightResource mapLight:
                             mapLight.Lights?.Load();
                             if (mapLight.Lights is not null)
-                                mapLight.Lights.LoadIntoExporter(dynamicScene, savePath);
+                                mapLight.Lights.LoadIntoExporter();
                             break;
 
                         case SMapShadowingLightResource shadowingLight:
                             shadowingLight.ShadowingLight?.Load();
                             if (shadowingLight.ShadowingLight is not null)
-                                shadowingLight.ShadowingLight.LoadIntoExporter(dynamicScene, entry, savePath);
+                            {
+                                shadowingLight.ShadowingLight.Transfrom = entry.Transfrom;
+                                shadowingLight.ShadowingLight.LoadIntoExporter();
+                            }
                             break;
 
                         case SMapDecalsResource decals:
                             decals.MapDecals?.Load();
-                            if (decals.MapDecals is null)
-                                return;
-
-                            dynamicScene.AddDecals(decals);
-                            foreach (var item in decals.MapDecals.TagData.DecalResources)
-                            {
-                                if (item.StartIndex >= 0 && item.StartIndex < decals.MapDecals.TagData.Locations.Count)
-                                {
-                                    for (int i = item.StartIndex; i < item.StartIndex + item.Count && i < decals.MapDecals.TagData.Locations.Count; i++)
-                                    {
-                                        dynamicScene.Materials.Add(new ExportMaterial(item.Material));
-                                    }
-                                }
-                            }
+                            if (decals.MapDecals is not null)
+                                decals.MapDecals.LoadIntoExporter(dynamicScene);
                             break;
 
                         case SDecoratorMapResource decorator:
                             decorator.Decorator?.Load();
-                            if (decorator.Decorator is null)
-                                return;
-
-                            decorator.Decorator.LoadIntoExporter(decoratorScene, savePath);
+                            if (decorator.Decorator is not null)
+                                decorator.Decorator.LoadIntoExporter(decoratorScene, savePath);
                             break;
 
                         case SMapWaterDecal waterDecal:
                             if (waterDecal.Model is null)
                                 return;
 
-                            dynamicScene.AddMapModel(waterDecal.Model,
-                            entry.Translation,
-                            entry.Rotation,
-                            new Tiger.Schema.Vector3(entry.Translation.W));
-                            foreach (DynamicMeshPart part in waterDecal.Model.Load(ExportDetailLevel.MostDetailed, null))
-                            {
-                                if (part.Material == null) continue;
-                                dynamicScene.Materials.Add(new ExportMaterial(part.Material));
-                            }
+                            WaterDecals water = new(waterDecal);
+                            water.Transform = entry.Transfrom;
+                            water.LoadIntoExporter(dynamicScene);
                             break;
 
                         case SMapAtmosphere atmosphere:
-                            globalScene.AddToGlobalScene(atmosphere);
+                            globalScene.AddToGlobalScene(atmosphere, true);
+                            break;
+
+                        case SMapLensFlareResource lensFlare:
+                            lensFlare.LensFlare.Transform = entry.Transfrom;
+                            lensFlare.LensFlare.LoadIntoExporter(dynamicScene);
                             break;
                         default:
                             break;

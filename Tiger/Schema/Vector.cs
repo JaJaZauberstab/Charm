@@ -1,7 +1,19 @@
 ﻿using System.Globalization;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Tiger.Schema;
+
+/// <summary>
+/// A Map Transfrom
+/// </summary>
+/// <returns>Vector4 Rotation, Vector4 Translation</returns>
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct MapTransform
+{
+    public Vector4 Rotation;
+    public Vector4 Translation;
+}
 
 [StructLayout(LayoutKind.Sequential, Size = 0x40)]
 public struct Matrix4x4
@@ -32,18 +44,38 @@ public struct Matrix4x4
         return new Vector3(x, y, z);
     }
 
+    /// <summary>
+    /// Decompose this Matrix into Translation, Rotation and Scale.
+    /// </summary>
+    /// <returns>Vector4 Translation, Vector4 Quaternion, Vector3 Scale</returns>
+    public void Decompose(out Vector4 trans, out Vector4 quat, out Vector3 scale)
+    {
+        System.Numerics.Matrix4x4 matrix = ToSys();
+
+        System.Numerics.Vector3 scale_sys = new();
+        System.Numerics.Vector3 trans_sys = new();
+        Quaternion quat_sys = new();
+        System.Numerics.Matrix4x4.Decompose(matrix, out scale_sys, out quat_sys, out trans_sys);
+
+        trans = new Tiger.Schema.Vector4(trans_sys.X, trans_sys.Y, trans_sys.Z, 1.0f);
+        quat = new Tiger.Schema.Vector4(quat_sys.X, quat_sys.Y, quat_sys.Z, quat_sys.W);
+        scale = new Tiger.Schema.Vector3(scale_sys.X, scale_sys.Y, scale_sys.Z);
+    }
+
     public override string ToString() =>
         $"[{X_Axis.ToString()}\n" +
         $"{Y_Axis.ToString()}\n" +
         $"{Z_Axis.ToString()}\n" +
         $"{W_Axis.ToString()}]";
 }
+
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]
 public struct AABB
 {
     public Vector4 Min;
     public Vector4 Max;
 }
+
 [StructLayout(LayoutKind.Sequential, Size = 8)]
 public struct Vector2
 {
@@ -172,6 +204,40 @@ public struct Vector3
         return x.X != y.X &&
         x.Y != y.Y &&
         x.Z != y.Z;
+    }
+
+    public static Vector3 Transform(Vector3 value, Vector4 rotation)
+    {
+        float x2 = rotation.X + rotation.X;
+        float y2 = rotation.Y + rotation.Y;
+        float z2 = rotation.Z + rotation.Z;
+
+        float wx2 = rotation.W * x2;
+        float wy2 = rotation.W * y2;
+        float wz2 = rotation.W * z2;
+        float xx2 = rotation.X * x2;
+        float xy2 = rotation.X * y2;
+        float xz2 = rotation.X * z2;
+        float yy2 = rotation.Y * y2;
+        float yz2 = rotation.Y * z2;
+        float zz2 = rotation.Z * z2;
+
+        return new Vector3(
+            value.X * (1.0f - yy2 - zz2) + value.Y * (xy2 - wz2) + value.Z * (xz2 + wy2),
+            value.X * (xy2 + wz2) + value.Y * (1.0f - xx2 - zz2) + value.Z * (yz2 - wx2),
+            value.X * (xz2 - wy2) + value.Y * (yz2 + wx2) + value.Z * (1.0f - xx2 - yy2)
+        );
+    }
+
+    public override string ToString() =>
+    $"({FormatFloat(X)}, {FormatFloat(Y)}, {FormatFloat(Z)})";
+
+    private static string FormatFloat(float value)
+    {
+        if (float.IsInfinity(value) || float.IsNaN(value))
+            return value.ToString(); // This will return "Infinity", "-Infinity", or "NaN"
+
+        return Decimal.Parse(value.ToString(), NumberStyles.Float).ToString();
     }
 }
 

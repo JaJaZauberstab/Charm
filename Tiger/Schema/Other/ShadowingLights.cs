@@ -5,11 +5,13 @@ namespace Tiger.Schema;
 
 public class ShadowingLights : Tag<SMapShadowingLight>
 {
+    public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.DeferredLights;
+    public MapTransform Transfrom { get; set; }
     public ShadowingLights(FileHash hash) : base(hash)
     {
     }
 
-    public void LoadIntoExporter(ExporterScene scene, SMapDataEntry mapEntry, string savePath)
+    public void LoadIntoExporter()
     {
         var data = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || _tag.BufferData2 is null) ? _tag.BufferData : _tag.BufferData2;
         if (data is null)
@@ -25,35 +27,28 @@ public class ShadowingLights : Tag<SMapShadowingLight>
         Material shading = FileResourcer.Get().GetFile<Material>(_tag.Shading);
         if (shading.Pixel.EnumerateTextures().Any())
         {
-            if (!Directory.Exists($"{savePath}/Textures"))
-                Directory.CreateDirectory($"{savePath}/Textures");
-
             cookie = shading.Pixel.EnumerateTextures().First().GetTexture();
-            cookie.SavetoFile($"{savePath}/Textures/{cookie.Hash}");
-            if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
-                Source2Handler.SaveVTEX(cookie, $"{savePath}/Textures");
         }
 
         Lights.LightData lightData = new()
         {
             Hash = data.Hash,
+            Material = shading.Hash,
             LightType = Lights.LightType.Shadowing,
             Color = color,
-            Size = new Vector2(_tag.HalfFOV * 2.0f, 1f),
-            Range = size.Y,
-            Attenuation = _tag.BufferData.TagData.Buffer2[1].Vec.W,
+            Size = new Vector3(_tag.HalfFOV * 2.0f, size.Y, 1f),
+            Attenuation = 1, // Don't know
             Transform = new()
             {
-                Position = mapEntry.Translation.ToVec3(),
-                Quaternion = mapEntry.Rotation
+                Position = Transfrom.Translation.ToVec3(),
+                Quaternion = Transfrom.Rotation
             },
-            Cookie = cookie != null ? cookie.Hash : null
+            Cookie = cookie != null ? cookie.Hash : null,
+            Bytecode = data.TagData.Bytecode.Select(x => x.Value).ToArray(),
+            BytecodeConstants = data.TagData.Buffer1.Select(x => x.Vec).ToArray()
         };
 
-        scene.AddMapLight(lightData);
-
-        if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
-            data.Dump($"{savePath}/Shaders/Source2/Lights");
+        Exporter.Get().GetGlobalScene().AddToGlobalScene(lightData);
     }
 
     public Vector4 GetColor(Tag<D2Class_A16D8080> data)

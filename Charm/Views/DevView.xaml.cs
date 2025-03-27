@@ -18,8 +18,7 @@ using Tiger.Schema.Audio;
 using Tiger.Schema.Entity;
 using Tiger.Schema.Investment;
 using Tiger.Schema.Shaders;
-using Tiger.Schema.Static;
-using Decorator = Tiger.Schema.Static.Decorator;
+using Decorator = Tiger.Schema.Decorator;
 
 namespace Charm;
 
@@ -310,6 +309,45 @@ public partial class DevView : UserControl
                     bytecode = new(TfxBytecodeOp.ParseAll(scope_data.TagData.Bytecode));
                     _ = bytecode.Evaluate(scope_data.TagData.BytecodeConstants, true);
                     break;
+
+                case 0x80808AC5:
+                    Tag<D2Class_C58A8080> skyComplex = FileResourcer.Get().GetSchemaTag<D2Class_C58A8080>(hash);
+                    var a = (D2Class_438B8080)skyComplex.TagData.Pointer.GetValue(skyComplex.GetReader());
+
+                    Console.WriteLine($"\n{skyComplex.Hash}: Unk00 {a.Unk00.Count}");
+                    for (int i = 0; i < a.Unk00.Count; i += 3)
+                    {
+                        Vector3 half = new Vector3(a.Unk00[i].Unk0, a.Unk00[i + 1].Unk0, a.Unk00[i + 2].Unk0);
+                        Console.WriteLine(half);
+                    }
+                    break;
+
+                case 0x8080695B: // decal tag 5B698080, 5BF3AC80
+                    //Decals decal = FileResourcer.Get().GetFile<Decals>(hash);
+                    //decal.ExportCube($"C:\\Users\\Michael\\Desktop\\cube\\cube.obj", decal.GetCube());
+                    //decal.DebugExport("C:\\Users\\Michael\\Desktop\\cube");
+
+                    //var allDecals = PackageResourcer.Get().GetAllFiles<Decals>();
+                    //List<ShaderBytecode> shaderSize = new();
+
+                    //foreach (var file in allDecals)
+                    //{
+                    //    foreach (var instance in file.TagData.DecalResources)
+                    //    {
+                    //        shaderSize.Add(instance.Material.Vertex.Shader);
+                    //    }
+                    //}
+
+                    //var first = shaderSize.First();
+                    //for (int i = 0; i < shaderSize.Count; i++)
+                    //{
+                    //    Console.WriteLine($"{shaderSize[i].Hash}: {shaderSize[i].GetBytecode().Count()} , {first.Hash}: {first.GetBytecode().Count()}");
+                    //    Debug.Assert(shaderSize[i].GetBytecode().Equals(first.GetBytecode()), $"{shaderSize[i].Hash}, {first.Hash}");
+                    //}
+                    //Console.WriteLine("Yep, all the same size");
+
+                    break;
+
                 default:
                     MessageBox.Show("Unknown reference: " + Endian.U32ToString(reference));
                     break;

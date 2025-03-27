@@ -108,93 +108,149 @@ public static class Externs
 {
     public static string GetExternFloat(TfxExtern extern_, int element, bool bInline = false)
     {
+        string InlineOrDefault(string name, string defaultValue) =>
+                    bInline ? $"float4({name}.xxxx)" : $"(exists({name}) ? ({name}) : ({defaultValue}))";
+
+        static string HandleUnknownElement(int element, TfxExtern extern_)
+        {
+            Log.Warning($"Unimplemented element {element} (0x{element:X}) for extern {extern_}");
+            return "float4(1,1,1,1)";
+        }
+
         switch (extern_)
         {
             case TfxExtern.Frame:
-                switch (element)
+                return element switch
                 {
-                    case 0:
-                        return bInline ? $"float4(g_flTime,g_flTime,g_flTime,g_flTime)" : "(Time)"; // game_time
-                    case 0x04:
-                        return bInline ? $"float4(g_flTime,g_flTime,g_flTime,g_flTime)" : "(Time)"; // render_time
-                    case 0x10:
-                        return bInline ? $"float4(FrameTimeOfDay.xxxx)" : $"(exists(FrameTimeOfDay) ? (FrameTimeOfDay) : (0.5))";
-                    case 0x14:
-                        return $"float4(0.016,0.016,0.016,0.016)"; // delta_game_time
-                    case 0x1C:
-                        return $"float4(16,16,16,16)"; // exposure_scale
+                    // Not using inline method for time since its an engine provided value
+                    0 => bInline ? $"float4(g_flTime.xxxx)" : "(Time)", // game_time
+                    0x04 => bInline ? $"float4(g_flTime.xxxx)" : "(Time)", // render_time
+                    0x10 => InlineOrDefault("FrameTimeOfDay", "0.5"),
+                    0x14 => "float4(0.016,0.016,0.016,0.016)", // delta_game_time
+                    0x1C => "float4(16,16,16,16)", // exposure_scale
+                    _ => HandleUnknownElement(element, extern_)
+                };
 
-                    default:
-                        Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_}");
-                        return $"float4(1,1,1,1)";
-                }
             case TfxExtern.Atmosphere:
-                switch (element)
+                return element switch
                 {
-                    case 0x70:
-                        return bInline ? $"float4(AtmosTimeOfDay.xxxx)" : $"(exists(AtmosTimeOfDay) ? (AtmosTimeOfDay) : (0.5))";
-                    case 0x198:
-                    case 0x170:
-                        return $"float4(0.0001,0.0001,0.0001,0.0001)";
-                    case 0x1b4:
-                        return bInline ? $"float4(AtmosRotation.xxxx)" : $"(exists(AtmosRotation) ? (AtmosRotation) : (0))";
-                    case 0x1b8:
-                        return bInline ? $"float4(AtmosIntensity.xxxx)" : $"(exists(AtmosIntensity) ? (AtmosIntensity) : (0.5))";
-                    case 0x1bc:
-                        return $"float4(0.5,0.5,0.5,0.5)";
-                    case 0x1e8:
-                        return $"float4(0,0,0,0)";
-                    default:
-                        Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_} ");
-                        return $"float4(1,1,1,1)";
-                }
+                    0x70 => InlineOrDefault("AtmosTimeOfDay", "0.5"),
+                    0x1b4 => InlineOrDefault("AtmosRotation", "0"),
+                    0x1b8 => InlineOrDefault("AtmosIntensity", "1"),
+                    0x1e4 => InlineOrDefault("AtmosSunIntensity", "0.05923"),
+                    0x198 or 0x170 => "float4(0.0001,0.0001,0.0001,0.0001)",
+                    0x1bc => "float4(0.5,0.5,0.5,0.5)",
+                    0x1e8 => "float4(0,0,0,0)",
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
             default:
-                Log.Error($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
+                Log.Warning($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
                 return $"float4(1,1,1,1)";
         }
     }
 
-    public static string GetExternVec4(TfxExtern extern_, int element)
+    public static string GetExternVec4(TfxExtern extern_, int element, bool bInline = false)
     {
+        static string HandleUnknownElement(int element, TfxExtern extern_)
+        {
+            Log.Warning($"Unimplemented element {element} (0x{element:X}) for extern {extern_}");
+            return "float4(1,1,1,1)";
+        }
+
+        string InlineOrDefault(string name, string defaultValue) =>
+            bInline ? $"{name}" : $"(exists({name}) ? ({name}) : ({defaultValue}))";
+
         switch (extern_)
         {
             case TfxExtern.Deferred:
-                switch (element)
+                return element switch
                 {
-                    case 0:
-                        return $"float4(0.0, 100, 0.0, 0.0)";
-                    default:
-                        Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_}");
-                        return $"float4(1,1,1,1)";
-                }
+                    0 => "float4(0.0, 100, 0.0, 0.0)",
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
             case TfxExtern.Frame:
-                switch (element)
+                return element switch
                 {
-                    case 0x1A0:
-                        return $"float4(0, 0, 0, 0)";
-                    case 0x1C0:
-                        return $"float4(1, 1, 0, 1)";
-                    default:
-                        Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_}");
-                        return $"float4(1,1,1,1)";
-                }
+                    0x1A0 => "float4(0, 0, 0, 0)",
+                    0x1C0 => "float4(1, 1, 0, 1)",
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
             case TfxExtern.Atmosphere:
-                switch (element)
+                return element switch
                 {
-                    case 0xD0:
-                        return $"float4(512.0, 512.0, 1.0 / 512.0, 1.0 / 512.0)";
-                    case 0x110:
-                        return $"float4(0,0,-1.5,0)";
-                    case 0x140:
-                        return $"float4(0,0,0,0)";
-                    case 0x1D0:
-                        return $"float4(0,0,0,0)";
-                    default:
-                        Log.Warning($"Unimplemented element {element} (0x{(element):X}) for extern {extern_} ");
-                        return $"float4(1,1,1,1)";
-                }
+                    0xD0 => "float4(512.0, 512.0, 1.0 / 512.0, 1.0 / 512.0)",
+                    0x90 => InlineOrDefault("AtmosRTDimensions", "float4(480.0, 270.0, 0.00208, 0.0037)"),
+                    0x110 => InlineOrDefault("AtmosSunDir", "float4(-0.30372, -0.59835, 0.74144, 0.0)"),
+                    0x140 => InlineOrDefault("AtmosSunColor", "float4(1.0, 0.95, 0.85, 1.0)"),
+                    0x1D0 => "float4(0,0,0,0)",
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
+            case TfxExtern.Decal:
+                return element switch
+                {
+                    0x10 => "float4(0, 100, 0, 0)",
+                    0x20 => "float4(0.03, 0, 0, 0)",
+                    _ => HandleUnknownElement(element, extern_)
+                };
+            case TfxExtern.DecalSetTransform:
+                return element switch
+                {
+                    0x0 => "float4(0, 0, 0, 1)",
+                    0x10 => "float4(0, 0, 0, 1)",
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
             default:
-                Log.Error($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
+                Log.Warning($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
+                return $"float4(1, 1, 1, 1)";
+        }
+    }
+
+    // TODO, make this return just the texture attribute name maybe?
+    public static string GetExternTexture(TfxExtern extern_, int element, bool bInline = false)
+    {
+        static string HandleUnknownElement(int element, TfxExtern extern_)
+        {
+            Log.Warning($"Unimplemented element {element} (0x{element:X}) for extern {extern_}");
+            return "float4(1,1,1,1)";
+        }
+
+        switch (extern_)
+        {
+            case TfxExtern.Deferred:
+                return element switch
+                {
+
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
+            case TfxExtern.Frame:
+                return element switch
+                {
+
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
+            case TfxExtern.Atmosphere:
+                return element switch
+                {
+
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
+            case TfxExtern.Decal:
+                return element switch
+                {
+
+                    _ => HandleUnknownElement(element, extern_)
+                };
+
+            default:
+                Log.Warning($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
                 return $"float4(1, 1, 1, 1)";
         }
     }

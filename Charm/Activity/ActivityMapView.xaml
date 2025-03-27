@@ -14,7 +14,7 @@
         <ControlTemplate x:Key="StaticTemplate">
             <Grid
                 Height="40"
-                Margin="5,3,5,3"
+                Margin="0,3,0,3"
                 Background="{StaticResource BackgroundColour14a}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80*" />
@@ -173,25 +173,42 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <ListView
-                x:Name="StaticList"
+            <StackPanel
+                x:Name="ManualControls"
                 Grid.Row="1"
                 Grid.Column="1"
-                d:ItemsSource="{d:SampleData ItemCount=5}"
-                Background="Transparent"
-                BorderThickness="0,0,2,0">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="OverridesDefaultStyle" Value="True" />
-                        <Setter Property="Template" Value="{StaticResource StaticTemplate}" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-            </ListView>
+                Margin="15"
+                d:Visibility="Visible"
+                Orientation="Vertical"
+                Visibility="Hidden">
+                <Border Style="{StaticResource ColumnHeaderBorder}">
+                    <Grid Style="{StaticResource ColumnHeader}">
+                        <TextBlock
+                            d:FontFamily="Haas Grot Text 55 Roman"
+                            FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
+                            FontSize="24"
+                            Text="MANUAL EXPORT" />
+                    </Grid>
+                </Border>
+
+                <ListView
+                    x:Name="StaticList"
+                    d:ItemsSource="{d:SampleData ItemCount=5}"
+                    Background="Transparent"
+                    BorderThickness="0,0,2,0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="OverridesDefaultStyle" Value="True" />
+                            <Setter Property="Template" Value="{StaticResource StaticTemplate}" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
+            </StackPanel>
 
             <Border
                 Grid.Row="1"

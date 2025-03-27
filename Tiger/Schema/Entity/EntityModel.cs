@@ -124,6 +124,7 @@ public class EntityModel : Tag<SEntityModel>
                 dynamicMeshPart.Material.Pixel.Shader is null) // || dynamicMeshPart.Material.Unk08 != 1)
                     continue;
 
+                //dynamicMeshPart.Material.RenderStage = (TfxRenderStage)exportPartRange[i]; // I think this is correct..?
                 dynamicMeshPart.GetAllData(mesh, _tag);
                 parts.Add(dynamicMeshPart);
             }
@@ -138,7 +139,7 @@ public class EntityModel : Tag<SEntityModel>
     {
         List<int> exportPartRange = new();
 
-        foreach (TfxRenderStage stage in Globals.Get().ExportRenderStages)
+        foreach (TfxRenderStage stage in Globals.Get().GetExportStages())
         {
             var range = mesh.GetRangeForStage((int)stage);
             if (!(range.Start.Value < range.End.Value))

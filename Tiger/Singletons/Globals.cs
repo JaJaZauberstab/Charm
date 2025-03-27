@@ -119,16 +119,25 @@ public class Globals : Strategy.StrategistSingleton<Globals>
         //}
     }
 
-    public List<TfxRenderStage> ExportRenderStages = new List<TfxRenderStage>
+    private List<TfxRenderStage> ExportRenderStages = new List<TfxRenderStage>
     {
         TfxRenderStage.GenerateGbuffer,
         TfxRenderStage.Decals,
         TfxRenderStage.InvestmentDecals,
         TfxRenderStage.DecalsAdditive,
         TfxRenderStage.Transparents,
-        TfxRenderStage.Distortion
+        TfxRenderStage.Distortion,
         //TfxRenderStage.Reticle
     };
+
+    public List<TfxRenderStage> GetExportStages()
+    {
+        if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
+        {
+            return ExportRenderStages.Append(TfxRenderStage.WaterReflection).ToList();
+        }
+        return ExportRenderStages;
+    }
 
     public TfxRenderStage[] GetRenderStages()
     {

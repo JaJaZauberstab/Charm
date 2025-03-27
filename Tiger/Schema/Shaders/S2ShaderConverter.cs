@@ -5,6 +5,7 @@ using Tiger.Schema.Shaders;
 
 namespace Tiger.Schema;
 
+
 // ugh this is so ugly
 public class S2ShaderConverter
 {
@@ -23,6 +24,7 @@ public class S2ShaderConverter
 
     private bool isTerrain = false;
     private bool isDecorator = false;
+    private bool isDecal = false;
     private bool bRT0 = true;
     private bool bTranslucent = false;
 
@@ -40,8 +42,6 @@ MODES
 {{
 	VrForward();
 	Depth(); 
-	//ToolsVis( S_MODE_TOOLS_VIS );
-	//ToolsWireframe( ""vr_tools_wireframe.shader"" );
 	ToolsShadingComplexity( ""tools_shading_complexity.shader"" );
 }}
 
@@ -124,6 +124,7 @@ PS
         bTranslucent = Outputs.Count == 1 || Scopes.Contains(TfxScope.TRANSPARENT) || Scopes.Contains(TfxScope.TRANSPARENT_ADVANCED) || Scopes.Contains(TfxScope.DECAL);
         isTerrain = Scopes.Contains(TfxScope.TERRAIN);
         isDecorator = Scopes.Contains(TfxScope.INSTANCES);
+        isDecal = Scopes.Contains(TfxScope.DECAL) && Externs.Contains(TfxExtern.Decal);
 
         if (Inputs.Exists(input => input.Semantic == DXBCSemantic.SystemIsFrontFace))
             vfxStructure = vfxStructure.Replace("//frontface", "#define S_RENDER_BACKFACES 1");
@@ -178,7 +179,7 @@ PS
             vfxStructure = vfxStructure.Replace("//vs_Function", "\t\tfloat4 r0,r1,r2,r3,r4,r5;\r\n\t\t// Terrain specific\r\n\t\tr1.xyz = float3(0,1,0) * i.vNormalOs.yzx;\r\n\t\tr1.xyz = i.vNormalOs.zxy * float3(0,0,1) + -r1.xyz;\r\n\t\tr0.z = dot(r1.yz, r1.yz);\r\n\t\tr0.z = rsqrt(r0.z);\r\n\t\tr1.xyz = r1.xyz * r0.zzz;\r\n\t\tr2.xyz = i.vNormalOs.zxy * r1.yzx;\r\n\t\tr2.xyz = i.vNormalOs.yzx * r1.zxy + -r2.xyz;\r\n\t\to.v4.xyz = r1.xyz;\r\n\t\tr0.z = dot(r2.xyz, r2.xyz);\r\n\t\tr0.z = rsqrt(r0.z);\r\n\t\to.v3.xyz = r2.xyz * r0.zzz;\r\n\t\tr1.xyz = abs(i.vNormalOs.xyz) * abs(i.vNormalOs.xyz);\r\n\t\tr1.xyz = r1.xyz * r1.xyz;\r\n\t\tr2.xyz = r1.xyz * r1.xyz;\r\n\t\tr2.xyz = r2.xyz * r2.xyz;\r\n\t\tr1.xyz = r2.xyz * r1.xyz;\r\n\t\tr0.z = dot(r1.xyz, float3(1,1,1));\r\n\t\to.v5.xyz = r1.xyz / r0.zzz;");
 
         // Only gonna add vertex shaders for basic statics/entities with vertex animation
-        if (material.Vertex.Unk64 != 0 && !isDecorator && !isTerrain && (Scopes.Contains(TfxScope.RIGID_MODEL) || Scopes.Contains(TfxScope.CHUNK_MODEL)))
+        if (isDecal || (material.Vertex.Unk64 != 0 && !isDecorator && !isTerrain && (Scopes.Contains(TfxScope.RIGID_MODEL) || Scopes.Contains(TfxScope.CHUNK_MODEL))))
         {
             texSamples = new StringBuilder();
             hlsl = new StringReader(vertex);
@@ -233,7 +234,14 @@ PS
                 case ResourceType.CBuffer:
                     if (!bInline)
                     {
-                        if (resource.Index != 12 && (!isVertexShader || resource.Index != 1))
+                        int[] blacklist = // Dont add if these scopes cbuffers are used
+                        {
+                            1, // rigid / chunked
+                            2, // transparent
+                            9, // decal
+                            12, // frame
+                        };
+                        if (!blacklist.Contains((int)resource.Index))
                         {
                             string cbType = isVertexShader ? "vs_cb" : "cb";
                             for (int i = 0; i < resource.Count; i++)
@@ -265,17 +273,17 @@ PS
                                 }
                                 break;
 
-                            case 2:
-                                CBuffers.AppendLine($"\n\t\tfloat4 cb2[{resource.Count}] = \n\t\t{{ // Transparent");
-                                for (int i = 0; i < resource.Count; i++)
-                                {
-                                    if (i == 0)
-                                        CBuffers.AppendLine($"\t\t\tfloat4(0,100,0,0),");
-                                    else
-                                        CBuffers.AppendLine($"\t\t\tfloat4(1,1,1,1),");
-                                }
-                                CBuffers.AppendLine($"\t\t}};");
-                                break;
+                            //case 2:
+                            //    CBuffers.AppendLine($"\n\t\tfloat4 cb2[{resource.Count}] = \n\t\t{{ // Transparent");
+                            //    for (int i = 0; i < resource.Count; i++)
+                            //    {
+                            //        if (i == 0)
+                            //            CBuffers.AppendLine($"\t\t\tfloat4(0,100,0,0),");
+                            //        else
+                            //            CBuffers.AppendLine($"\t\t\tfloat4(1,1,1,1),");
+                            //    }
+                            //    CBuffers.AppendLine($"\t\t}};");
+                            //    break;
 
                             case 8:
                                 CBuffers.AppendLine($"\n\t\tfloat4 cb8[37] =\n\t\t{{ // Transparent_Advanced");
@@ -313,11 +321,12 @@ PS
                                 break;
 
                             case 13: // Frame
-                                CBuffers.AppendLine($"\n\t\tfloat4 cb13[7] =\n\t\t{{ // Frame");
+                                CBuffers.AppendLine($"\n\t\tfloat4 cb13[8] =\n\t\t{{ // Frame");
 
                                 CBuffers.AppendLine($"\t\t\tfloat4(g_flTime, g_flTime, 0.05, 0.016),");
                                 CBuffers.AppendLine($"\t\t\tfloat4(0.65,16,0.65,1.5),");
                                 CBuffers.AppendLine($"\t\t\tfloat4((g_flTime + 33.75) * 1.258699, (g_flTime + 60.0) * 0.9583125, (g_flTime + 60.0) * 8.789123, (g_flTime + 33.75) * 2.311535),");
+                                CBuffers.AppendLine($"\t\t\tfloat4(0.5,0.5,0,0),");
                                 CBuffers.AppendLine($"\t\t\tfloat4(1,1,0,1),");
                                 CBuffers.AppendLine($"\t\t\tfloat4(0,0,512,0),");
                                 CBuffers.AppendLine($"\t\t\tfloat4(0,1,sin(g_flTime * 6.0) * 0.5 + 0.5,0),");
@@ -327,7 +336,7 @@ PS
                                 break;
 
                             default:
-                                if (resource.Index != 12 && (!isVertexShader || resource.Index != 1))
+                                if (resource.Index != 2 && resource.Index != 12 && (!isVertexShader || resource.Index != 1))
                                 {
                                     CBuffers.AppendLine($"\t\tfloat4 cb{resource.Index}[{resource.Count}] =\n\t\t{{");
                                     for (int i = 0; i < resource.Count; i++)
@@ -342,6 +351,13 @@ PS
                     break;
             }
         }
+
+        if (Scopes.Contains(TfxScope.VIEW))
+            CBuffers.AppendLine(AddViewScope());
+        if (Scopes.Contains(TfxScope.TRANSPARENT))
+            CBuffers.AppendLine(AddTransparentScope());
+        if (isDecal)
+            CBuffers.AppendLine(AddDecalScope());
 
         return CBuffers;
     }
@@ -385,11 +401,6 @@ PS
         if (isVertexShader)
             return funcDef;
 
-        if (isTerrain)
-        {
-            funcDef.AppendLine($"\tTexture2D g_t14 < Attribute( \"TerrainDyemap\" ); SrgbRead( false ); >;\r\n\n");
-        }
-
         var opcodes = material.Pixel.GetBytecode();
         bool bInline = opcodes.CanInlineBytecode();
         foreach ((int i, var op) in opcodes.Opcodes.Select((value, index) => (index, value)))
@@ -399,36 +410,61 @@ PS
                 case TfxBytecode.PushExternInputFloat:
                     var externFloatData = (PushExternInputFloatData)op.data;
                     var externIndex = externFloatData.element * 4;
-                    switch (externFloatData.extern_)
+
+                    if (bInline)
                     {
-                        case TfxExtern.Frame:
-                            switch (externIndex)
+                        var attributeMap = new Dictionary<TfxExtern, Dictionary<int, string>>
+                        {
                             {
-                                case 0x10 when bInline:
-                                    if (!funcDef.ToString().Contains($"\tfloat FrameTimeOfDay < Attribute( \"FrameTimeOfDay\" ); Default1( 0.5 ); >;"))
-                                        funcDef.AppendLine($"\tfloat FrameTimeOfDay < Attribute( \"FrameTimeOfDay\" ); Default1( 0.5 ); >;");
-                                    break;
-                            }
-                            break;
-
-
-                        case TfxExtern.Atmosphere:
-                            switch (externIndex)
+                                TfxExtern.Frame, new Dictionary<int, string>
+                                {
+                                    { 0x10, "\tfloat FrameTimeOfDay < Attribute( \"FrameTimeOfDay\" ); Default1( 0.5 ); >;" }
+                                }
+                            },
                             {
-                                case 0x70 when bInline:
-                                    if (!funcDef.ToString().Contains($"\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;"))
-                                        funcDef.AppendLine($"\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;");
-                                    break;
-                                case 0x1b4 when bInline:
-                                    if (!funcDef.ToString().Contains($"\tfloat AtmosRotation < Attribute( \"AtmosRotation\" ); Default1( 0.5 ); >;"))
-                                        funcDef.AppendLine($"\tfloat AtmosRotation < Attribute( \"AtmosRotation\" ); Default1( 0.5 ); >;");
-                                    break;
-                                case 0x1b8 when bInline:
-                                    if (!funcDef.ToString().Contains($"\tfloat AtmosIntensity < Attribute( \"AtmosIntensity\" ); Default1( 0.5 ); >;"))
-                                        funcDef.AppendLine($"\tfloat AtmosIntensity < Attribute( \"AtmosIntensity\" ); Default1( 0.5 ); >;");
-                                    break;
+                                TfxExtern.Atmosphere, new Dictionary<int, string>
+                                {
+                                    { 0x70,  "\tfloat AtmosTimeOfDay < Attribute( \"AtmosTimeOfDay\" ); Default1( 0.5 ); >;" },
+                                    { 0x1b4, "\tfloat AtmosRotation < Attribute( \"AtmosRotation\" ); Default1( 0 ); >;" },
+                                    { 0x1b8, "\tfloat AtmosIntensity < Attribute( \"AtmosIntensity\" ); Default1( 1 ); >;" },
+                                    { 0x1e4, "\tfloat AtmosSunIntensity < Attribute( \"AtmosSunIntensity\" ); Default1( 0.05923 ); >;" }
+                                }
                             }
-                            break;
+                        };
+
+                        if (attributeMap.TryGetValue(externFloatData.extern_, out var externDict) &&
+                            externDict.TryGetValue(externIndex, out var attributeString) &&
+                            !funcDef.ToString().Contains(attributeString))
+                        {
+                            funcDef.AppendLine(attributeString);
+                        }
+                    }
+                    break;
+
+                case TfxBytecode.PushExternInputVec4:
+                    var externVec4Data = (PushExternInputVec4Data)op.data;
+                    externIndex = externVec4Data.element * 16;
+
+                    if (bInline)
+                    {
+                        var attributeMap = new Dictionary<TfxExtern, Dictionary<int, string>>
+                        {
+                            {
+                                TfxExtern.Atmosphere, new Dictionary<int, string>
+                                {
+                                    { 0x90,  "\tfloat4 AtmosRTDimensions < Attribute( \"AtmosRTDimensions\" ); Default4( 480.0, 270.0, 0.00208, 0.0037 ); >;" },
+                                    { 0x110, "\tfloat4 AtmosSunDir < Attribute( \"AtmosSunDir\" ); Default4( -0.30372, -0.59835, 0.74144, 0.0 ); >;" },
+                                    { 0x140, "\tfloat4 AtmosSunColor < Attribute( \"AtmosSunColor\" ); Default4( 1, 1, 1, 1 ); >;" }
+                                }
+                            }
+                        };
+
+                        if (attributeMap.TryGetValue(externVec4Data.extern_, out var externDict) &&
+                            externDict.TryGetValue(externIndex, out var attributeString) &&
+                            !funcDef.ToString().Contains(attributeString))
+                        {
+                            funcDef.AppendLine(attributeString);
+                        }
                     }
                     break;
 
@@ -436,13 +472,13 @@ PS
                     var data = (PushExternInputTextureViewData)op.data;
                     var slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
                     var index = data.element * 8;
+                    ExternTextureSlots.Add(slot);
                     switch (data.extern_)
                     {
                         case TfxExtern.Frame:
                             switch (index)
                             {
                                 case 0xB8: // SGlobalTextures SpecularTintLookup
-                                    ExternTextureSlots.Add(slot);
                                     funcDef.AppendLine($"\tCreateInputTexture2D( PS_tSpecularTintLookup, Srgb, 8, \"\", \"\",  \"PS Textures,10/{slot}\", Default4( 1.0, 1.0, 1.0, 1.0 ));");
                                     funcDef.AppendLine($"\tTexture2D g_t{slot} < Channel( RGBA,  Box( PS_tSpecularTintLookup ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
                                     break;
@@ -453,7 +489,6 @@ PS
                             switch (index)
                             {
                                 case 0x48:
-                                    ExternTextureSlots.Add(slot);
                                     if (!bAlreadyUsingFB)
                                         funcDef.AppendLine($"\tBoolAttribute( bWantsFBCopyTexture, true );");
 
@@ -462,9 +497,7 @@ PS
                                     break;
 
                                 case 0x98: // Generated sky hemisphere
-                                    ExternTextureSlots.Add(slot);
-                                    funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT{slot}, Srgb, 8, \"\", \"\",  \"PS Textures,10/{slot}\", Default4( 1.0, 1.0, 1.0, 1.0 ));");
-                                    funcDef.AppendLine($"\tTexture2D g_t{slot} < Channel( RGBA,  Box( PS_TextureT{slot} ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
+                                    funcDef.AppendLine($"\tTexture2D g_t{slot} < Attribute( \"AtmosHemisphere\" ); SrgbRead( true ); >;");
                                     break;
                             }
                             break;
@@ -473,17 +506,17 @@ PS
                             switch (index)
                             {
                                 case 0x80: // SMapAtmosphere Lookup4
-                                    ExternTextureSlots.Add(slot);
                                     funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT{slot}, Srgb, 8, \"\", \"\",  \"PS Textures,10/{slot}\", Default4( 1.0, 1.0, 1.0, 1.0 ));");
                                     funcDef.AppendLine($"\tTexture2D g_t{slot} < Channel( RGBA,  Box( PS_TextureT{slot} ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
                                     break;
 
-                                case 0xE0: // SMapAtmosphere T11
-                                    ExternTextureSlots.Add(slot);
+                                case 0xE0: // Atmosphere Far
+                                    funcDef.AppendLine($"\tTexture2D g_t{slot} < Attribute( \"AtmosFar\" ); Default1( 0.0 ); >;\n");
                                     break;
 
-                                case 0xF0: // SMapAtmosphere T13
-                                    ExternTextureSlots.Add(slot);
+                                case 0xF0: // Atmosphere Near
+                                    funcDef.AppendLine($"\tTexture2D g_t{slot} < Attribute( \"AtmosNear\" ); Default1( 0.0 ); >;\n");
+
                                     break;
                             }
                             break;
@@ -491,9 +524,8 @@ PS
                         case TfxExtern.Water:
                             switch (index)
                             {
+                                case 0x0: // Framebuffer
                                 case 0x30: // temp
-                                case 0x0:
-                                    ExternTextureSlots.Add(slot);
                                     if (!bAlreadyUsingFB)
                                         funcDef.AppendLine($"\tBoolAttribute( bWantsFBCopyTexture, true );");
 
@@ -502,9 +534,17 @@ PS
                                     break;
 
                                 case 0x28:
-                                    ExternTextureSlots.Add(slot);
                                     funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT{slot}, Srgb, 8, \"\", \"\",  \"PS Textures,10/{slot}\", Default4( 0.5, 0.5, 0.0, 1.0 ));");
                                     funcDef.AppendLine($"\tTexture2D g_t{slot} < Channel( RGBA,  Box( PS_TextureT{slot} ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
+                                    break;
+                            }
+                            break;
+
+                        case TfxExtern.Decal:
+                            switch (index)
+                            {
+                                case 0x8: // Normal gbuffer
+                                    funcDef.AppendLine($"\tint NormalsIndex < Attribute(\"NormalsTextureIndex\");>;");
                                     break;
                             }
                             break;
@@ -513,54 +553,24 @@ PS
             }
         }
 
-        foreach (var scope in Scopes)
+        foreach (var scope in Scopes) // These should be compilied out if not used
         {
             switch (scope)
             {
-                // Gonna use input texture for these since "Default4" works on it, wont be the magenta checkerboard if missing, idk if this is bad or not
                 case TfxScope.TRANSPARENT:
-                    //funcDef.AppendLine($"\tTexture2D g_t11 < Attribute( \"AtmosFar\" ); >;\n");
-                    funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT11, Srgb, 8, \"\", \"\",  \"PS Textures,10/11\", Default4( 0.0, 0.0, 0.0, 1.0 ));");
-                    funcDef.AppendLine($"\tTexture2D g_t11 < Channel( RGBA,  Box( PS_TextureT11 ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
+                    funcDef.AppendLine($"\tTexture2D g_t11 < Attribute( \"AtmosFar\" ); Default1( 0.0 ); >;\n");
+                    funcDef.AppendLine($"\tTexture2D g_t13 < Attribute( \"AtmosNear\" ); Default1( 0.0 ); >;\n");
+                    funcDef.AppendLine($"\tTexture2D g_t15 < Attribute( \"AtmosDensity\" ); Default1( 0.0 ); >;\n");
 
-                    //funcDef.AppendLine($"\tTexture2D g_t13 < Attribute( \"AtmosNear\" ); >;\n");
-                    funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT13, Srgb, 8, \"\", \"\",  \"PS Textures,10/13\", Default4( 0.0, 0.0, 0.0, 1.0 ));");
-                    funcDef.AppendLine($"\tTexture2D g_t13 < Channel( RGBA,  Box( PS_TextureT13 ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
+                    if (!bAlreadyUsingFB)
+                        funcDef.AppendLine($"\tBoolAttribute( bWantsFBCopyTexture, true );");
 
-                    funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT15, Srgb, 8, \"\", \"\",  \"PS Textures,10/15\", Default4( 1.0, 1.0, 1.0, 1.0 ));");
-                    funcDef.AppendLine($"\tTexture2D g_t15 < Channel( RGBA,  Box( PS_TextureT15 ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
-
-                    if (Resources.Any(x => x.ResourceType == ResourceType.Texture2D && x.Index == 23))
-                    {
-                        ExternTextureSlots.Add(23);
-                        if (!bAlreadyUsingFB)
-                            funcDef.AppendLine($"\tBoolAttribute( bWantsFBCopyTexture, true );");
-
-                        funcDef.AppendLine($"\tTexture2D g_t23 < Attribute( \"FrameBufferCopyTexture\" ); SrgbRead( true ); Filter( MIN_MAG_MIP_LINEAR ); AddressU( CLAMP ); AddressV( CLAMP ); >;");
-                        bAlreadyUsingFB = true;
-                    }
-
+                    funcDef.AppendLine($"\tTexture2D g_t23 < Attribute( \"FrameBufferCopyTexture\" ); SrgbRead( true ); Filter( MIN_MAG_MIP_LINEAR ); AddressU( CLAMP ); AddressV( CLAMP ); >;\n");
+                    bAlreadyUsingFB = true;
                     break;
-            }
-        }
-
-        foreach (var extern_ in Externs)
-        {
-            foreach (var resource in Resources)
-            {
-                switch (extern_)
-                {
-                    case TfxExtern.Atmosphere when ((resource.ResourceType == ResourceType.Texture2D && resource.Index == 1) && !Textures.Exists(texture => texture.TextureIndex == 1 && texture.GetTexture() is not null)):
-                        //funcDef.AppendLine($"\tTexture2D g_t1 < Attribute( \"AtmosFar\" ); >;\r\n\n");
-                        funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT1, Srgb, 8, \"\", \"\",  \"PS Textures,10/1\", Default4( 0.0, 0.0, 0.0, 0.0 ));");
-                        funcDef.AppendLine($"\tTexture2D g_t1 < Channel( RGBA,  Box( PS_TextureT1 ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
-                        break;
-                    case TfxExtern.Atmosphere when ((resource.ResourceType == ResourceType.Texture2D && resource.Index == 2) && !Textures.Exists(texture => texture.TextureIndex == 2 && texture.GetTexture() is not null)):
-                        //funcDef.AppendLine($"\tTexture2D g_t2 < Attribute( \"AtmosNear\" ); >;\r\n\n");
-                        funcDef.AppendLine($"\tCreateInputTexture2D( PS_TextureT2, Srgb, 8, \"\", \"\",  \"PS Textures,10/2\", Default4( 0.0, 0.0, 0.0, 0.0 ));");
-                        funcDef.AppendLine($"\tTexture2D g_t2 < Channel( RGBA,  Box( PS_TextureT2 ), Srgb ); OutputFormat( RGBA8888 ); SrgbRead( True ); >;");
-                        break;
-                }
+                case TfxScope.TERRAIN:
+                    funcDef.AppendLine($"\tTexture2D g_t14 < Attribute( \"TerrainDyemap\" ); SrgbRead( false ); >;\n");
+                    break;
             }
         }
 
@@ -575,9 +585,11 @@ PS
 
         if (isVertexShader)
         {
-            funcDef.AppendLine("\t\tfloat3 vCameraPos = g_vCameraPositionWs/TO_INCHES;");
-            funcDef.AppendLine(AddViewScope(true));
-            funcDef.AppendLine(AddCB1());
+            funcDef.AppendLine(AddViewScope(isVertexShader));
+            if (!isDecal)
+                funcDef.AppendLine(AddCB1());
+            else
+                funcDef.AppendLine(AddDecalScope(isVertexShader));
 
             foreach (var i in Inputs)
             {
@@ -610,7 +622,6 @@ PS
         else //Pixel
         {
             //Need to divde by TO_INCHES to convert to meters
-            funcDef.AppendLine("\t\tfloat3 vCameraPos = g_vCameraPositionWs/TO_INCHES;");
             funcDef.AppendLine("\t\tfloat3 vPositionWs = (i.vPositionWithOffsetWs.xyz + g_vCameraPositionWs.xyz) / TO_INCHES;");
             funcDef.AppendLine("\t\tfloat alpha = 1;");
 
@@ -678,11 +689,6 @@ PS
             funcDef.AppendLine("\t\tfloat4 o1 = float4(PackNormal3D(v0.xyz),1);");
             funcDef.AppendLine("\t\tfloat4 o2 = float4(0,0.5,0,0);");
             funcDef.AppendLine("\t\tfloat4 o3 = float4(0,0,0,0);\n");
-
-            if (Resources.Exists(cbuffer => (cbuffer.ResourceType == ResourceType.CBuffer && cbuffer.Index == 12)))
-            {
-                funcDef.AppendLine(AddViewScope());
-            }
         }
 
 
@@ -731,16 +737,23 @@ PS
             line = hlsl.ReadLine();
             if (line != null)
             {
+
                 if (!bInline && (line.Contains("cb") && !line.Contains("Sample")))
                 {
+                    int[] blacklist = // Dont process if these scopes cbuffers are used
+                    {
+                        1, // rigid / chunked
+                        9, // decal
+                        12, // frame
+                    };
                     string pattern = @"cb(\d+)\[(\d+)\]"; // Matches cb#[#]
                     string output = Regex.Replace(line, pattern, match =>
                     {
                         // Extract the values from the matched groups
-                        string group1 = match.Groups[1].Value; // cbuffer index
-                        string group2 = match.Groups[2].Value; // cbuffer array index
+                        int group1 = Int32.Parse(match.Groups[1].Value); // cbuffer index
+                        int group2 = Int32.Parse(match.Groups[2].Value); // cbuffer array index
 
-                        if (group1 != "12" && (!isVertexShader || group1 != "1"))
+                        if (!blacklist.Contains(group1))
                         {
                             // Replace with the actual values of group1 and group2
                             return isVertexShader ? $"vs_cb{group1}_{group2}" : $"cb{group1}_{group2}";
@@ -763,15 +776,14 @@ PS
                 {
                     break;
                 }
-                else if (line.Contains("Sample"))
+                else if (line.Contains("Sample") || line.Contains("Load"))
                 {
+                    var type = line.Contains("Sample") ? "Sample" : "Load";
                     var equal = line.Split("=")[0];
                     var equal_post = line.Split("=")[1];
                     var equal_tex_post = equal_post.Substring(equal_post.IndexOf(".") + 1);
-
-                    var texIndex = Int32.Parse(line.Split(".Sample")[0].Split("t")[1]);
-                    var sampleIndex = Int32.Parse(line.Split("(s")[1].Split("_s,")[0]);
-                    var sampleUv = line.Split(", ")[1].Split(").")[0];
+                    var texIndex = Int32.Parse(line.Split($".{type}")[0].Split("t")[1]);
+                    var sampleUv = type == "Sample" ? line.Split(", ")[1].Split(").")[0] : line.Split("(")[1].Split(").")[0];
                     var dotAfter = line.Split(").")[1];
 
                     if (!bInline && sampleUv.Contains("cb")) //Rare case where a cbuffer value is used as a texcoord
@@ -798,65 +810,173 @@ PS
                     }
 
 
-                    if (texIndex == 14 && isTerrain) // Terrain dyemap, not defined in the material itself
+                    if ((!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.GetTexture() is not null))) // Some kind of buffer texture or not defined in the material
                     {
-                        funcDef.AppendLine($"\t\t{equal.TrimStart()} = g_t{texIndex}.Sample(s{sampleIndex}_s, {sampleUv}).{dotAfter}");
-                    }
-                    else if ((!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.GetTexture() is not null)) && !ExternTextureSlots.Contains(texIndex)) // Some kind of buffer texture or not defined in the material
-                    {
-                        switch (texIndex)
+                        var defaultString = $"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}";
+                        // Textures provided through Scopes (static texture slots)
+                        foreach (var scope in Scopes)
                         {
-                            case 1 when Externs.Contains(TfxExtern.Atmosphere) && !isVertexShader:
-                            case 2 when Externs.Contains(TfxExtern.Atmosphere) && !isVertexShader:
-                            case 11 when Scopes.Contains(TfxScope.TRANSPARENT): // Atmosphere textures
-                            case 13 when Scopes.Contains(TfxScope.TRANSPARENT):
-                            case 15 when Scopes.Contains(TfxScope.TRANSPARENT): // Atmosphere Density
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}");
-                                break;
+                            if (ExternTextureSlots.Contains(texIndex))
+                                continue;
+                            switch (scope)
+                            {
+                                case TfxScope.TRANSPARENT:
+                                    switch (texIndex)
+                                    {
+                                        case 10: // Depth 
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
+                                            break;
 
-                            case 10: // Depth buffer
-                                bUsesDepthBuffer = true;
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
-                                break;
+                                        case 11: // Atmosphere Far
+                                        case 13: // Atmosphere Near
+                                        case 15: // Atmosphere Density
+                                        case 23: // Framebuffer?
+                                            funcDef.AppendLine(defaultString);
+                                            break;
 
-                            case 23 when Scopes.Contains(TfxScope.TRANSPARENT): // Unsure                    
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t23.{equal_tex_post}");//.SampleLevel(s_s{sampleIndex}, {sampleUv}).{dotAfter} //{equal_post}");
-                                break;
+                                        case 16: // 3d textures, Volume related..?
+                                        case 17:
+                                        case 18:
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.1,0.1,0.1,1).{dotAfter} //{equal_post}");
+                                            break;
 
-                            case 7 when Externs.Contains(TfxExtern.Water):
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(1,0,0,1).{dotAfter} //{equal_post}");
-                                break;
+                                        case 19:
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(1,0,0,1).{dotAfter} //{equal_post}");
+                                            break;
 
-                            case 1: // Unknown
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.21191,0.21191,0.21191,0.49804).{dotAfter} //{equal_post}");
-                                break;
+                                        case 20: // Some kind of modified depth?
+                                        case 21: // Volumetric lighting?
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,1).{dotAfter} //{equal_post}");
+                                            break;
 
-                            case 16: // Specular related..?
-                            case 17:
-                            case 18:
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.1,0.1,0.1,1).{dotAfter} //{equal_post}");
-                                break;
-                            case 19:
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(1,0,0,1).{dotAfter} //{equal_post}");
-                                break;
+                                        case 24: // Not in the scope (its not anywhere), ive only seen it used with transparent, always cubemap?
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.1,0.1,0.1,0).{dotAfter} //{equal_post}");
+                                            break;
 
-                            case 0: // Unknown
-                            case 20: // Some kind of modified depth?
-                            case 21: // Volumetric lighting?
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
-                                break;
+                                        default: // Unknown
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                            break;
+                                    }
+                                    break;
 
-                            case 22: // Unknown
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.55078,0.55078,0.55078,0.49804).{dotAfter} //{equal_post}");
-                                break;
+                                case TfxScope.TERRAIN:
+                                    funcDef.AppendLine(defaultString);
+                                    break;
 
-                            case 6 when Externs.Contains(TfxExtern.Deferred): // Hemisphere/Sky texture?
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.01,0.01,0.02,1).{dotAfter} //{equal_post}");
-                                break;
+                                case TfxScope.DECAL:
+                                    switch (texIndex)
+                                    {
+                                        case 0: // Depth buffer
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
+                                            break;
+                                        case 1: // Normal buffer
+                                            funcDef.AppendLine($"\tTexture2DMS<float4> g_t{texIndex} = Bindless::GetTexture2DMS(NormalsIndex);");
+                                            funcDef.AppendLine(defaultString);
+                                            break;
+                                    }
+                                    break;
 
-                            default: // Unknown
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
-                                break;
+                            }
+                        }
+
+                        // Textures provided through Externs (dynamic texture slots)
+                        var opcodes = (isVertexShader ? material.Vertex : material.Pixel).GetBytecode();
+                        foreach ((int i, var op) in opcodes.Opcodes.Select((value, index) => (index, value)))
+                        {
+                            if (op.op != TfxBytecode.PushExternInputTextureView)
+                                continue;
+
+                            var data = (PushExternInputTextureViewData)op.data;
+                            var slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
+                            if (texIndex != slot)
+                                continue;
+
+                            var index = data.element * 8;
+                            switch (data.extern_)
+                            {
+                                //funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}");
+                                case TfxExtern.Frame:
+                                    switch (index)
+                                    {
+                                        case 0xB8: // SGlobalTextures SpecularTintLookup
+                                            funcDef.AppendLine(defaultString);
+                                            break;
+
+                                        default: // Unknown
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                            break;
+                                    }
+                                    break;
+
+                                case TfxExtern.Deferred:
+                                    switch (index)
+                                    {
+                                        case 0x48: // Framebuffer?
+                                        case 0x98: // Generated sky hemisphere
+                                            funcDef.AppendLine(defaultString);
+                                            break;
+
+                                        default: // Unknown
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                            break;
+                                    }
+                                    break;
+
+                                case TfxExtern.Atmosphere:
+                                    switch (index)
+                                    {
+                                        case 0x80: // SMapAtmosphere Lookup4
+                                        case 0xE0: // Atmosphere Far
+                                        case 0xF0: // Atmosphere Near
+                                            funcDef.AppendLine(defaultString);
+                                            break;
+
+                                        default: // Unknown
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                            break;
+                                    }
+                                    break;
+
+                                case TfxExtern.Water:
+                                    switch (index)
+                                    {
+                                        case 0x0: // Framebuffer
+                                        case 0x28:
+                                        case 0x30: // temp
+                                            funcDef.AppendLine(defaultString);
+                                            break;
+
+                                        case 0x8: // water uvs, temp
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= i.vPositionSs.{dotAfter} //{equal_post}");
+                                            break;
+
+                                        default: // Unknown
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                            break;
+                                    }
+                                    break;
+
+                                case TfxExtern.Decal:
+                                    switch (index)
+                                    {
+                                        case 0x0: // Depth buffer
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
+                                            break;
+                                        case 0x8: // Normal buffer
+                                            funcDef.AppendLine($"\tTexture2DMS<float4> g_t{slot} = Bindless::GetTexture2DMS(NormalsIndex);");
+                                            funcDef.AppendLine(defaultString);
+                                            break;
+
+                                        default: // Unknown
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                            break;
+                                    }
+                                    break;
+
+                                default: // Unknown
+                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
+                                    break;
+                            }
                         }
                     }
                     else // Textures defined by the material
@@ -874,85 +994,10 @@ PS
 
                     funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.CalculateLevelOfDetail(s{sampleIndex}_s, {sampleUv});");
                 }
-                else if (line.Contains("Load"))
-                {
-                    var equal = line.Split("=")[0];
-                    var equal_post = line.Split("=")[1];
-                    var texIndex = Int32.Parse(line.Split(".Load")[0].Split("t")[1]);
-                    var sampleUv = line.Split("(")[1].Split(")")[0];
-                    var dotAfter = line.Split(").")[1];
 
-                    if (!isVertexShader)
-                    {
-                        if (!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.GetTexture() is not null)) //Some kind of buffer texture
-                        {
-                            switch (texIndex)
-                            {
-                                case 2:
-                                    if (Scopes.Contains(TfxScope.DECAL))
-                                    {
-                                        bUsesNormalBuffer = true;
-                                        funcDef.AppendLine($"\t\t{equal.TrimStart()}= v0.{dotAfter}");
-                                    }
-                                    else
-                                        funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.5,0.5,0.5,0.5).{dotAfter} //{equal_post}");
-
-                                    break;
-                                case 10:
-                                    bUsesDepthBuffer = true;
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
-                                    break;
-                                case 11:
-                                case 13:
-                                case 23: //Usually uses SampleLevel but shouldnt be an issue?
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_tFrameBufferCopyTexture.Load({sampleUv}).{dotAfter} //{equal_post}");
-                                    break;
-                                case 15:
-                                case 20:
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.3137,0.3137,0.3137,0.3137).{dotAfter} //{equal_post}");
-                                    break;
-                                case 0:
-                                case 21:
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0.1882,0.1882,0.1882,0.1882).{dotAfter} //{equal_post}");
-                                    break;
-                                default:
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.Load({sampleUv}).{dotAfter}");
-                        }
-                    }
-                    else
-                    {
-                        switch (texIndex)
-                        {
-                            case 0: // Vertex Color
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= i.vColor.{dotAfter}");
-                                break;
-                            case 1: // Vertex AO
-                                funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(1,1,1,1).{dotAfter}");
-                                break;
-                            default:
-                                if (!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.GetTexture() is not null)) //Some kind of buffer texture
-                                {
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= float4(0,0,0,0).{dotAfter} //{equal_post}");
-                                }
-                                else
-                                {
-                                    string tex = isVertexShader ? $"g_vt{texIndex}" : $"g_t{texIndex}";
-                                    funcDef.AppendLine($"\t\t{equal.TrimStart()}= {tex}.Load({sampleUv}).{dotAfter}");
-                                }
-                                break;
-                        }
-                    }
-
-                }
                 else if (line.Contains("o1.xyzw = float4(0,0,0,0);") && !isVertexShader)
                 {
-                    funcDef.AppendLine(line.Replace("o1.xyzw = float4(0,0,0,0);", "\t\to1.xyzw = float4(PackNormal3D(v0.xyz),0);")); //decals(?) have 0 normals sometimes, dont want that
+                    funcDef.AppendLine(line.Replace("o1.xyzw = float4(0,0,0,0);", "\t\to1.xyzw = float4(0.5f * Normals::Sample(v5) + 0.5f, 1);")); //decals(?) have 0 normals sometimes, dont want that
                 }
                 else if (line.Contains("GetDimensions"))
                 {
@@ -1075,11 +1120,13 @@ PS
     private string AddViewScope(bool isVertexShader = false)
     {
         StringBuilder viewScope = new StringBuilder();
+        viewScope.AppendLine("\t\tfloat3 vCameraPos = g_vCameraPositionWs/TO_INCHES;");
+        viewScope.AppendLine("\t\tfloat4x4 mWorldToProj = transpose(g_matWorldToProjection);");
         viewScope.AppendLine($"\t\tfloat4 cb12[{(isVertexShader ? "16" : "15")}] = {{");
 
-        viewScope.AppendLine($"\t\t\ttranspose(g_matWorldToProjection),"); //0-3 World To Proj
+        viewScope.AppendLine($"\t\t\tmWorldToProj,"); //0-3 World To Proj
 
-        viewScope.AppendLine($"\t\t\tfloat4(cross(g_vCameraUpDirWs, -g_vCameraDirWs),0),"); //4-7 Camera To World
+        viewScope.AppendLine($"\t\t\tfloat4(cross(g_vCameraUpDirWs, -g_vCameraDirWs),0),"); //4-7 Camera To World (wrong)
         viewScope.AppendLine($"\t\t\tfloat4(g_vCameraUpDirWs,0),");
         viewScope.AppendLine($"\t\t\tfloat4(-g_vCameraDirWs,0),");
         viewScope.AppendLine($"\t\t\tfloat4(vCameraPos,1),");
@@ -1089,8 +1136,8 @@ PS
             viewScope.AppendLine($"\t\t\tfloat4(g_vViewportSize, g_vInvViewportSize),"); //VS 8 Target
             viewScope.AppendLine($"\t\t\tfloat4(1,0,0,0),"); //VS 9 View Misc
             viewScope.AppendLine($"\t\t\tfloat4(vCameraPos,1),"); //VS 10 Position
-            viewScope.AppendLine($"\t\t\tg_matViewToProjection,"); //VS 11-14 Camera To Proj
-            viewScope.AppendLine($"\t\t\tfloat4(0,0,1,0) - transpose(g_matWorldToProjection)[3],"); //VS 15 Unk
+            viewScope.AppendLine($"\t\t\tg_matViewToProjection/TO_INCHES,"); //VS 11-14 Camera To Proj
+            viewScope.AppendLine($"\t\t\tfloat4(0,0,1,0) - mWorldToProj[3],"); //VS 15 Unk
         }
         else
         {
@@ -1141,6 +1188,44 @@ PS
         cb1.AppendLine($"\t\t}};");
 
         return cb1.ToString();
+    }
+
+    private string AddDecalScope(bool isVertexShader = false)
+    {
+        StringBuilder decalScope = new StringBuilder();
+        decalScope.AppendLine($"\t\tfloat4 cb9[{(isVertexShader ? "6" : "5")}] = {{");
+
+        decalScope.AppendLine($"\t\t\tg_matViewToProjection,"); //0-3 Unk View->_0x240
+
+        if (isVertexShader)
+        {
+            decalScope.AppendLine($"\t\t\tfloat4(0,0,0,0),"); //VS DecalSetTransform->_0x0
+            decalScope.AppendLine($"\t\t\tfloat4(0,0,0,1),"); //VS DecalSetTransform->_0x10
+        }
+        else
+        {
+            decalScope.AppendLine($"\t\t\tfloat4(0.00002, 6.66665, 0.00, 0.00),"); //PS Decal->_0x10 (Depth Constants)
+        }
+
+
+        decalScope.AppendLine($"\t\t}};");
+
+        return decalScope.ToString();
+    }
+
+    private string AddTransparentScope(bool isVertexShader = false)
+    {
+        StringBuilder transScope = new StringBuilder();
+        transScope.AppendLine($"\t\tfloat4 cb2[6] = {{");
+        //transScope.AppendLine($"\t\t\tfloat4(1.0 / g_flFarPlane,(g_flFarPlane - g_flNearPlane) / (g_flFarPlane * g_flNearPlane),0,0),"); // Depth constants
+        transScope.AppendLine($"\t\t\tfloat4(0,100,0,0),"); // Depth constants
+        for (int i = 0; i < 5; i++)
+        {
+            transScope.AppendLine($"\t\t\tfloat4(1,1,1,1),");
+        }
+        transScope.AppendLine($"\t\t}};");
+
+        return transScope.ToString();
     }
 
     private void AddTPToProj()

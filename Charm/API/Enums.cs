@@ -17,32 +17,32 @@ public static class DestinyDamageType
             case 1319:
             case 1373:
             case 1405:
-            case 1469: // nice
+            case 1473:
                 return DestinyDamageTypeEnum.Kinetic;
             case 1320:
             case 1374:
             case 1406:
-            case 1470:
+            case 1474:
                 return DestinyDamageTypeEnum.Arc;
             case 1321:
             case 1375:
             case 1407:
-            case 1471:
+            case 1475:
                 return DestinyDamageTypeEnum.Solar;
             case 1322:
             case 1376:
             case 1408:
-            case 1472:
+            case 1476:
                 return DestinyDamageTypeEnum.Void;
             case 1323:
             case 1377:
             case 1409:
-            case 1473:
+            case 1477:
                 return DestinyDamageTypeEnum.Stasis;
             case 1324:
             case 1378:
             case 1410:
-            case 1474:
+            case 1478:
                 return DestinyDamageTypeEnum.Strand;
             default:
                 Log.Warning($"Unknown DestinyDamageTypeEnum {index}");

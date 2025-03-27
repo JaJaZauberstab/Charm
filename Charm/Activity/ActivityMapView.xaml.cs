@@ -83,6 +83,7 @@ public partial class ActivityMapView : UserControl
         ExportControl.SetExportInfo(activity.FileHash);
 
         QuickControls.Visibility = Visibility.Hidden;
+        ManualControls.Visibility = Visibility.Hidden;
         ExportControl.Visibility = Visibility.Hidden;
 
         if (Strategy.IsD1() || Strategy.IsPreBL())
@@ -117,6 +118,7 @@ public partial class ActivityMapView : UserControl
         MainWindow.Progress.CompleteStage();
         Dispatcher.Invoke(() => MapControl.Visibility = Visibility.Visible);
         QuickControls.Visibility = Visibility.Visible;
+        ManualControls.Visibility = Visibility.Visible;
         ExportControl.Visibility = Visibility.Visible;
     }
 

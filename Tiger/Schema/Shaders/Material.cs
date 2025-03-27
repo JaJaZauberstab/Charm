@@ -16,6 +16,9 @@ namespace Tiger.Schema.Shaders
         {
         }
 
+        // Currently used for shader/material conversion purposes
+        public TfxRenderStage RenderStage { get; set; } = TfxRenderStage.GenerateGbuffer;
+
         public StateSelection RenderStates => _tag.RenderStates;
 
         public SMaterialShader Pixel => _tag.Pixel.Value;

@@ -2,12 +2,13 @@ using System.Diagnostics;
 using Tiger.Exporters;
 using Tiger.Schema.Model;
 using Tiger.Schema.Shaders;
+using Tiger.Schema.Static;
 
-namespace Tiger.Schema.Static;
-
+namespace Tiger.Schema;
 
 public class Terrain : Tag<STerrain>
 {
+    public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.TerrainPatch;
     public Terrain(FileHash hash) : base(hash)
     {
 
