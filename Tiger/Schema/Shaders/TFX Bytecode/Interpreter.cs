@@ -285,17 +285,17 @@ public class TfxBytecodeInterpreter
                         break;
                     case TfxBytecode.Spline8ConstChain:
                         var s8cc_X = StackTop();
-                        var s8cc_Recursion = $"float4{constants[((Spline8ConstData)op.data).constant_index].Vec}";
-                        var s8cc_C3 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 1].Vec}";
-                        var s8cc_C2 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 2].Vec}";
-                        var s8cc_C1 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 3].Vec}";
-                        var s8cc_C0 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 4].Vec}";
-                        var s8cc_D3 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 5].Vec}";
-                        var s8cc_D2 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 6].Vec}";
-                        var s8cc_D1 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 7].Vec}";
-                        var s8cc_D0 = $"float4{constants[((Spline8ConstData)op.data).constant_index + 8].Vec}";
-                        var s8cc_CThresholds = $"float4{constants[((Spline8ConstData)op.data).constant_index + 9].Vec}";
-                        var s8cc_DThresholds = $"float4{constants[((Spline8ConstData)op.data).constant_index + 10].Vec}";
+                        var s8cc_Recursion = $"float4{constants[((Spline8ConstChainData)op.data).constant_index].Vec}";
+                        var s8cc_C3 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 1].Vec}";
+                        var s8cc_C2 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 2].Vec}";
+                        var s8cc_C1 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 3].Vec}";
+                        var s8cc_C0 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 4].Vec}";
+                        var s8cc_D3 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 5].Vec}";
+                        var s8cc_D2 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 6].Vec}";
+                        var s8cc_D1 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 7].Vec}";
+                        var s8cc_D0 = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 8].Vec}";
+                        var s8cc_CThresholds = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 9].Vec}";
+                        var s8cc_DThresholds = $"float4{constants[((Spline8ConstChainData)op.data).constant_index + 10].Vec}";
 
                         if (bInline)
                             StackPush($"bytecode_op_spline8_chain_const({s8cc_X}, {s8cc_Recursion}, {s8cc_C3}, {s8cc_C2}, {s8cc_C1}, {s8cc_C0}, {s8cc_D3}, {s8cc_D2}, {s8cc_D1}, {s8cc_D0}, {s8cc_CThresholds}, {s8cc_DThresholds})");

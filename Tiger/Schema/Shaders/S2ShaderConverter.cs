@@ -70,14 +70,7 @@ struct VertexInput
 
 struct PixelInput
 {{
-    float4 vColor		 : TEXCOORD14;
-	float3 v3                : TEXCOORD15; //terrain specific
-	float3 v4                : TEXCOORD16; //terrain specific
-    float3 v5                : TEXCOORD17; //terrain specific
-
-    float3 vPositionOs : TEXCOORD18;
-	float3 vNormalOs : TEXCOORD19;
-	float4 vTangentUOs_flTangentVSign : TANGENT	< Semantic( TangentU_SignV ); >;
+   //pixel_input
 
 	#include ""common/pixelinput.hlsl""
 }};
@@ -153,13 +146,14 @@ PS
 
         vfxStructure = vfxStructure.Replace("//ps_Inputs", WriteTexInputs(material, false).ToString());
 
-        if (Resources.Exists(cbuffer => cbuffer.ResourceType == ResourceType.CBuffer && cbuffer.Index == 12))
+        if (Scopes.Contains(TfxScope.VIEW))
             AddTPToProj();
 
         StringBuilder instructions = ConvertInstructions(material, false);
         if (instructions.ToString().Length == 0)
             return "";
 
+        vfxStructure = vfxStructure.Replace("//pixel_input", AddPixelInput().ToString());
         vfxStructure = vfxStructure.Replace("//ps_Function", instructions.ToString());
         vfxStructure = vfxStructure.Replace("//ps_output", AddOutput().ToString());
         vfxStructure = vfxStructure.Replace("//ps_additional", PS_Functions.ToString());
@@ -179,7 +173,7 @@ PS
             vfxStructure = vfxStructure.Replace("//vs_Function", "\t\tfloat4 r0,r1,r2,r3,r4,r5;\r\n\t\t// Terrain specific\r\n\t\tr1.xyz = float3(0,1,0) * i.vNormalOs.yzx;\r\n\t\tr1.xyz = i.vNormalOs.zxy * float3(0,0,1) + -r1.xyz;\r\n\t\tr0.z = dot(r1.yz, r1.yz);\r\n\t\tr0.z = rsqrt(r0.z);\r\n\t\tr1.xyz = r1.xyz * r0.zzz;\r\n\t\tr2.xyz = i.vNormalOs.zxy * r1.yzx;\r\n\t\tr2.xyz = i.vNormalOs.yzx * r1.zxy + -r2.xyz;\r\n\t\to.v4.xyz = r1.xyz;\r\n\t\tr0.z = dot(r2.xyz, r2.xyz);\r\n\t\tr0.z = rsqrt(r0.z);\r\n\t\to.v3.xyz = r2.xyz * r0.zzz;\r\n\t\tr1.xyz = abs(i.vNormalOs.xyz) * abs(i.vNormalOs.xyz);\r\n\t\tr1.xyz = r1.xyz * r1.xyz;\r\n\t\tr2.xyz = r1.xyz * r1.xyz;\r\n\t\tr2.xyz = r2.xyz * r2.xyz;\r\n\t\tr1.xyz = r2.xyz * r1.xyz;\r\n\t\tr0.z = dot(r1.xyz, float3(1,1,1));\r\n\t\to.v5.xyz = r1.xyz / r0.zzz;");
 
         // Only gonna add vertex shaders for basic statics/entities with vertex animation
-        if (isDecal || (material.Vertex.Unk64 != 0 && !isDecorator && !isTerrain && (Scopes.Contains(TfxScope.RIGID_MODEL) || Scopes.Contains(TfxScope.CHUNK_MODEL))))
+        if ((material.Vertex.Unk64 != 0 && !isDecorator && !isTerrain && (Scopes.Contains(TfxScope.RIGID_MODEL) || Scopes.Contains(TfxScope.CHUNK_MODEL))))
         {
             texSamples = new StringBuilder();
             hlsl = new StringReader(vertex);
@@ -351,13 +345,6 @@ PS
                     break;
             }
         }
-
-        if (Scopes.Contains(TfxScope.VIEW))
-            CBuffers.AppendLine(AddViewScope());
-        if (Scopes.Contains(TfxScope.TRANSPARENT))
-            CBuffers.AppendLine(AddTransparentScope());
-        if (isDecal)
-            CBuffers.AppendLine(AddDecalScope());
 
         return CBuffers;
     }
@@ -621,6 +608,15 @@ PS
         }
         else //Pixel
         {
+
+            if (Scopes.Contains(TfxScope.VIEW))
+                funcDef.AppendLine(AddViewScope());
+            if (Scopes.Contains(TfxScope.TRANSPARENT))
+                funcDef.AppendLine(AddTransparentScope());
+            if (isDecal)
+                funcDef.AppendLine(AddDecalScope());
+
+
             //Need to divde by TO_INCHES to convert to meters
             funcDef.AppendLine("\t\tfloat3 vPositionWs = (i.vPositionWithOffsetWs.xyz + g_vCameraPositionWs.xyz) / TO_INCHES;");
             funcDef.AppendLine("\t\tfloat alpha = 1;");
@@ -642,6 +638,16 @@ PS
                 funcDef.AppendLine("\t\tfloat4 v3 = {i.vTangentVWs,1};");
                 funcDef.AppendLine("\t\tfloat4 v4 = {0,0,0,0};"); // Unsure
                 funcDef.AppendLine("\t\tfloat4 v5 = {vPositionWs,0};");
+            }
+            else if (isDecal)
+            {
+                funcDef.AppendLine("\t\tfloat4 v0 = i.o0;");
+                funcDef.AppendLine("\t\tfloat4 v1 = i.o1;");
+                funcDef.AppendLine("\t\tfloat4 v2 = i.o2;");
+                funcDef.AppendLine("\t\tfloat4 v3 = i.o3;");
+                funcDef.AppendLine("\t\tfloat4 v4 = i.o4;");
+                funcDef.AppendLine("\t\tfloat4 v5 = i.o5;");
+                funcDef.AppendLine("\t\tfloat4 v6 = i.vPositionSs;");
             }
             else // statics, normal entities
             {
@@ -669,9 +675,9 @@ PS
                         break;
 
                     case "float4":
-                        if (i.Semantic == DXBCSemantic.SystemPosition)
+                        if (i.Semantic == DXBCSemantic.SystemPosition && !isDecal)
                             funcDef.AppendLine($"\t\tfloat4 v{i.RegisterIndex} = i.vPositionSs;");
-                        else if (i.RegisterIndex == 5 && i.Semantic == DXBCSemantic.Texcoord && !isTerrain && !isDecorator)
+                        else if (i.RegisterIndex == 5 && i.Semantic == DXBCSemantic.Texcoord && !isTerrain && !isDecorator && !isDecal)
                             funcDef.AppendLine($"\t\tfloat4 v5 = i.vColor; //{i.Semantic}{i.SemanticIndex}");
                         else if (i.RegisterIndex > 5 && i.Semantic == DXBCSemantic.Texcoord && isDecorator)
                             funcDef.AppendLine($"\t\tfloat4 v{i.RegisterIndex} = float4(0,0,0,0);");
@@ -743,6 +749,7 @@ PS
                     int[] blacklist = // Dont process if these scopes cbuffers are used
                     {
                         1, // rigid / chunked
+                        2, // transparent
                         9, // decal
                         12, // frame
                     };
@@ -824,7 +831,7 @@ PS
                                     switch (texIndex)
                                     {
                                         case 10: // Depth 
-                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv}).xxxx; //{equal_post}");
                                             break;
 
                                         case 11: // Atmosphere Far
@@ -867,11 +874,11 @@ PS
                                     switch (texIndex)
                                     {
                                         case 0: // Depth buffer
-                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv}).xxxx; //{equal_post}");
                                             break;
                                         case 1: // Normal buffer
-                                            funcDef.AppendLine($"\tTexture2DMS<float4> g_t{texIndex} = Bindless::GetTexture2DMS(NormalsIndex);");
-                                            funcDef.AppendLine(defaultString);
+                                            funcDef.AppendLine($"\t\tTexture2DMS<float4> g_t{texIndex} = Bindless::GetTexture2DMS(NormalsIndex);");
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}=  g_t{texIndex}.Load({sampleUv}, 0).{dotAfter}");
                                             break;
                                     }
                                     break;
@@ -960,11 +967,11 @@ PS
                                     switch (index)
                                     {
                                         case 0x0: // Depth buffer
-                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv})*0.3937.xxxx; //{equal_post}");
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Depth::GetNormalized({sampleUv}).xxxx; //{equal_post}");
                                             break;
                                         case 0x8: // Normal buffer
-                                            funcDef.AppendLine($"\tTexture2DMS<float4> g_t{slot} = Bindless::GetTexture2DMS(NormalsIndex);");
-                                            funcDef.AppendLine(defaultString);
+                                            funcDef.AppendLine($"\t\tTexture2DMS<float4> g_t{texIndex} = Bindless::GetTexture2DMS(NormalsIndex);");
+                                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.Load({sampleUv}, 0).{dotAfter}");
                                             break;
 
                                         default: // Unknown
@@ -997,7 +1004,11 @@ PS
 
                 else if (line.Contains("o1.xyzw = float4(0,0,0,0);") && !isVertexShader)
                 {
-                    funcDef.AppendLine(line.Replace("o1.xyzw = float4(0,0,0,0);", "\t\to1.xyzw = float4(0.5f * Normals::Sample(v5) + 0.5f, 1);")); //decals(?) have 0 normals sometimes, dont want that
+                    funcDef.AppendLine(line.Replace("o1.xyzw = float4(0,0,0,0);", "\t\to1.xyzw = float4(0.5f * Normals::Sample(i.vPositionSs.xyz) + 0.5f, 1);")); //decals(?) have 0 normals sometimes, dont want that
+                }
+                else if (line.Contains("o2.xyzw = float4(0,0,0,0);") && !isVertexShader && isDecal)
+                {
+                    funcDef.AppendLine(line.Replace("o2.xyzw = float4(0,0,0,0);", "\t\to2.xyzw = float4(0,0.5,0,1);"));
                 }
                 else if (line.Contains("GetDimensions"))
                 {
@@ -1108,10 +1119,39 @@ PS
         return output;
     }
 
+    private StringBuilder AddPixelInput()
+    {
+        StringBuilder pixelInput = new StringBuilder();
+        if (isDecal)
+        {
+            pixelInput.AppendLine($"\tfloat4 o0 : TEXCOORD10; // world position modified with DecalSetTransform");
+            pixelInput.AppendLine($"\tfloat4 o1 : TEXCOORD11; // normal");
+            pixelInput.AppendLine($"\tfloat4 o2 : TEXCOORD12; // tangent");
+            pixelInput.AppendLine($"\tfloat4 o3 : TEXCOORD13; // bitangent");
+            pixelInput.AppendLine($"\tfloat4 o4 : TEXCOORD14; // projection ray ?");
+            pixelInput.AppendLine($"\tfloat4 o5 : TEXCOORD15; // uvs");
+            pixelInput.AppendLine($"\tfloat4 o6 : TEXCOORD16; // sv_position");
+        }
+        else
+        {
+            pixelInput.AppendLine($"\tfloat4 vColor : TEXCOORD14;");
+            pixelInput.AppendLine($"\tfloat3 v3 : TEXCOORD15; // terrain specific");
+            pixelInput.AppendLine($"\tfloat3 v4 : TEXCOORD16; // terrain specific");
+            pixelInput.AppendLine($"\tfloat3 v5 : TEXCOORD17; // terrain specific");
+            pixelInput.AppendLine($"\tfloat3 vPositionOs : TEXCOORD18;");
+            pixelInput.AppendLine($"\tfloat3 vNormalOs : TEXCOORD19;");
+            pixelInput.AppendLine($"\tfloat4 vTangentUOs_flTangentVSign : TANGENT\t< Semantic( TangentU_SignV ); >;");
+
+        }
+        return pixelInput;
+    }
+
     private string AddVertexShader() // I hate this
     {
         if (isDecorator) // Surely this is fine...
             return $"VS\r\n{{\r\n\t#include \"common/vertex.hlsl\"\r\n\r\n    float g_flEdgeFrequency < Default( 0.17 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flEdgeAmplitude < Default( 0.15 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flBranchFrequency < Default( 0.17 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flBranchAmplitude < Default( 0.15 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flTrunkDeflection < Default( 0.0 ); Range( 0.0, 1.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n    float g_flTrunkDeflectionStart < Default( 0.0 ); Range( 0.0, 1000.0 ); UiGroup( \"Foliage Animation\" ); >;\r\n\r\n    float4 SmoothCurve( float4 x )\r\n    {{  \r\n        return x * x * ( 3.0 - 2.0 * x );  \r\n    }}  \r\n\r\n    float4 TriangleWave( float4 x )\r\n    {{\r\n        return abs( frac( x + 0.5 ) * 2.0 - 1.0 );  \r\n    }}  \r\n\r\n    float4 SmoothTriangleWave( float4 x )\r\n    {{  \r\n        return SmoothCurve( TriangleWave( x ) );  \r\n    }}\r\n\r\n    // High-frequency displacement used in Unity's TerrainEngine; based on \"Vegetation Procedural Animation and Shading in Crysis\"\r\n    // http://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch16.html\r\n    void FoliageDetailBending( inout float3 vPositionOs, float3 vNormalOs, float3 vVertexColor, float3x4 matObjectToWorld, float3 vWind )\r\n    {{\r\n        // 1.975, 0.793, 0.375, 0.193 are good frequencies   \r\n        const float4 vFoliageFreqs = float4( 1.975, 0.793, 0.375, 0.193 );\r\n\r\n        // Attenuation and phase offset is encoded in the vertex color\r\n        const float flEdgeAtten = vVertexColor.r;\r\n        const float flBranchAtten = vVertexColor.b;\r\n        const float flDetailPhase = vVertexColor.g;\r\n\r\n        // Material defined frequency and amplitude\r\n        const float2 vTime = g_flTime.xx * float2( g_flEdgeFrequency, g_flBranchFrequency );\r\n        const float flEdgeAmp = g_flEdgeAmplitude;\r\n        const float flBranchAmp = g_flBranchAmplitude;\r\n\r\n        // Phases\r\n        float flObjPhase = dot( mul( matObjectToWorld, float4( 0, 0, 0, 1 ) ), 1 );\r\n        float flBranchPhase = flDetailPhase + flObjPhase;\r\n        float flVtxPhase = dot( vPositionOs.xyz, flDetailPhase + flBranchPhase );\r\n\r\n        // fmod max phase avoid imprecision at high phases\r\n        const float maxPhase = 50000.0f;\r\n\r\n        // x is used for edges; y is used for branches\r\n        float2 vWavesIn = ( vTime.xy + fmod( float2( flVtxPhase, flBranchPhase ), maxPhase ) ) * length( vWind );\r\n        \r\n        float4 vWaves = ( frac( vWavesIn.xxyy * vFoliageFreqs ) * 2.0 - 1.0 );\r\n        vWaves = SmoothTriangleWave( vWaves );\r\n        float2 vWavesSum = vWaves.xz + vWaves.yw;\r\n\r\n        // Edge (xy) and branch bending (z)\r\n        float flBranchWindBend = 1.0f - abs( dot( normalize( vWind.xyz ), normalize( float3( vPositionOs.xy, 0.0f ) ) ) );\r\n        flBranchWindBend *= flBranchWindBend;\r\n\r\n        vPositionOs.xyz += vWavesSum.x * flEdgeAtten * flEdgeAmp * vNormalOs.xyz;\r\n        vPositionOs.xyz += vWavesSum.y * flBranchAtten * flBranchAmp * float3( 0.0f, 0.0f, 1.0f );\r\n        vPositionOs.xyz += vWavesSum.y * flBranchAtten * flBranchAmp * flBranchWindBend * vWind.xyz;\r\n    }}\r\n\r\n    // Main vegetation bending - displace verticies' xy positions along the wind direction\r\n    // using normalized height to scale the amount of deformation.\r\n    void FoliageMainBending( inout float3 vPositionOs, float3 vWind )\r\n    {{\r\n        if ( g_flTrunkDeflection <= 0.0 ) return;\r\n\r\n        float flLength = length( vPositionOs.xyz );\r\n        // Bend factor - Wind variation is done on the CPU.  \r\n        float flBF = 0.01f * max( vPositionOs.z - g_flTrunkDeflectionStart, 0 ) * g_flTrunkDeflection;  \r\n        // Smooth bending factor and increase its nearby height limit.  \r\n        flBF += 1.0f;\r\n        flBF *= flBF;\r\n        flBF = flBF * flBF - flBF;\r\n\r\n        // Back and forth\r\n        float flBend = pow( max( 0.0f, length( vWind ) - 1.0f ) / 4.0f, 2 ) * 4.0f;\r\n        flBend = flBend + 0.7f * sqrt( flBend ) * sin( g_flTime );\r\n        flBF *= flBend;\r\n\r\n        // Displace position  \r\n        float3 vNewPos = vPositionOs;\r\n        vNewPos.xy += vWind.xy * flBF;\r\n\r\n        // Rescale (reduces stretch)\r\n        vPositionOs.xyz = normalize( vNewPos.xyz ) * flLength;\r\n    }}\r\n\r\n\t//\r\n\t// Main\r\n\t//\r\n\tPixelInput MainVs( VertexInput i )\r\n\t{{\r\n\t\tPixelInput o = ProcessVertex( i );\r\n\r\n        //o.vColor = i.vColor;\r\n\t\to.vColor = i.vColor;\r\n\t\to.vColor.a = i.vColor.a;\r\n\r\n        float3 vNormalOs;\r\n        float4 vTangentUOs_flTangentVSign;\r\n\r\n        VS_DecodeObjectSpaceNormalAndTangent( i, vNormalOs, vTangentUOs_flTangentVSign );\r\n\t\t\r\n        float3 vPositionOs = i.vPositionOs.xyz;\r\n        float3x4 matObjectToWorld = CalculateInstancingObjectToWorldMatrix( i );\r\n\r\n\t\tif(!all(i.vColor.xyz == float3(1, 1, 1)))\r\n\t\t{{\r\n\t\t\tfloat3 vWind = float3(1,1,0.1) * 4.0f; //g_vWindDirection.xyz * g_vWindStrengthFreqMulHighStrength.x;\r\n\t\t\tFoliageDetailBending( vPositionOs, vNormalOs, i.vColor.xyz, matObjectToWorld, vWind );\r\n\t\t\tFoliageMainBending( vPositionOs, vWind );\r\n\t\t}}\r\n\r\n        o.vPositionWs = mul( matObjectToWorld, float4( vPositionOs.xyz, 1.0 ) );\r\n\t    o.vPositionPs.xyzw = Position3WsToPs( o.vPositionWs.xyz );\r\n\r\n\t\t// Add your vertex manipulation functions here\r\n\t\treturn FinalizeVertex( o );\r\n\t}}\r\n}}";
+        else if (isDecal)
+            return $"VS\r\n{{\r\n\t#include \"common/vertex.hlsl\"\r\n    #define CUSTOM_TEXTURE_FILTERING\r\n    #define cmp -\r\n\r\n\tfloat4 Position < Attribute(\"ObjectPosition\"); >;\r\n\tfloat4 Rotation < Attribute(\"ObjectRotation\"); >;\r\n\tfloat4 Scale < Attribute(\"ObjectScale\"); >;\r\n\t\r\n\tPixelInput MainVs( VertexInput i )\r\n\t{{\r\n\t\tPixelInput o = ProcessVertex( i );\r\n\r\n\t\tfloat3 vCameraPos = g_vCameraPositionWs/TO_INCHES;\r\n\t\tfloat4x4 mWorldToProj = transpose(g_matWorldToProjection);\r\n\t\tfloat4 cb12[16] = {{\r\n\t\t\tmWorldToProj,\r\n\t\t\tfloat4(cross(g_vCameraUpDirWs, -g_vCameraDirWs),0),\r\n\t\t\tfloat4(g_vCameraUpDirWs,0),\r\n\t\t\tfloat4(-g_vCameraDirWs,0),\r\n\t\t\tfloat4(vCameraPos,1),\r\n\t\t\tfloat4(g_vViewportSize, g_vInvViewportSize),\r\n\t\t\tfloat4(1,0,0,0),\r\n\t\t\tfloat4(vCameraPos,1),\r\n\t\t\tg_matViewToProjection/TO_INCHES,\r\n\t\t\tfloat4(0,0,1,0) - mWorldToProj[3],\r\n\t\t}};\r\n\r\n\t\tfloat4 cb9[6] = {{\r\n\t\t\tg_matViewToProjection,\r\n\t\t\tfloat4(0,0,0,0),\r\n\t\t\tfloat4(0,0,0,1),\r\n\t\t}};\r\n\r\n\t\tfloat4 v0 = float4(i.vPositionOs, 0);\r\n\t\tfloat4 v1 = Position/TO_INCHES;\r\n\t\tfloat4 v2 = Rotation;\r\n\t\tfloat4 v3 = Scale;\r\n\t\tfloat4 r0,r1,r2,r3,r4,r5,r6;\r\n\t\t\r\n\t\tr0.xyz = -cb9[5].yzx * v1.zxy; // DecalSetTransfom transforms\r\n\t\tr0.xyz = v1.yzx * -cb9[5].zxy + -r0.xyz;\r\n\t\tr1.x = dot(v1.xyz, -cb9[5].xyz);\r\n\t\tr0.w = -r1.x;\r\n\t\tr1.xyz = v1.xyz;\r\n\t\tr1.w = 0;\r\n\t\tr0.xyzw = cb9[5].wwww * r1.xyzw + r0.xyzw;\r\n\t\tr1.xyz = cb9[5].zxy * r0.yzx;\r\n\t\tr1.xyz = cb9[5].yzx * r0.zxy + -r1.xyz;\r\n\t\tr0.xyz = cb9[5].www * r0.xyz + r1.xyz;\r\n\t\tr0.xyz = r0.www * cb9[5].xyz + r0.xyz;\r\n\t\tr0.xyz = cb9[4].xyz + r0.xyz;\r\n\t\to.o0.xyz = r0.xyz; // world position\r\n\t\to.o1.w = v3.x; // scale x\r\n\t\t\r\n\t\tr1.xyz = cb9[5].zxy * v2.yzx; // float4(0,0,0,1) * quat rotation\r\n\t\tr1.xyz = cb9[5].yzx * v2.zxy + -r1.xyz;\r\n\t\tr1.xyz = cb9[5].www * v2.xyz + r1.xyz;\r\n\t\tr0.w = dot(cb9[5].xyz, v2.xyz);\r\n\t\tr1.w = -r0.w;\r\n\t\tr1.xyzw = v2.wwww * cb9[5].xyzw + r1.xyzw; // final rotation\r\n\t\t\r\n\t\tr2.xyzw = float4(1,0,0,-1) * r1.wwww; \r\n\t\tr3.xyzw = r1.zzyx * float4(-0,1,-1,1) + r2.xyyy;\r\n\t\tr4.xyz = r3.yzx * r1.zxy;\r\n\t\tr4.xyz = r1.yzx * r3.zxy + -r4.xyz;\r\n\t\tr3.xyz = r1.www * r3.xyz + r4.xyz;\r\n\t\tr3.xyz = r3.www * r1.xyz + r3.xyz;\r\n\t\tr0.w = dot(r3.xyz, r3.xyz);\r\n\t\tr0.w = rsqrt(r0.w);\r\n\t\tr3.xyz = r3.xyz * r0.www;\r\n\t\to.o1.xyz = r3.xyz; // normal?\r\n\r\n\t\to.o2.w = v3.y; // scale y\r\n\t\tr4.xyzw = r1.zxxy * float4(1,-0,-1,-1) + r2.zwzz;\r\n\t\tr2.xyzw = r1.yxyz * float4(-1,1,-0,-1) + r2.zzwz;\r\n\t\tr5.xyz = r4.yzx * r1.zxy;\r\n\t\tr5.xyz = r1.yzx * r4.zxy + -r5.xyz;\r\n\t\tr4.xyz = r1.www * r4.xyz + r5.xyz;\r\n\t\tr4.xyz = r4.www * r1.xyz + r4.xyz;\r\n\t\tr0.w = dot(r4.xyz, r4.xyz);\r\n\t\tr0.w = rsqrt(r0.w);\r\n\t\tr4.xyz = r4.xyz * r0.www;\r\n\t\to.o2.xyz = r4.xyz; // tangent?\r\n\t\t\r\n\t\tr5.xyz = r2.yzx * r1.zxy;\r\n\t\tr5.xyz = r1.yzx * r2.zxy + -r5.xyz;\r\n\t\tr2.xyz = r1.www * r2.xyz + r5.xyz;\r\n\t\tr2.xyz = r2.www * r1.xyz + r2.xyz;\r\n\t\tr0.w = dot(r2.xyz, r2.xyz);\r\n\t\tr0.w = rsqrt(r0.w);\r\n\t\tr2.xyz = r2.xyz * r0.www;\r\n\t\to.o3.xyz = r2.xyz; // bitangent?\r\n\t\t\r\n\t\tr0.w = 0 + v3.z; // Decal 0x20.y + scale z\r\n\t\tr5.z = max(0.03, r0.w); // max(Decal 0x20.x, r0.w)\r\n\t\to.o3.w = r5.z; // scale z\r\n\t\t\r\n\t\tr6.xyz = cb12[7].xyz + -r0.xyz; // camera pos - object pos\r\n\t\tr3.x = dot(r6.xyz, r3.xyz); // new pos dot normal?\r\n\t\tr3.y = dot(r6.xyz, r4.xyz); // new pos dot tangent?\r\n\t\tr3.z = dot(r6.xyz, r2.xyz); // new pos dot bitangent?\r\n\t\tr5.xy = v3.xy; // scale xy\r\n\t\tr2.xyz = float3(1,1,1) / r5.xyz; // 1 / scale\r\n\t\to.o4.xyz = r2.xyz * r3.xyz; // projection\r\n\t\t\r\n\t\tr2.xyz = (float3(-0.5,-0.5,-0.5) + v0.xyz)/TO_INCHES; // Uv scaling based on vertex position\r\n\t\tr3.xyz = r2.xyz * r5.xyz;\r\n\t\to.o5.xyz = float3(1,-1,-1) * r2.xyz; // uv\r\n\t\t\r\n\t\tr2.xyz = r3.zxy * -r1.yzx;\r\n\t\tr2.xyz = r3.yzx * -r1.zxy + -r2.xyz;\r\n\t\tr4.w = 0;\r\n\t\tr0.w = dot(r3.xyz, -r1.xyz);\r\n\t\tr4.xyz = r3.xyz * r1.www;\r\n\t\tr2.w = -r0.w;\r\n\t\tr2.xyzw = r4.xyzw + r2.xyzw;\r\n\t\tr3.xyz = r2.yzx * r1.zxy;\r\n\t\tr3.xyz = r1.yzx * r2.zxy + -r3.xyz;\r\n\t\tr2.xyz = r1.www * r2.xyz + r3.xyz;\r\n\t\tr1.xyz = r2.www * r1.xyz + r2.xyz;\r\n\t\tr0.xyz = r1.xyz + r0.xyz;\r\n\t\tr1.xyz = cb12[7].xyz + -r0.xyz;\r\n\t\to.o5.w = o.vPositionPs.w/TO_INCHES; //dot(r1.xyz, cb12[6].xyz); // Distance thing\r\n\r\n\t\tr1.xyzw = cb12[1].xyzw * r0.yyyy;\r\n\t\tr1.xyzw = cb12[0].xyzw * r0.xxxx + r1.xyzw;\r\n\t\tr0.xyzw = cb12[2].xyzw * r0.zzzz + r1.xyzw;\r\n\t\to.o6.xyzw = cb12[3].xyzw + r0.xyzw;\r\n\r\n\t\treturn FinalizeVertex( o );\r\n\t}}\r\n}}";
         else // Basic vertex shader
             return $"VS\r\n{{\r\n\t#include \"common/vertex.hlsl\"\r\n    #define CUSTOM_TEXTURE_FILTERING\r\n    #define cmp -\r\n\r\n//vs_samplers\r\n//vs_CBuffers\r\n//vs_Inputs\r\n\r\n\tPixelInput MainVs( VertexInput i )\r\n\t{{\r\n\t\tPixelInput o = ProcessVertex( i );\r\n        float4 o0,o1,o2,o3,o4,o5,o6,o7,o8;\r\n        o.vColor = i.vColor;\r\n\t\to.vColor.a = i.vColor.a;\r\n        o.vPositionOs = i.vPositionOs.xyz;\r\n        VS_DecodeObjectSpaceNormalAndTangent( i, o.vNormalOs, o.vTangentUOs_flTangentVSign );\r\n\r\n//vs_CBuffers_inline\r\n//vs_Function\r\n//vs_output\r\n\t\treturn FinalizeVertex( o );\r\n\t}}\r\n}}";
     }
@@ -1204,7 +1244,8 @@ PS
         }
         else
         {
-            decalScope.AppendLine($"\t\t\tfloat4(0.00002, 6.66665, 0.00, 0.00),"); //PS Decal->_0x10 (Depth Constants)
+            decalScope.AppendLine($"\t\t\tfloat4((1 / g_flFarPlane)*TO_INCHES, ((g_flFarPlane - g_flNearPlane) / (g_flFarPlane * g_flNearPlane))*TO_INCHES,0,0),"); //PS Decal->_0x10 (Depth Constants)
+            //decalScope.AppendLine($"\t\t\tfloat4(0, 100, 0, 0),"); //PS Decal->_0x10 (Depth Constants)
         }
 
 
@@ -1217,8 +1258,8 @@ PS
     {
         StringBuilder transScope = new StringBuilder();
         transScope.AppendLine($"\t\tfloat4 cb2[6] = {{");
-        //transScope.AppendLine($"\t\t\tfloat4(1.0 / g_flFarPlane,(g_flFarPlane - g_flNearPlane) / (g_flFarPlane * g_flNearPlane),0,0),"); // Depth constants
-        transScope.AppendLine($"\t\t\tfloat4(0,100,0,0),"); // Depth constants
+        //transScope.AppendLine($"\t\t\tfloat4(0,100,0,0),"); // Depth constants
+        transScope.AppendLine($"\t\t\tfloat4((1 / g_flFarPlane)*TO_INCHES, ((g_flFarPlane - g_flNearPlane) / (g_flFarPlane * g_flNearPlane))*TO_INCHES,0,0),");
         for (int i = 0; i < 5; i++)
         {
             transScope.AppendLine($"\t\t\tfloat4(1,1,1,1),");
