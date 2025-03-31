@@ -106,26 +106,26 @@ public partial class GeneralConfigView : UserControl
         // ---- Misc settings panel ----
         MiscConfigPanel.Children.Clear();
 
-        // Enable individual static extraction with maps
-        ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
-        cfe.SettingName = "Export Individual Models With Maps";
-        var bval = _config.GetIndvidualStaticsEnabled();
-        cfe.SettingValue = bval.ToString();
-        cfe.ChangeButton.Click += IndvidualStaticsEnabled_OnClick;
-        MiscConfigPanel.Children.Add(cfe);
+        //// Enable individual static extraction with maps
+        //ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
+        //cfe.SettingName = "Export Individual Models With Maps";
+        //var bval = _config.GetIndvidualStaticsEnabled();
+        //cfe.SettingValue = bval.ToString();
+        //cfe.ChangeButton.Click += IndvidualStaticsEnabled_OnClick;
+        //MiscConfigPanel.Children.Add(cfe);
 
-        // Enable full material data exporting
-        ConfigSettingToggleControl exportMaterials = new ConfigSettingToggleControl();
-        exportMaterials.SettingName = "Export Full Material Data";
-        var bhlsl = _config.GetExportMaterials();
-        exportMaterials.SettingValue = bhlsl.ToString();
-        exportMaterials.ChangeButton.Click += ExportMaterials_OnClick;
-        MiscConfigPanel.Children.Add(exportMaterials);
+        //// Enable full material data exporting
+        //ConfigSettingToggleControl exportMaterials = new ConfigSettingToggleControl();
+        //exportMaterials.SettingName = "Export Full Material Data";
+        //var bhlsl = _config.GetExportMaterials();
+        //exportMaterials.SettingValue = bhlsl.ToString();
+        //exportMaterials.ChangeButton.Click += ExportMaterials_OnClick;
+        //MiscConfigPanel.Children.Add(exportMaterials);
 
         ConfigSettingToggleControl disBg = new ConfigSettingToggleControl();
         disBg.SettingName = "Animated Background";
         disBg.SettingLabel = "(Requires Restart)";
-        bval = _config.GetAnimatedBackground();
+        var bval = _config.GetAnimatedBackground();
         disBg.SettingValue = bval.ToString();
         disBg.ChangeButton.Click += AnimatedBackground_OnClick;
         MiscConfigPanel.Children.Add(disBg);
@@ -270,11 +270,11 @@ public partial class GeneralConfigView : UserControl
         PopulateConfigPanel();
     }
 
-    private void IndvidualStaticsEnabled_OnClick(object sender, RoutedEventArgs e)
-    {
-        _config.SetIndvidualStaticsEnabled(!_config.GetIndvidualStaticsEnabled());
-        PopulateConfigPanel();
-    }
+    //private void IndvidualStaticsEnabled_OnClick(object sender, RoutedEventArgs e)
+    //{
+    //    _config.SetIndvidualStaticsEnabled(!_config.GetIndvidualStaticsEnabled());
+    //    PopulateConfigPanel();
+    //}
 
     private void OutputTextureFormat_OnSelectionChanged(object sender, RoutedEventArgs e)
     {
@@ -309,9 +309,9 @@ public partial class GeneralConfigView : UserControl
         PopulateConfigPanel();
     }
 
-    private void ExportMaterials_OnClick(object sender, RoutedEventArgs e)
-    {
-        _config.SetExportMaterials(!_config.GetExportMaterials());
-        PopulateConfigPanel();
-    }
+    //private void ExportMaterials_OnClick(object sender, RoutedEventArgs e)
+    //{
+    //    _config.SetExportMaterials(!_config.GetExportMaterials());
+    //    PopulateConfigPanel();
+    //}
 }

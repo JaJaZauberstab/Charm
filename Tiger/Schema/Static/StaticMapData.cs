@@ -205,16 +205,16 @@ public class StaticMapData : Tag<SStaticMapData>
     {
     }
 
-    public void LoadArrangedIntoExporterScene()
-    {
-        ExporterScene scene = Exporter.Get().CreateScene(Hash, ExportType.Map);
-        Parallel.ForEach(_tag.InstanceCounts, c =>
-        {
-            var s = _tag.Statics[c.StaticIndex].Static;
-            var parts = s.Load(ExportDetailLevel.MostDetailed);
-            scene.AddStaticInstancesAndParts(s.Hash, parts, _tag.Instances.Skip(c.InstanceOffset).Take(c.InstanceCount));
-        });
-    }
+    //public void LoadArrangedIntoExporterScene()
+    //{
+    //    ExporterScene scene = Exporter.Get().CreateScene(Hash, ExportType.Map);
+    //    Parallel.ForEach(_tag.InstanceCounts, c =>
+    //    {
+    //        var s = _tag.Statics[c.StaticIndex].Static;
+    //        var parts = s.Load(ExportDetailLevel.MostDetailed);
+    //        scene.AddStaticInstancesAndParts(s.Hash, parts, _tag.Instances.Skip(c.InstanceOffset).Take(c.InstanceCount));
+    //    });
+    //}
 
     public void LoadDecalsIntoExporterScene(ExporterScene scene)
     {

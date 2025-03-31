@@ -14,7 +14,6 @@ public class SkyObjects : Tag<SMapSkyObjects>
     public void LoadIntoExporter(ExporterScene scene)
     {
         var _config = ConfigSubsystem.Get();
-        var _exportIndiv = _config.GetIndvidualStaticsEnabled();
 
         if (_tag.Entries is null)
             return;

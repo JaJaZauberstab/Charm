@@ -118,7 +118,7 @@ public partial class EntityView : UserControl
         string savePath = config.GetExportSavePath() + $"/{name}";
 
         if (scene == null)
-            scene = Tiger.Exporters.Exporter.Get().CreateScene(name, ExportType.Entity);
+            scene = Tiger.Exporters.Exporter.Get().CreateScene(name, ExportType.Entities);
 
         Log.Verbose($"Exporting entity model name: {name}");
 

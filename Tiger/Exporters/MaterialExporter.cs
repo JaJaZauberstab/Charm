@@ -1,4 +1,4 @@
-﻿using ConcurrentCollections;
+﻿using System.Collections.Concurrent;
 using Tiger.Schema;
 
 namespace Tiger.Exporters;
@@ -10,96 +10,52 @@ public class MaterialExporter : AbstractExporter
     {
         var _config = ConfigSubsystem.Get();
 
-        ConcurrentHashSet<Texture> mapTextures = new();
-        ConcurrentHashSet<ExportMaterial> mapMaterials = new();
-        ConcurrentHashSet<ExportMaterial> materials = new();
-
-        bool saveMats = _config.GetExportMaterials();
+        var textures = new ConcurrentBag<(Texture, string)>();
+        var materials = new ConcurrentBag<(ExportMaterial, string)>();
 
         Parallel.ForEach(args.Scenes, scene =>
         {
-            if (scene.Type is ExportType.Entity or ExportType.Static or ExportType.API or ExportType.D1API)
+            string textureSaveDirectory;
+            string shaderSaveDirectory;
+
+            if (scene.DataType is DataExportType.Individual)
             {
-                ConcurrentHashSet<Texture> textures = scene.Textures;
-
-                foreach (ExportMaterial material in scene.Materials)
-                {
-                    materials.Add(material);
-                    foreach (STextureTag texture in material.Material.Vertex.EnumerateTextures())
-                    {
-                        if (texture.GetTexture() == null)
-                            continue;
-
-                        textures.Add(texture.GetTexture());
-                    }
-                    foreach (STextureTag texture in material.Material.Pixel.EnumerateTextures())
-                    {
-                        if (texture.GetTexture() == null)
-                            continue;
-
-                        textures.Add(texture.GetTexture());
-                    }
-                }
-
-                string textureSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, scene.Name);
-                textureSaveDirectory = $"{textureSaveDirectory}/Textures";
-
-                Directory.CreateDirectory(textureSaveDirectory);
-                foreach (Texture texture in textures)
-                {
-                    texture.SavetoFile($"{textureSaveDirectory}/{texture.Hash}");
-                }
-                foreach (ExportMaterial material in materials)
-                {
-                    string shaderSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, scene.Name);
-                    Directory.CreateDirectory(shaderSaveDirectory);
-                    material.Material.Export(shaderSaveDirectory);
-                }
+                textureSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, scene.Name);
+                shaderSaveDirectory = textureSaveDirectory;
             }
             else
             {
-                mapTextures.UnionWith(scene.Textures);
-                foreach (ExportMaterial material in scene.Materials)
-                {
-                    mapMaterials.Add(material);
-                    foreach (STextureTag texture in material.Material.Vertex.EnumerateTextures())
-                    {
-                        if (texture.GetTexture() == null)
-                            continue;
+                textureSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, $"Maps");
+                shaderSaveDirectory = textureSaveDirectory;
+            }
 
-                        mapTextures.Add(texture.GetTexture());
-                    }
-                    foreach (STextureTag texture in material.Material.Pixel.EnumerateTextures())
-                    {
-                        if (texture.GetTexture() == null)
-                            continue;
+            textureSaveDirectory = Path.Combine(textureSaveDirectory, "Textures");
 
-                        mapTextures.Add(texture.GetTexture());
-                    }
-                }
+            Directory.CreateDirectory(textureSaveDirectory);
+            Directory.CreateDirectory(shaderSaveDirectory);
+
+            foreach (Texture texture in scene.ExternalTextures.Distinct())
+            {
+                if (texture is null) continue;
+                string filePath = Path.Combine(textureSaveDirectory, texture.Hash);
+                textures.Add((texture, filePath));
+            }
+
+            foreach (ExportMaterial material in scene.Materials.Distinct())
+            {
+                string filePath = shaderSaveDirectory;
+                materials.Add((material, filePath));
             }
         });
 
-        foreach (Texture texture in mapTextures)
+        foreach (var (texture, path) in textures)
         {
-            if (texture is null)
-                continue;
-
-            string textureSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, $"Maps");
-            textureSaveDirectory = $"{textureSaveDirectory}/Textures";
-            Directory.CreateDirectory(textureSaveDirectory);
-
-            texture.SavetoFile($"{textureSaveDirectory}/{texture.Hash}");
+            texture.SavetoFile(path);
         }
 
-        if (saveMats)
+        foreach (var (material, path) in materials)
         {
-            foreach (ExportMaterial material in mapMaterials)
-            {
-                string shaderSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, $"Maps");
-                Directory.CreateDirectory(shaderSaveDirectory);
-                material.Material.Export(shaderSaveDirectory);
-            }
+            material.Material.Export(path);
         }
     }
 }

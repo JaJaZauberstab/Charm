@@ -93,7 +93,7 @@ namespace Tiger.Schema.Shaders
                 {
                     string vertex = Vertex.Shader.Decompile($"vs{Vertex.Shader.Hash}");
                     Directory.CreateDirectory($"{saveDirectory}/HLSL");
-                    File.WriteAllText($"{saveDirectory}/HLSL/VS_{Hash}.hlsl", vertex);
+                    File.WriteAllText($"{saveDirectory}/HLSL/VS_{Vertex.Shader.Hash}.hlsl", vertex);
                 }
                 catch (IOException e)  // threading error
                 {
@@ -136,7 +136,7 @@ namespace Tiger.Schema.Shaders
                     psCB.Textures.TryAdd((int)texture.TextureIndex, new()
                     {
                         Hash = texture.GetTexture().Hash,
-                        Colorspace = texture.GetTexture().IsSrgb() ? "Srgb" : "Non-Color",
+                        Colorspace = texture.GetTexture().IsSrgb() ? "sRGB" : "Non-Color",
                         Dimension = texture.GetTexture().GetDimension().GetEnumDescription(),
                         Format = texture.GetTexture().TagData.GetFormat().ToString()
                     });

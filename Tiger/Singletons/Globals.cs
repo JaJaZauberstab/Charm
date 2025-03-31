@@ -51,11 +51,6 @@ public class Globals : Strategy.StrategistSingleton<Globals>
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON) // D1 has an extra base layout, so just gonna reuse the last entry (suuurely its fine)
             _inputLayouts.Add(BaseInputLayouts[BaseInputLayouts.Count - 1]);
 
-        bool PackageFilterFunc(string packagePath) =>
-            Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_BEYONDLIGHT_3402 ?
-            packagePath.Contains("client_startup") : packagePath.Contains("globals");
-
-        //PackageResourcer.Get().GetAllHashes<SClientBootstrap>(PackageFilterFunc).First();
         FileHash hash = Strategy.CurrentStrategy switch
         {
             TigerStrategy.DESTINY1_RISE_OF_IRON => new FileHash("0020AF80"),
@@ -68,12 +63,21 @@ public class Globals : Strategy.StrategistSingleton<Globals>
 
         var ElementSet = RenderGlobals.TagData.InputLayouts.TagData.Elements2.TagData.Sets;
         var Mappings = RenderGlobals.TagData.InputLayouts.TagData.ElementMappings.TagData.Layouts;
-
         foreach (var layout in Mappings)
         {
             List<TigerInputLayoutElement> layoutElements = new List<TigerInputLayoutElement>();
-            foreach (var (bufferIndex, elementIndex) in new int[] { layout.Element0, layout.Element1, layout.Element2, layout.Element3 }.Select((value, index) => (index, value)))
+            var buffers = new (int elementIndex, bool isInstanceData)[]
             {
+                (layout.Buffer0, layout.Buffer0Instanced),
+                (layout.Buffer1, layout.Buffer1Instanced),
+                (layout.Buffer2, layout.Buffer2Instanced),
+                (layout.Buffer3, layout.Buffer3Instanced)
+            };
+
+            for (int bufferIndex = 0; bufferIndex < buffers.Length; bufferIndex++)
+            {
+                var (elementIndex, isInstanceData) = buffers[bufferIndex];
+
                 if (elementIndex == -1)
                     continue;
 
@@ -3447,8 +3451,13 @@ public struct SVertexLayout
 {
     public short Index;
     [SchemaField(0x8)]
-    public int Element0;
-    public int Element1;
-    public int Element2;
-    public int Element3;
+    public int Buffer0;
+    public int Buffer1;
+    public int Buffer2;
+    public int Buffer3;
+
+    public bool Buffer0Instanced;
+    public bool Buffer1Instanced;
+    public bool Buffer2Instanced;
+    public bool Buffer3Instanced;
 }

@@ -24,9 +24,6 @@ public partial class MapView : UserControl
 
     private static ConfigSubsystem _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
 
-    private static bool source2Models = _config.GetS2VMDLExportEnabled();
-    private static bool exportStatics = _config.GetIndvidualStaticsEnabled();
-
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
     {
         _mainWindow = Window.GetWindow(this) as MainWindow;
@@ -155,10 +152,9 @@ public partial class MapView : UserControl
 
     public static void ExportFullMap(Tag<SMapContainer> map, string savePath)
     {
-        ExporterScene scene = Exporter.Get().CreateScene(map.Hash.ToString(), ExportType.Map);
         Directory.CreateDirectory(savePath);
 
-        ExtractDataTables(map, scene, savePath);
+        ExtractDataTables(map, savePath);
 
         if (_config.GetUnrealInteropEnabled())
         {
@@ -166,9 +162,10 @@ public partial class MapView : UserControl
         }
     }
 
-    private static void ExtractDataTables(Tag<SMapContainer> map, ExporterScene scene, string savePath)
+    private static void ExtractDataTables(Tag<SMapContainer> map, string savePath)
     {
-        ExporterScene terrainScene = Exporter.Get().CreateScene($"{map.Hash}_Terrain", ExportType.Terrain);
+        ExporterScene staticsScene = Exporter.Get().CreateScene(map.Hash.ToString(), ExportType.Statics, DataExportType.Map);
+        ExporterScene terrainScene = Exporter.Get().CreateScene($"{map.Hash}_Terrain", ExportType.Terrain, DataExportType.Map);
 
         Parallel.ForEach(map.TagData.MapDataTables, data =>
         {
@@ -180,7 +177,7 @@ public partial class MapView : UserControl
                     if (staticMapResource.StaticMapParent is null)
                         return;
 
-                    staticMapResource.StaticMapParent.TagData.StaticMap.LoadDecalsIntoExporterScene(scene);
+                    staticMapResource.StaticMapParent.TagData.StaticMap.LoadDecalsIntoExporterScene(staticsScene);
                 }
             }
 
@@ -193,7 +190,7 @@ public partial class MapView : UserControl
                         if (staticMapResource.StaticMapParent is null)
                             return;
 
-                        staticMapResource.StaticMapParent.TagData.StaticMap.LoadIntoExporterScene(scene);
+                        staticMapResource.StaticMapParent.TagData.StaticMap.LoadIntoExporterScene(staticsScene);
                         break;
 
                     case SStaticAOResource AO:
@@ -206,14 +203,6 @@ public partial class MapView : UserControl
                             return;
 
                         terrain.Terrain.LoadIntoExporter(terrainScene, savePath, terrain.Identifier);
-                        break;
-
-                    case SMapRoadDecalsResource roadDecals:
-                        roadDecals.RoadDecals?.Load();
-                        if (roadDecals.RoadDecals is null)
-                            return;
-
-                        roadDecals.RoadDecals.LoadIntoExporter(scene);
                         break;
                     default:
                         break;

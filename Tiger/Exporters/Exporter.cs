@@ -36,9 +36,9 @@ public class Exporter : Subsystem<Exporter>
         return true;
     }
 
-    public ExporterScene CreateScene(string name, ExportType type)
+    public ExporterScene CreateScene(string name, ExportType type, DataExportType dataType = DataExportType.Individual)
     {
-        var scene = new ExporterScene { Name = name, Type = type };
+        var scene = new ExporterScene { Name = name, Type = type, DataType = dataType };
         _scenes.Add(scene);
         return scene;
     }
@@ -161,16 +161,17 @@ public class GlobalExporterScene : ExporterScene
 public class ExporterScene
 {
     public string Name { get; set; }
+    public DataExportType DataType { get; set; }
     public ExportType Type { get; set; }
+
     public ConcurrentBag<ExporterMesh> TerrainMeshes = new();
     public ConcurrentBag<ExporterMesh> StaticMeshes = new();
     public ConcurrentBag<ExporterEntity> Entities = new();
     public ConcurrentDictionary<string, List<Transform>> StaticMeshInstances = new();
     public ConcurrentDictionary<string, List<Transform>> ArrangedStaticMeshInstances = new();
     public ConcurrentDictionary<string, List<Transform>> EntityInstances = new();
-    public ConcurrentBag<MaterialTexture> ExternalMaterialTextures = new();
     public ConcurrentBag<SMapDataEntry> EntityPoints = new();
-    public ConcurrentHashSet<Texture> Textures = new();
+    public ConcurrentHashSet<Texture> ExternalTextures = new();
     public ConcurrentHashSet<ExportMaterial> Materials = new();
     public ConcurrentDictionary<string, List<FileHash>> TerrainDyemaps = new();
     private ConcurrentDictionary<string, bool> _addedEntities = new();
@@ -267,11 +268,6 @@ public class ExporterScene
             Quaternion = quatRotation,
             Scale = scale
         });
-    }
-
-    public void AddTextureToMaterial(string material, int index, Texture texture)
-    {
-        ExternalMaterialTextures.Add(new MaterialTexture { Material = material, Index = index, Texture = texture });
     }
 
     public void AddEntityPoints(SMapDataEntry points)
@@ -508,16 +504,26 @@ public struct MaterialTexture
     public Texture Texture;
 }
 
+// Used for metadata exporter
+public enum DataExportType
+{
+    Individual,
+    Map
+}
+
 public enum ExportType
 {
-    Global,
-    Static,
-    Entity,
     Map,
+    Global,
+    Statics,
+    Entities,
     Terrain,
+    SkyObjects,
+    RoadDecals,
+    Decorators,
+    WaterDecals,
+
     EntityPoints,
-    StaticInMap,
-    EntityInMap,
     API,
     D1API
 }

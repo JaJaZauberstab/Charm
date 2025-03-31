@@ -257,7 +257,7 @@ public partial class DevView : UserControl
                 case 0x808073A5:
                 case 0x80806F07: //Entity model
                     EntityModel entityModel = FileResourcer.Get().GetFile<EntityModel>(hash);
-                    ExporterScene scene = Exporter.Get().CreateScene(hash, ExportType.Entity);
+                    ExporterScene scene = Exporter.Get().CreateScene(hash, ExportType.Entities);
                     scene.AddModel(entityModel);
                     var parts = entityModel.Load(ExportDetailLevel.MostDetailed, null);
                     foreach (DynamicMeshPart part in parts)
@@ -284,7 +284,7 @@ public partial class DevView : UserControl
                 case 0x80801ACE:
                 case 0x80806C98: // Decorator 986C8080
                     Decorator decorator = FileResourcer.Get().GetFile<Decorator>(hash);
-                    ExporterScene decoratorScene = Exporter.Get().CreateScene(hash, ExportType.Map);
+                    ExporterScene decoratorScene = Exporter.Get().CreateScene(hash, ExportType.Decorators);
                     decorator.LoadIntoExporter(decoratorScene, ConfigSubsystem.Get().GetExportSavePath());
                     Exporter.Get().Export();
                     break;

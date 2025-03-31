@@ -413,11 +413,14 @@ public partial class ActivityMapEntityView : UserControl
     private static void ExtractDataTables(List<FileHash> dataTables, string hash, string savePath)
     {
         GlobalExporterScene globalScene = Tiger.Exporters.Exporter.Get().GetOrCreateGlobalScene();
+
         // todo these scenes can be combined
-        ExporterScene dynamicPointScene = Exporter.Get().CreateScene($"{hash}_EntityPoints", ExportType.EntityPoints);
-        ExporterScene dynamicScene = Exporter.Get().CreateScene($"{hash}_Entities", ExportType.Map);
-        ExporterScene skyScene = Exporter.Get().CreateScene($"{hash}_SkyEnts", ExportType.Map);
-        ExporterScene decoratorScene = Exporter.Get().CreateScene($"{hash}_Decorators", ExportType.Map);
+        ExporterScene dynamicPointScene = Exporter.Get().CreateScene($"{hash}_EntityPoints", ExportType.EntityPoints, DataExportType.Map);
+        ExporterScene entitiesScene = Exporter.Get().CreateScene($"{hash}_Entities", ExportType.Entities, DataExportType.Map);
+        ExporterScene skyScene = Exporter.Get().CreateScene($"{hash}_SkyObjects", ExportType.SkyObjects, DataExportType.Map);
+        ExporterScene decoratorsScene = Exporter.Get().CreateScene($"{hash}_Decorators", ExportType.Decorators, DataExportType.Map);
+        ExporterScene roadDecalsScene = Exporter.Get().CreateScene($"{hash}_RoadDecals", ExportType.RoadDecals, DataExportType.Map);
+        ExporterScene waterDecalsScene = Exporter.Get().CreateScene($"{hash}_WaterDecals", ExportType.WaterDecals, DataExportType.Map);
 
         Parallel.ForEach(dataTables, data =>
         {
@@ -429,8 +432,8 @@ public partial class ActivityMapEntityView : UserControl
                     Entity entity = FileResourcer.Get().GetFile<Entity>(entry.GetEntityHash());
                     if (entity.HasGeometry())
                     {
-                        dynamicScene.AddMapEntity(entry, entity);
-                        entity.SaveMaterialsFromParts(dynamicScene, entity.Load(ExportDetailLevel.MostDetailed));
+                        entitiesScene.AddMapEntity(entry, entity);
+                        entity.SaveMaterialsFromParts(entitiesScene, entity.Load(ExportDetailLevel.MostDetailed));
                     }
                     else
                         dynamicPointScene.AddEntityPoints(entry);
@@ -444,8 +447,8 @@ public partial class ActivityMapEntityView : UserControl
                     Entity entity = FileResourcer.Get().GetFile<Entity>(entry.GetEntityHash());
                     if (entity.HasGeometry())
                     {
-                        dynamicScene.AddMapEntity(entry, entity);
-                        entity.SaveMaterialsFromParts(dynamicScene, entity.Load(ExportDetailLevel.MostDetailed));
+                        entitiesScene.AddMapEntity(entry, entity);
+                        entity.SaveMaterialsFromParts(entitiesScene, entity.Load(ExportDetailLevel.MostDetailed));
                     }
                     else
                     {
@@ -486,13 +489,13 @@ public partial class ActivityMapEntityView : UserControl
                         case SMapDecalsResource decals:
                             decals.MapDecals?.Load();
                             if (decals.MapDecals is not null)
-                                decals.MapDecals.LoadIntoExporter(dynamicScene);
+                                decals.MapDecals.LoadIntoExporter(entitiesScene);
                             break;
 
                         case SDecoratorMapResource decorator:
                             decorator.Decorator?.Load();
                             if (decorator.Decorator is not null)
-                                decorator.Decorator.LoadIntoExporter(decoratorScene, savePath);
+                                decorator.Decorator.LoadIntoExporter(decoratorsScene, savePath);
                             break;
 
                         case SMapWaterDecal waterDecal:
@@ -501,7 +504,7 @@ public partial class ActivityMapEntityView : UserControl
 
                             WaterDecals water = new(waterDecal);
                             water.Transform = entry.Transfrom;
-                            water.LoadIntoExporter(dynamicScene);
+                            water.LoadIntoExporter(waterDecalsScene);
                             break;
 
                         case SMapAtmosphere atmosphere:
@@ -510,8 +513,17 @@ public partial class ActivityMapEntityView : UserControl
 
                         case SMapLensFlareResource lensFlare:
                             lensFlare.LensFlare.Transform = entry.Transfrom;
-                            lensFlare.LensFlare.LoadIntoExporter(dynamicScene);
+                            lensFlare.LensFlare.LoadIntoExporter(entitiesScene);
                             break;
+
+                        case SMapRoadDecalsResource roadDecals:
+                            roadDecals.RoadDecals?.Load();
+                            if (roadDecals.RoadDecals is null)
+                                return;
+
+                            roadDecals.RoadDecals.LoadIntoExporter(roadDecalsScene);
+                            break;
+
                         default:
                             break;
                     }

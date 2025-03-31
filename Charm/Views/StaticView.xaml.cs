@@ -37,7 +37,7 @@ public partial class StaticView : UserControl
 
     public static void ExportStatic(FileHash hash, string name, ExportTypeFlag exportType, string extraPath = "")
     {
-        ExporterScene scene = Exporter.Get().CreateScene(name, ExportType.Static);
+        ExporterScene scene = Exporter.Get().CreateScene(name, ExportType.Statics);
         bool lodexport = false;
         ConfigSubsystem config = ConfigSubsystem.Get();
 
@@ -63,7 +63,7 @@ public partial class StaticView : UserControl
 
         if (lodexport)
         {
-            ExporterScene lodScene = Exporter.Get().CreateScene($"{name}_LOD", ExportType.Static);
+            ExporterScene lodScene = Exporter.Get().CreateScene($"{name}_LOD", ExportType.Statics);
 
             List<StaticPart> lodparts = staticMesh.Load(ExportDetailLevel.LeastDetailed);
             Directory.CreateDirectory(savePath + "/LOD");

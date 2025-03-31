@@ -16,35 +16,36 @@ public class FbxExporter : AbstractExporter
     /// </summary>
     public override void Export(Exporter.ExportEventArgs args)
     {
-        bool exportIndiv = _config.GetIndvidualStaticsEnabled();
         foreach (ExporterScene scene in args.Scenes)
         {
             FbxScene fbxScene = FbxScene.Create(_manager, scene.Name);
             string outputDirectory = args.OutputDirectory;
-            string outputIndivDir = outputDirectory;
+            string modelSubDirectory = $"Models/{scene.Type.ToString()}";
 
-            string baseDirectory = args.AggregateOutput ? outputDirectory : Path.Join(outputDirectory, "Maps");
-            string modelSubDirectory = scene.Name.Contains("Decorators") ? "Decorators" :
-                                       scene.Name.Contains("SkyEnts") ? "SkyEntities" : "Entities";
-
-            switch (scene.Type)
+            switch (scene.DataType)
             {
-                case ExportType.Map:
-                case ExportType.Terrain:
-                case ExportType.EntityPoints:
-                    outputDirectory = baseDirectory;
-                    break;
-                case ExportType.StaticInMap:
-                    outputDirectory = Path.Join(baseDirectory, args.AggregateOutput ? "Statics" : "Maps/Statics");
-                    break;
-                case ExportType.EntityInMap:
-                    outputDirectory = Path.Join(baseDirectory, args.AggregateOutput ? "Entities" : "Maps/Entities");
+                case DataExportType.Map:
+                    outputDirectory = Path.Join(outputDirectory, modelSubDirectory);
                     break;
                 default:
-                    outputDirectory = args.AggregateOutput ? outputDirectory : Path.Join(outputDirectory, scene.Name);
-                    if (!args.AggregateOutput)
-                        outputIndivDir = outputDirectory;
+                    outputDirectory = Path.Join(outputDirectory, scene.Name);
                     break;
+            }
+
+            if (scene.Type == ExportType.API || scene.Type == ExportType.D1API)
+            {
+                if (args.AggregateOutput)
+                    outputDirectory = args.OutputDirectory;
+
+                FbxScene apiScene = FbxScene.Create(_manager, scene.Name);
+                foreach (ExporterEntity entity in scene.Entities)
+                {
+                    if (entity.Mesh.Parts.Count == 0)
+                        continue;
+                    AddEntity(apiScene, entity);
+                }
+                ExportScene(apiScene, Path.Join(outputDirectory, scene.Name));
+                continue;
             }
 
             foreach (ExporterMesh mesh in scene.StaticMeshes)
@@ -52,22 +53,15 @@ public class FbxExporter : AbstractExporter
                 if (mesh.Parts.Count == 0)
                     continue;
 
-                if (exportIndiv)
+                FbxScene fbxIndivScene = FbxScene.Create(_manager, mesh.Hash);
+                AddMesh(fbxIndivScene, mesh);
+                ExportScene(fbxIndivScene, Path.Join(outputDirectory, mesh.Hash));
+
+                if (_config.GetS2VMDLExportEnabled() && scene.Type != ExportType.Terrain)
                 {
-                    if (scene.Type == ExportType.Map)
-                    {
-                        outputIndivDir = Path.Join(outputDirectory, "Models", "Statics");
-                        FbxScene fbxIndivScene = FbxScene.Create(_manager, mesh.Hash);
-                        AddMesh(fbxIndivScene, mesh);
-                        ExportScene(fbxIndivScene, Path.Join(outputIndivDir, mesh.Hash));
-                    }
-                    if (_config.GetS2VMDLExportEnabled() && scene.Type != ExportType.Terrain)
-                    {
-                        string fbxPath = scene.Type == ExportType.Map ? "Models/Statics" : "Models";
-                        Source2Handler.SaveStaticVMDL(outputIndivDir, fbxPath, mesh);
-                    }
+                    string fbxPath = scene.DataType == DataExportType.Map ? modelSubDirectory : "Models";
+                    Source2Handler.SaveStaticVMDL(outputDirectory, fbxPath, mesh);
                 }
-                AddMesh(fbxScene, mesh);
             }
 
             foreach (ExporterEntity entity in scene.Entities)
@@ -75,24 +69,15 @@ public class FbxExporter : AbstractExporter
                 if (entity.Mesh.Parts.Count == 0)
                     continue;
 
-                if (exportIndiv)
+                FbxScene fbxIndivScene = FbxScene.Create(_manager, entity.Mesh.Hash);
+                AddEntity(fbxIndivScene, entity);
+                ExportScene(fbxIndivScene, Path.Join(outputDirectory, entity.Mesh.Hash));
+
+                if (_config.GetS2VMDLExportEnabled() && scene.Type != ExportType.Terrain)
                 {
-                    if (scene.Type == ExportType.Map)
-                    {
-                        outputIndivDir = Path.Join(outputDirectory, "Models", modelSubDirectory);
-                        FbxScene fbxIndivScene = FbxScene.Create(_manager, entity.Mesh.Hash);
-                        AddEntity(fbxIndivScene, entity);
-                        ExportScene(fbxIndivScene, Path.Join(outputIndivDir, entity.Mesh.Hash));
-                    }
-
-                    if (_config.GetS2VMDLExportEnabled() && scene.Type != ExportType.API && scene.Type != ExportType.D1API)
-                    {
-                        string fbxPath = scene.Type == ExportType.Map ? Path.Join("Models", modelSubDirectory) : "Models";
-                        Source2Handler.SaveEntityVMDL(outputIndivDir, fbxPath, entity);
-                    }
+                    string fbxPath = scene.DataType == DataExportType.Map ? modelSubDirectory : "Models";
+                    Source2Handler.SaveEntityVMDL(outputDirectory, fbxPath, entity);
                 }
-
-                AddEntity(fbxScene, entity);
             }
 
             foreach (ExporterMesh mesh in scene.TerrainMeshes)
@@ -100,26 +85,21 @@ public class FbxExporter : AbstractExporter
                 if (mesh.ID != null)
                     AddVertexAO(mesh, (ulong)mesh.ID);
 
-                if (exportIndiv)
-                {
-                    outputIndivDir = Path.Join(outputDirectory, "Models", "Terrain");
-                    FbxScene fbxIndivScene = FbxScene.Create(_manager, $"{mesh.Hash}_{mesh.Index}");
-                    AddMesh(fbxIndivScene, mesh);
-                    ExportScene(fbxIndivScene, Path.Join(outputIndivDir, $"{mesh.Hash}_{mesh.Index}"));
-                }
-                AddMesh(fbxScene, mesh);
+                FbxScene fbxIndivScene = FbxScene.Create(_manager, $"{mesh.Hash}_{mesh.Index}");
+                AddMesh(fbxIndivScene, mesh);
+                ExportScene(fbxIndivScene, Path.Join(outputDirectory, $"{mesh.Hash}_{mesh.Index}"));
             }
 
-            foreach (var meshInstance in scene.ArrangedStaticMeshInstances)
-            {
-                AddInstancedMesh(fbxScene, scene.StaticMeshes.First(s => s.Hash == meshInstance.Key).Parts, meshInstance.Value);
-            }
+            //foreach (var meshInstance in scene.ArrangedStaticMeshInstances)
+            //{
+            //    AddInstancedMesh(fbxScene, scene.StaticMeshes.First(s => s.Hash == meshInstance.Key).Parts, meshInstance.Value);
+            //}
             foreach (var p in scene.EntityPoints)
             {
                 AddDynamicPoint(fbxScene, p);
             }
 
-            ExportScene(fbxScene, Path.Join(outputDirectory, scene.Name));
+            //ExportScene(fbxScene, Path.Join(outputDirectory, scene.Name));
         }
     }
 

@@ -18,7 +18,7 @@ public class Terrain : Tag<STerrain>
     public void LoadIntoExporter(ExporterScene scene, string saveDirectory, ulong? identifier = null)
     {
         var _config = ConfigSubsystem.Get();
-        var _exportIndiv = _config.GetIndvidualStaticsEnabled();
+        //var _exportIndiv = _config.GetIndvidualStaticsEnabled();
 
         // Uses triangle strip + only using first set of vertices and indices
         Dictionary<StaticPart, Material> parts = new Dictionary<StaticPart, Material>();
@@ -36,7 +36,7 @@ public class Terrain : Tag<STerrain>
                 if (lastValidEntry != null)
                 {
                     // Use the last valid Dyemap for any invalid
-                    scene.Textures.Add(lastValidEntry);
+                    scene.ExternalTextures.Add(lastValidEntry);
                     dyeMaps.Add(lastValidEntry);
                 }
                 else // Use the first valid dyemap if it gets to this point
@@ -44,7 +44,7 @@ public class Terrain : Tag<STerrain>
                     var firstValidDyemap = _tag.MeshGroups.FirstOrDefault(x => x.Dyemap != null).Dyemap;
                     if (firstValidDyemap != null)
                     {
-                        scene.Textures.Add(firstValidDyemap);
+                        scene.ExternalTextures.Add(firstValidDyemap);
                         dyeMaps.Add(firstValidDyemap);
                     }
                 }
@@ -53,7 +53,7 @@ public class Terrain : Tag<STerrain>
             {
                 // Update lastValidEntry with the current Dyemap
                 lastValidEntry = meshGroup.Dyemap;
-                scene.Textures.Add(meshGroup.Dyemap);
+                scene.ExternalTextures.Add(meshGroup.Dyemap);
                 dyeMaps.Add(meshGroup.Dyemap);
             }
 
@@ -73,7 +73,7 @@ public class Terrain : Tag<STerrain>
                         TransformTexcoords(part);
                         TransformVertexColors(part);
 
-                        if (_config.GetS2ShaderExportEnabled() && _exportIndiv)
+                        if (_config.GetS2ShaderExportEnabled())
                             Source2Handler.SaveVMAT($"{saveDirectory}", $"{part.Material.Hash}", part.Material, dyeMaps);
 
                         parts.TryAdd(part, partEntry.Material);
@@ -83,7 +83,7 @@ public class Terrain : Tag<STerrain>
 
             scene.AddTerrain($"{Hash}", parts.Keys.ToList(), identifier, i);
 
-            if (_config.GetS2VMDLExportEnabled() && _exportIndiv)
+            if (_config.GetS2VMDLExportEnabled())
                 Source2Handler.SaveTerrainVMDL($"{Hash}_{i}", saveDirectory, parts.Keys.ToList());
 
             parts.Clear();

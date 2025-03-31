@@ -123,6 +123,28 @@ public class Lights : Tag<D2Class_656C8080>
             cubePoints[i] = (b / new Vector4(b.W)).ToVec3();
         }
 
+        //for (int i = 0; i < cubePoints.Length; i++)
+        //{
+        //    Vector4 p = Vector4.Transform(new Vector4(cubePoints[i].X, cubePoints[i].Y, cubePoints[i].Z, 1.0f), matrix);
+        //    float w = -p.W;
+        //    Vector4 auvar58 = p / p.W;
+        //    float auvar50 = Math.Abs(w);
+
+        //    cubePoints[i] = (auvar50 >= 0.0001f) ? new Vector3(auvar58.X, auvar58.Y, auvar58.Z) : new Vector3(0, 0, 1);
+        //    Console.WriteLine($"{cubePoints[i]}");
+        //}
+
+        //System.Numerics.Vector3 min = new System.Numerics.Vector3(float.MaxValue);
+        //System.Numerics.Vector3 max = new System.Numerics.Vector3(float.MinValue);
+
+        //foreach (var point in cubePoints)
+        //{
+        //    min = System.Numerics.Vector3.Min(min, point.ToSys());
+        //    max = System.Numerics.Vector3.Max(max, point.ToSys());
+        //}
+
+        //Console.WriteLine($"{Hash}: Min: {min}, Max: {max}");
+
         switch (lightType)
         {
             case LightType.Spot:

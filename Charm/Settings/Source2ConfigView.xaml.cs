@@ -105,9 +105,7 @@ public partial class Source2ConfigView : UserControl
         _config.SetS2ShaderExportEnabled(!_config.GetS2ShaderExportEnabled());
         if (_config.GetS2ShaderExportEnabled())
         {
-            _config.SetIndvidualStaticsEnabled(true);
             _config.SetS2TexPow2Enabled(true);
-            _config.SetExportMaterials(true);
         }
         PopulateConfigPanel();
     }
@@ -115,8 +113,6 @@ public partial class Source2ConfigView : UserControl
     private void S2VMDLExportEnabled_OnClick(object sender, RoutedEventArgs e)
     {
         _config.SetS2VMDLExportEnabled(!_config.GetS2VMDLExportEnabled());
-        if (_config.GetS2VMDLExportEnabled())
-            _config.SetIndvidualStaticsEnabled(true);
         PopulateConfigPanel();
     }
 

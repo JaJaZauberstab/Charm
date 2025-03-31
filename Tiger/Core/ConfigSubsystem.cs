@@ -342,16 +342,16 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
 
     #endregion
 
-    public void SetIndvidualStaticsEnabled(bool bIndvidualStaticsEnabled)
-    {
-        _settings.Common.IndividualStaticsEnabled = bIndvidualStaticsEnabled;
-        Save();
-    }
+    //public void SetIndvidualStaticsEnabled(bool bIndvidualStaticsEnabled)
+    //{
+    //    _settings.Common.IndividualStaticsEnabled = bIndvidualStaticsEnabled;
+    //    Save();
+    //}
 
-    public bool GetIndvidualStaticsEnabled()
-    {
-        return _settings.Common.IndividualStaticsEnabled;
-    }
+    //public bool GetIndvidualStaticsEnabled()
+    //{
+    //    return _settings.Common.IndividualStaticsEnabled;
+    //}
 
     #region outputTextureFormat
 
@@ -392,16 +392,16 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
         return _settings.Common.AnimatedBackground;
     }
 
-    public void SetExportMaterials(bool b)
-    {
-        _settings.Common.ExportMaterials = b;
-        Save();
-    }
+    //public void SetExportMaterials(bool b)
+    //{
+    //    _settings.Common.ExportMaterials = b;
+    //    Save();
+    //}
 
-    public bool GetExportMaterials()
-    {
-        return _settings.Common.ExportMaterials;
-    }
+    //public bool GetExportMaterials()
+    //{
+    //    return _settings.Common.ExportMaterials;
+    //}
 
     private string _configFilePath = "./config.json";
     // private Dictionary<string, dynamic?> _settings;

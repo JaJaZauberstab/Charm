@@ -13,6 +13,11 @@ public struct MapTransform
 {
     public Vector4 Rotation;
     public Vector4 Translation;
+
+    public override string ToString()
+    {
+        return $"Rotation: {Rotation.ToString()}\nTranslation: {Translation.ToString()}";
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x40)]
@@ -239,6 +244,11 @@ public struct Vector3
 
         return Decimal.Parse(value.ToString(), NumberStyles.Float).ToString();
     }
+
+    public System.Numerics.Vector3 ToSys()
+    {
+        return new System.Numerics.Vector3(X, Y, Z);
+    }
 }
 
 public struct IntVector3
@@ -444,6 +454,11 @@ public struct Vector4
         return new Vector3(X, Y, Z);
     }
 
+    public System.Numerics.Vector4 ToSys()
+    {
+        return new System.Numerics.Vector4(X, Y, Z, W);
+    }
+
     public float this[int index]
     {
         get
@@ -531,6 +546,14 @@ public struct Vector4
             x.W / y.W);
     }
 
+    public static Vector4 operator /(Vector4 x, float y)
+    {
+        return new Vector4(x.X / y,
+            x.Y / y,
+            x.Z / y,
+            x.W / y);
+    }
+
     public static Vector4 Cross(Vector4 vector1, Vector4 vector2)
     {
         return new Vector4(
@@ -546,6 +569,16 @@ public struct Vector4
                  + (vector1.Y * vector2.Y)
                  + (vector1.Z * vector2.Z)
                  + (vector1.W * vector2.W);
+    }
+
+    public static Vector4 Transform(Vector4 vector, Matrix4x4 matrix)
+    {
+        return new Vector4(
+            (vector.X * matrix.X_Axis.X) + (vector.Y * matrix.Y_Axis.X) + (vector.Z * matrix.Z_Axis.X) + (vector.W * matrix.W_Axis.X),
+            (vector.X * matrix.X_Axis.Y) + (vector.Y * matrix.Y_Axis.Y) + (vector.Z * matrix.Z_Axis.Y) + (vector.W * matrix.W_Axis.Y),
+            (vector.X * matrix.X_Axis.Z) + (vector.Y * matrix.Y_Axis.Z) + (vector.Z * matrix.Z_Axis.Z) + (vector.W * matrix.W_Axis.Z),
+            (vector.X * matrix.X_Axis.W) + (vector.Y * matrix.Y_Axis.W) + (vector.Z * matrix.Z_Axis.W) + (vector.W * matrix.W_Axis.W)
+        );
     }
 
     /// euler degrees
