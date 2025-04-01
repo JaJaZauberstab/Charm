@@ -84,37 +84,37 @@ public static class TfxBytecodeOp
                     break;
                 case TfxBytecode.PushExternInputFloat:
                     PushExternInputFloatData PushExternInputFloatData = new();
-                    PushExternInputFloatData.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputFloatData.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputFloatData.element = reader.ReadByte();
                     tfxData.data = PushExternInputFloatData;
                     break;
                 case TfxBytecode.PushExternInputVec4:
                     PushExternInputVec4Data PushExternInputVec4Data = new();
-                    PushExternInputVec4Data.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputVec4Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputVec4Data.element = reader.ReadByte();
                     tfxData.data = PushExternInputVec4Data;
                     break;
                 case TfxBytecode.PushExternInputMat4:
                     PushExternInputMat4Data PushExternInputMat4Data = new();
-                    PushExternInputMat4Data.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputMat4Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputMat4Data.element = reader.ReadByte();
                     tfxData.data = PushExternInputMat4Data;
                     break;
                 case TfxBytecode.PushExternInputTextureView:
                     PushExternInputTextureViewData Unk3fData = new();
-                    Unk3fData.extern_ = (TfxExtern)reader.ReadByte();
+                    Unk3fData.extern_ = Externs.GetExtern(reader.ReadByte());
                     Unk3fData.element = reader.ReadByte();
                     tfxData.data = Unk3fData;
                     break;
                 case TfxBytecode.PushExternInputU32:
                     PushExternInputU32Data PushExternInputU32Data = new();
-                    PushExternInputU32Data.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputU32Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputU32Data.element = reader.ReadByte();
                     tfxData.data = PushExternInputU32Data;
                     break;
                 case TfxBytecode.PushExternInputUav when !Strategy.IsD1():
                     PushExternInputUavData Unk41Data = new();
-                    Unk41Data.extern_ = (TfxExtern)reader.ReadByte();
+                    Unk41Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     Unk41Data.element = reader.ReadByte();
                     tfxData.data = Unk41Data;
                     break;
