@@ -10,7 +10,7 @@ public class MetadataExporter : AbstractExporter
     {
         Parallel.ForEach(args.Scenes, scene =>
         {
-            MetadataScene metadataScene = new(scene);
+            MetadataScene metadataScene = new(scene, args);
             metadataScene.WriteToFile(args);
         });
     }
@@ -18,11 +18,12 @@ public class MetadataExporter : AbstractExporter
 
 class MetadataScene
 {
+    private ConfigSubsystem _charmConfig = ConfigSubsystem.Get();
     private readonly ConcurrentDictionary<string, dynamic> _config = new();
     private readonly ExportType _exportType;
     private readonly DataExportType _dataExportType;
 
-    public MetadataScene(ExporterScene scene)
+    public MetadataScene(ExporterScene scene, Exporter.ExportEventArgs args)
     {
         ConcurrentDictionary<string, Dictionary<string, string>> parts = new();
         _config.TryAdd("Parts", parts);
@@ -40,6 +41,18 @@ class MetadataScene
         _dataExportType = scene.DataType;
         SetType(_exportType, _dataExportType);
         SetMeshName(scene.Name);
+
+        if (_charmConfig.GetSingleFolderMapAssetsEnabled() && scene.DataType == DataExportType.Map)
+        {
+            _config["AssetsPath"] = Path.Join(_charmConfig.GetExportSavePath(), $"Maps/Assets/").Replace("\\", "/");
+        }
+        else
+        {
+            if (args.AggregateOutput)
+                _config["AssetsPath"] = args.OutputDirectory.Replace("\\", "/");
+            else
+                _config["AssetsPath"] = (scene.DataType == DataExportType.Map ? args.OutputDirectory : Path.Join(args.OutputDirectory, scene.Name)).Replace("\\", "/");
+        }
 
         foreach (var mesh in scene.StaticMeshes)
         {

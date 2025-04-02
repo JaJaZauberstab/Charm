@@ -25,7 +25,10 @@ public class FbxExporter : AbstractExporter
             switch (scene.DataType)
             {
                 case DataExportType.Map:
-                    outputDirectory = Path.Join(outputDirectory, modelSubDirectory);
+                    if (_config.GetSingleFolderMapAssetsEnabled())
+                        outputDirectory = Path.Join($"{_config.GetExportSavePath()}/Maps/Assets", modelSubDirectory);
+                    else
+                        outputDirectory = Path.Join(outputDirectory, modelSubDirectory);
                     break;
                 default:
                     outputDirectory = Path.Join(outputDirectory, scene.Name);

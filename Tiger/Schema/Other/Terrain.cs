@@ -18,7 +18,8 @@ public class Terrain : Tag<STerrain>
     public void LoadIntoExporter(ExporterScene scene, string saveDirectory, ulong? identifier = null)
     {
         var _config = ConfigSubsystem.Get();
-        //var _exportIndiv = _config.GetIndvidualStaticsEnabled();
+        if (_config.GetSingleFolderMapAssetsEnabled())
+            saveDirectory = Path.Join(_config.GetExportSavePath(), $"Maps/Assets/");
 
         // Uses triangle strip + only using first set of vertices and indices
         Dictionary<StaticPart, Material> parts = new Dictionary<StaticPart, Material>();

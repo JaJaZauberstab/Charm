@@ -83,15 +83,6 @@ public partial class GeneralConfigView : UserControl
         csp.ChangeButton.Click += ExportSavePath_OnClick;
         GeneralConfigPanel.Children.Add(csp);
 
-        // Don't really see the point of this anymore, just export to 'Maps/(name)'
-        // Enable combined extraction folder for maps 
-        //ConfigSettingToggleControl cef = new ConfigSettingToggleControl();
-        //cef.SettingName = "Single Folder Extraction For Maps";
-        //var bval = _config.GetSingleFolderMapsEnabled();
-        //cef.SettingValue = bval.ToString();
-        //cef.ChangeButton.Click += SingleFolderMapsEnabled_OnClick;
-        //GeneralConfigPanel.Children.Add(cef);
-
         // Output texture format
         ConfigSettingComboControl ctf = new ConfigSettingComboControl();
         ctf.SettingName = "Output Texture Format";
@@ -106,21 +97,16 @@ public partial class GeneralConfigView : UserControl
         // ---- Misc settings panel ----
         MiscConfigPanel.Children.Clear();
 
-        //// Enable individual static extraction with maps
-        //ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
-        //cfe.SettingName = "Export Individual Models With Maps";
-        //var bval = _config.GetIndvidualStaticsEnabled();
-        //cfe.SettingValue = bval.ToString();
-        //cfe.ChangeButton.Click += IndvidualStaticsEnabled_OnClick;
-        //MiscConfigPanel.Children.Add(cfe);
+        // Store all exported map assets in a single "Maps/Assets/" folder  
+        // instead of "ExportPath/(MapName)/".
+        ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
+        cfe.SettingName = "Unified Map Asset Exports";
+        cfe.SettingLabel = "Export all map assets to a single \"Maps/Assets/\" folder";
+        var eval = _config.GetSingleFolderMapAssetsEnabled();
+        cfe.SettingValue = eval.ToString();
+        cfe.ChangeButton.Click += SingleFolderMapAssetsEnabled_OnClick;
+        MiscConfigPanel.Children.Add(cfe);
 
-        //// Enable full material data exporting
-        //ConfigSettingToggleControl exportMaterials = new ConfigSettingToggleControl();
-        //exportMaterials.SettingName = "Export Full Material Data";
-        //var bhlsl = _config.GetExportMaterials();
-        //exportMaterials.SettingValue = bhlsl.ToString();
-        //exportMaterials.ChangeButton.Click += ExportMaterials_OnClick;
-        //MiscConfigPanel.Children.Add(exportMaterials);
 
         ConfigSettingToggleControl disBg = new ConfigSettingToggleControl();
         disBg.SettingName = "Animated Background";
@@ -264,9 +250,9 @@ public partial class GeneralConfigView : UserControl
         PopulateConfigPanel();
     }
 
-    private void SingleFolderMapsEnabled_OnClick(object sender, RoutedEventArgs e)
+    private void SingleFolderMapAssetsEnabled_OnClick(object sender, RoutedEventArgs e)
     {
-        _config.SetSingleFolderMapsEnabled(!_config.GetSingleFolderMapsEnabled());
+        _config.SetSingleFolderMapAssetsEnabled(!_config.GetSingleFolderMapAssetsEnabled());
         PopulateConfigPanel();
     }
 
@@ -308,10 +294,4 @@ public partial class GeneralConfigView : UserControl
         _config.SetAnimatedBackground(!_config.GetAnimatedBackground());
         PopulateConfigPanel();
     }
-
-    //private void ExportMaterials_OnClick(object sender, RoutedEventArgs e)
-    //{
-    //    _config.SetExportMaterials(!_config.GetExportMaterials());
-    //    PopulateConfigPanel();
-    //}
 }

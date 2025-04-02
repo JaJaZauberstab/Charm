@@ -25,7 +25,7 @@ public class CommonSettings
     public Dictionary<TigerStrategy, string> PackagesPath { get; set; } = new Dictionary<TigerStrategy, string>();
     public TigerStrategy CurrentStrategy { get; set; } = TigerStrategy.NONE;
     public string ExportPath { get; set; } = "";
-    public bool SingleFolderMapsEnabled { get; set; } = true;
+    public bool SingleFolderMapAssetsEnabled { get; set; } = false;
     public bool IndividualStaticsEnabled { get; set; } = false;
     public TextureExportFormat OutputTextureFormat { get; set; } = TextureExportFormat.PNG;
     public bool AnimatedBackground { get; set; } = true;
@@ -329,29 +329,18 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
 
     #region singleFolderMapsEnabled
 
-    public void SetSingleFolderMapsEnabled(bool bSingleFolderMapsEnabled)
+    public void SetSingleFolderMapAssetsEnabled(bool bSingleFolderMapAssetsEnabled)
     {
-        _settings.Common.SingleFolderMapsEnabled = bSingleFolderMapsEnabled;
+        _settings.Common.SingleFolderMapAssetsEnabled = bSingleFolderMapAssetsEnabled;
         Save();
     }
 
-    public bool GetSingleFolderMapsEnabled()
+    public bool GetSingleFolderMapAssetsEnabled()
     {
-        return _settings.Common.SingleFolderMapsEnabled;
+        return _settings.Common.SingleFolderMapAssetsEnabled;
     }
 
     #endregion
-
-    //public void SetIndvidualStaticsEnabled(bool bIndvidualStaticsEnabled)
-    //{
-    //    _settings.Common.IndividualStaticsEnabled = bIndvidualStaticsEnabled;
-    //    Save();
-    //}
-
-    //public bool GetIndvidualStaticsEnabled()
-    //{
-    //    return _settings.Common.IndividualStaticsEnabled;
-    //}
 
     #region outputTextureFormat
 
@@ -391,17 +380,6 @@ public class ConfigSubsystem : Subsystem<ConfigSubsystem>
     {
         return _settings.Common.AnimatedBackground;
     }
-
-    //public void SetExportMaterials(bool b)
-    //{
-    //    _settings.Common.ExportMaterials = b;
-    //    Save();
-    //}
-
-    //public bool GetExportMaterials()
-    //{
-    //    return _settings.Common.ExportMaterials;
-    //}
 
     private string _configFilePath = "./config.json";
     // private Dictionary<string, dynamic?> _settings;

@@ -26,6 +26,8 @@ public class MaterialExporter : AbstractExporter
             else
             {
                 textureSaveDirectory = args.AggregateOutput ? args.OutputDirectory : Path.Join(args.OutputDirectory, $"Maps");
+                if (_config.GetSingleFolderMapAssetsEnabled())
+                    textureSaveDirectory = $"{_config.GetExportSavePath()}/Maps/Assets/";
                 shaderSaveDirectory = textureSaveDirectory;
             }
 
