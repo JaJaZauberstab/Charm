@@ -89,7 +89,7 @@ public static class Source2Handler
         vmat.AppendLine("Layer0\n{");
 
         //Material parameters
-        var name = material.Pixel.GetBytecode().CanInlineBytecode() ? material.Hash : material.Pixel.Shader.Hash;
+        var name = (material.Pixel.GetBytecode().CanInlineBytecode() || material.RenderStage == TfxRenderStage.WaterReflection) ? material.Hash : material.Pixel.Shader.Hash;
         vmat.AppendLine($"\tshader \"Shaders/Source2/ps_{name}.shader\"");
 
         if ((material.EnumerateScopes().Contains(TfxScope.TRANSPARENT) || material.EnumerateScopes().Contains(TfxScope.TRANSPARENT_ADVANCED)) && material.RenderStates.BlendState() == -1)

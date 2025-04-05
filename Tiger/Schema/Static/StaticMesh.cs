@@ -1,5 +1,6 @@
 ﻿using Arithmic;
 using Tiger.Exporters;
+using Tiger.Schema.Entity;
 using Tiger.Schema.Model;
 using Tiger.Schema.Shaders;
 using Tiger.Schema.Static;
@@ -62,15 +63,23 @@ public class MeshPart
     PrimitiveType primitiveType,
     int layoutIndex,
     uint indexCount,
-    uint indexOffset) where T : MeshPart, new()
+    uint indexOffset,
+    TfxRenderStage renderStage = TfxRenderStage.GenerateGbuffer) where T : MeshPart, new()
     {
         T part = new T();
 
+        if (mat is not null)
+        {
+            part.Material = mat;
+            part.Material.RenderStage = renderStage;
+        }
+
         part.Indices = ib.GetIndexData(primitiveType, indexOffset, indexCount);
-        part.Material = mat;
         part.VertexLayoutIndex = layoutIndex;
         part.IndexCount = indexCount;
         part.IndexOffset = indexOffset;
+        if (part is DynamicMeshPart)
+            (part as DynamicMeshPart).RenderStage = renderStage;
 
         // Get unique vertex indices we need to get data for
         HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
@@ -173,8 +182,11 @@ public class StaticMesh : Tag<SStaticMesh>
             }
             StaticPart part = new StaticPart(decalPartEntry);
             part.GetDecalData(decalPartEntry, _tag);
-            part.Material = decalPartEntry.Material;
-            part.Material.RenderStage = (TfxRenderStage)decalPartEntry.GetRenderStage();
+            if (part.Material is not null)
+            {
+                part.Material = decalPartEntry.Material;
+                part.Material.RenderStage = (TfxRenderStage)decalPartEntry.GetRenderStage();
+            }
             parts.Add(part);
         }
 

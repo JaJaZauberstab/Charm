@@ -15,9 +15,20 @@ public class WaterDecals
 
     public void LoadIntoExporter(ExporterScene scene)
     {
-        scene.AddMapModel(Water.Model, Transform.Translation, Transform.Rotation, new Tiger.Schema.Vector3(Transform.Translation.W));
+        Transform transform = new Transform
+        {
+            Position = Transform.Translation.ToVec3(),
+            Quaternion = Transform.Rotation,
+            Rotation = Vector4.QuaternionToEulerAngles(Transform.Rotation),
+            Scale = new(Transform.Translation.W)
+        };
 
-        foreach (DynamicMeshPart part in Water.Model.Load(ExportDetailLevel.MostDetailed, null))
+        var parts = Water.Model.Load(ExportDetailLevel.MostDetailed, null);
+
+        scene.AddMapModelParts($"{Water.Model.Hash}", parts.Where(x => x.RenderStage != TfxRenderStage.WaterReflection).ToList(), transform);
+        scene.AddMapModelParts($"{Water.Model.Hash}_Reflection", parts.Where(x => x.RenderStage == TfxRenderStage.WaterReflection).ToList(), transform);
+
+        foreach (DynamicMeshPart part in parts)
         {
             if (part.Material == null) continue;
             scene.Materials.Add(new ExportMaterial(part.Material));

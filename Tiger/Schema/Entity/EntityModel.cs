@@ -114,7 +114,8 @@ public class EntityModel : Tag<SEntityModel>
                     HasSkeleton = hasSkeleton,
                     RotationOffset = RotationOffset,
                     TranslationOffset = TranslationOffset,
-                    VertexLayoutIndex = mesh.GetInputLayoutForStage(0)
+                    VertexLayoutIndex = mesh.GetInputLayoutForStage(0),
+                    RenderStage = (TfxRenderStage)Array.IndexOf(mesh.PartRangePerRenderStage, (short)i)
                 };
 
                 //We only care about the vertex shader for now for mesh data
@@ -124,7 +125,7 @@ public class EntityModel : Tag<SEntityModel>
                 dynamicMeshPart.Material.Pixel.Shader is null) // || dynamicMeshPart.Material.Unk08 != 1)
                     continue;
 
-                //dynamicMeshPart.Material.RenderStage = (TfxRenderStage)exportPartRange[i]; // I think this is correct..?
+                dynamicMeshPart.Material.RenderStage = dynamicMeshPart.RenderStage;
                 dynamicMeshPart.GetAllData(mesh, _tag);
                 parts.Add(dynamicMeshPart);
             }
@@ -167,6 +168,8 @@ public class DynamicMeshPart : MeshPart
 
     public Vector4 RotationOffset = new();
     public Vector4 TranslationOffset = new();
+
+    public TfxRenderStage RenderStage;
 
     public DynamicMeshPart(D2Class_CB6E8080 part, EntityResource parentResource) : base()
     {

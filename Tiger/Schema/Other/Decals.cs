@@ -17,6 +17,9 @@ public class Decals : Tag<SMapDecals>
         {
             for (int i = instance.StartIndex; i < instance.StartIndex + instance.Count; i++)
             {
+                if (instance.Material is null)
+                    continue;
+
                 instance.Material.RenderStage = TfxRenderStage.Decals;
                 scene.Materials.Add(new(instance.Material));
             }

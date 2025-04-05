@@ -51,7 +51,7 @@ public class TfxBytecodeInterpreter
 
     public Dictionary<int, string> Evaluate(DynamicArray<Vec4> constants, bool print = false, Material? material = null)
     {
-        bool bInline = CanInlineBytecode();
+        bool bInline = CanInlineBytecode() || material?.RenderStage == TfxRenderStage.WaterReflection;
 
         Dictionary<int, string> hlsl = new();
         try
