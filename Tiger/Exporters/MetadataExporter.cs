@@ -42,6 +42,7 @@ class MetadataScene
         SetType(_exportType, _dataExportType);
         SetMeshName(scene.Name);
 
+        _config["UnifiedAssets"] = _charmConfig.GetSingleFolderMapAssetsEnabled();
         if (_charmConfig.GetSingleFolderMapAssetsEnabled() && scene.DataType == DataExportType.Map)
         {
             _config["AssetsPath"] = Path.Join(_charmConfig.GetExportSavePath(), $"Maps/Assets/").Replace("\\", "/");
