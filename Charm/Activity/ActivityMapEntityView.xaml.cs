@@ -216,14 +216,14 @@ public partial class ActivityMapEntityView : UserControl
         ConcurrentBag<DisplayEntityMap> items = new ConcurrentBag<DisplayEntityMap>();
         Parallel.ForEach(bubbleMaps.TagData.MapResources, m =>
         {
-            if (m.GetMapContainer().TagData.MapDataTables.Count > 0)
+            if (m.MapContainer.TagData.MapDataTables.Count > 0)
             {
                 DisplayEntityMap entityMap = new();
-                entityMap.Name = $"{m.GetMapContainer().Hash}";
-                entityMap.Hash = m.GetMapContainer().Hash;
-                entityMap.Count = m.GetMapContainer().TagData.MapDataTables.Count;
+                entityMap.Name = $"{m.MapContainer.Hash}";
+                entityMap.Hash = m.MapContainer.Hash;
+                entityMap.Count = m.MapContainer.TagData.MapDataTables.Count;
                 entityMap.EntityType = DisplayEntityMap.Type.Map;
-                entityMap.DataTables = m.GetMapContainer().TagData.MapDataTables.Select(entry => entry.MapDataTable.Hash).ToList();
+                entityMap.DataTables = m.MapContainer.TagData.MapDataTables.Select(entry => entry.MapDataTable.Hash).ToList();
                 entityMap.Data = entityMap;
 
                 items.Add(entityMap);
@@ -283,11 +283,11 @@ public partial class ActivityMapEntityView : UserControl
 
             dataEntries.ForEach(entry =>
             {
-                if (!entities.ContainsKey(entry.GetEntityHash()))
+                if (!entities.ContainsKey(entry.Entity.Hash))
                 {
-                    entities[entry.GetEntityHash()] = new ConcurrentBag<ulong>();
+                    entities[entry.Entity.Hash] = new ConcurrentBag<ulong>();
                 }
-                entities[entry.GetEntityHash()].Add(entry.WorldID);
+                entities[entry.Entity.Hash].Add(entry.WorldID);
             });
         });
 
@@ -429,7 +429,7 @@ public partial class ActivityMapEntityView : UserControl
                 var dataEntries = FileResourcer.Get().GetSchemaTag<SF6038080>(data).TagData.EntityResource.CollapseIntoDataEntry();
                 foreach (var entry in dataEntries)
                 {
-                    Entity entity = FileResourcer.Get().GetFile<Entity>(entry.GetEntityHash());
+                    Entity entity = FileResourcer.Get().GetFile<Entity>(entry.Entity.Hash);
                     if (entity.HasGeometry())
                     {
                         entitiesScene.AddMapEntity(entry, entity);
@@ -444,7 +444,7 @@ public partial class ActivityMapEntityView : UserControl
                 var dataTable = FileResourcer.Get().GetSchemaTag<SMapDataTable>(data);
                 dataTable.TagData.DataEntries.ForEach(entry =>
                 {
-                    Entity entity = FileResourcer.Get().GetFile<Entity>(entry.GetEntityHash());
+                    Entity entity = FileResourcer.Get().GetFile<Entity>(entry.Entity.Hash);
                     if (entity.HasGeometry())
                     {
                         entitiesScene.AddMapEntity(entry, entity);
@@ -677,7 +677,7 @@ public partial class ActivityMapEntityView : UserControl
 
                     foreach (var entry in dataEntries)
                     {
-                        Entity entity = FileResourcer.Get().GetFile<Entity>(entry.GetEntityHash());
+                        Entity entity = FileResourcer.Get().GetFile<Entity>(entry.Entity.Hash);
                         if (entity.HasGeometry())
                         {
                             List<Entity> entities = new List<Entity> { entity };

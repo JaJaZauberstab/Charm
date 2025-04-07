@@ -103,55 +103,55 @@ public partial class MaterialView : UserControl
 
         foreach (var tex in material.Vertex.EnumerateTextures())
         {
-            if (tex.GetTexture() is null)
+            if (tex.Texture is null)
                 continue;
 
             items.Add(new TextureDetail
             {
                 Shader = "Vertex Shader",
-                Hash = $"{tex.GetTexture().Hash}",
+                Hash = $"{tex.Texture.Hash}",
                 Index = $"Index: {tex.TextureIndex}",
-                Type = $"Colorspace: {(tex.GetTexture().IsSrgb() ? "Srgb" : "Non-Color")}",
-                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.GetTexture().GetDimension())}",
-                Format = $"Format: {tex.GetTexture().TagData.GetFormat()}",
-                Dimensions = $"{tex.GetTexture().TagData.Width}x{tex.GetTexture().TagData.Height}",
-                Texture = LoadTexture(tex.GetTexture())
+                Type = $"Colorspace: {(tex.Texture.IsSrgb() ? "Srgb" : "Non-Color")}",
+                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.Texture.GetDimension())}",
+                Format = $"Format: {tex.Texture.TagData.GetFormat()}",
+                Dimensions = $"{tex.Texture.TagData.Width}x{tex.Texture.TagData.Height}",
+                Texture = LoadTexture(tex.Texture)
             });
         }
 
         foreach (var tex in material.Pixel.EnumerateTextures())
         {
-            if (tex.GetTexture() is null)
+            if (tex.Texture is null)
                 continue;
 
             items.Add(new TextureDetail
             {
                 Shader = "Pixel Shader",
-                Hash = $"{tex.GetTexture().Hash}",
+                Hash = $"{tex.Texture.Hash}",
                 Index = $"Index: {tex.TextureIndex}",
-                Type = $"Colorspace: {(tex.GetTexture().IsSrgb() ? "Srgb" : "Non-Color")}",
-                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.GetTexture().GetDimension())}",
-                Format = $"Format: {tex.GetTexture().TagData.GetFormat()}",
-                Dimensions = $"{tex.GetTexture().TagData.Width}x{tex.GetTexture().TagData.Height}",
-                Texture = LoadTexture(tex.GetTexture())
+                Type = $"Colorspace: {(tex.Texture.IsSrgb() ? "Srgb" : "Non-Color")}",
+                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.Texture.GetDimension())}",
+                Format = $"Format: {tex.Texture.TagData.GetFormat()}",
+                Dimensions = $"{tex.Texture.TagData.Width}x{tex.Texture.TagData.Height}",
+                Texture = LoadTexture(tex.Texture)
             });
         }
 
         foreach (var tex in material.Compute.EnumerateTextures())
         {
-            if (tex.GetTexture() is null)
+            if (tex.Texture is null)
                 continue;
 
             items.Add(new TextureDetail
             {
                 Shader = "Compute Shader",
-                Hash = $"{tex.GetTexture().Hash}",
+                Hash = $"{tex.Texture.Hash}",
                 Index = $"Index: {tex.TextureIndex}",
-                Type = $"Colorspace: {(tex.GetTexture().IsSrgb() ? "Srgb" : "Non-Color")}",
-                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.GetTexture().GetDimension())}",
-                Format = $"Format: {tex.GetTexture().TagData.GetFormat()}",
-                Dimensions = $"{tex.GetTexture().TagData.Width}x{tex.GetTexture().TagData.Height}",
-                Texture = LoadTexture(tex.GetTexture())
+                Type = $"Colorspace: {(tex.Texture.IsSrgb() ? "Srgb" : "Non-Color")}",
+                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.Texture.GetDimension())}",
+                Format = $"Format: {tex.Texture.TagData.GetFormat()}",
+                Dimensions = $"{tex.Texture.TagData.Width}x{tex.Texture.TagData.Height}",
+                Texture = LoadTexture(tex.Texture)
             });
         }
 

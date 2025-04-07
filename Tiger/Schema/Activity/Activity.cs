@@ -202,11 +202,11 @@ namespace Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601
             {
                 var bubble = _tag.Bubbles[bubbleIndex];
                 if (bubble.MapReference is null ||
-                    bubble.MapReference.TagData.GetChildMapReference() == null)
+                    bubble.MapReference.TagData.ChildMapReference == null)
                 {
                     continue;
                 }
-                yield return new Bubble { Name = GetBubbleNameFromBubbleIndex(bubbleIndex), ChildMapReference = bubble.MapReference.TagData.GetChildMapReference() };
+                yield return new Bubble { Name = GetBubbleNameFromBubbleIndex(bubbleIndex), ChildMapReference = bubble.MapReference.TagData.ChildMapReference };
             }
         }
 
@@ -329,7 +329,7 @@ namespace Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402 // BL + all the way to
             {
                 if (Strategy.CurrentStrategy == TigerStrategy.DESTINY2_BEYONDLIGHT_3402)
                 {
-                    if (mapEntry.Unk30 is null || mapEntry.Unk30.TagData.GetChildMapReference() == null)
+                    if (mapEntry.Unk30 is null || mapEntry.Unk30.TagData.ChildMapReference == null)
                         continue;
 
                     string name = stringContainer is null ? mapEntry.BubbleName : stringContainer.GetStringFromHash(mapEntry.BubbleName);
@@ -339,7 +339,7 @@ namespace Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402 // BL + all the way to
                     yield return new Bubble
                     {
                         Name = name,
-                        ChildMapReference = mapEntry.Unk30.TagData.GetChildMapReference()
+                        ChildMapReference = mapEntry.Unk30.TagData.ChildMapReference
                     };
                 }
                 else
@@ -347,7 +347,7 @@ namespace Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402 // BL + all the way to
                     foreach (var mapReference in mapEntry.MapReferences)
                     {
 
-                        if (mapReference.MapReference is null || mapReference.MapReference.TagData.GetChildMapReference() == null)
+                        if (mapReference.MapReference is null || mapReference.MapReference.TagData.ChildMapReference == null)
                             continue;
 
                         string name = stringContainer is null ? mapEntry.BubbleName : stringContainer.GetStringFromHash(mapEntry.BubbleName);
@@ -357,7 +357,7 @@ namespace Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402 // BL + all the way to
                         yield return new Bubble
                         {
                             Name = name,
-                            ChildMapReference = mapReference.MapReference.TagData.GetChildMapReference()
+                            ChildMapReference = mapReference.MapReference.TagData.ChildMapReference
                         };
                     }
 

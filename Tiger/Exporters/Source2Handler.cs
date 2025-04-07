@@ -98,20 +98,20 @@ public static class Source2Handler
         //Textures
         foreach (var e in material.Pixel.EnumerateTextures())
         {
-            if (e.GetTexture() == null)
+            if (e.Texture == null)
                 continue;
 
-            vmat.AppendLine($"\tPS_TextureT{e.TextureIndex} \"Textures/{e.GetTexture().Hash}.png\"");
+            vmat.AppendLine($"\tPS_TextureT{e.TextureIndex} \"Textures/{e.Texture.Hash}.png\"");
         }
 
         if (material.Vertex.Unk64 != 0) // Vertex animation?
         {
             foreach (var e in material.Vertex.EnumerateTextures())
             {
-                if (e.GetTexture() == null)
+                if (e.Texture == null)
                     continue;
 
-                vmat.AppendLine($"\tVS_TextureT{e.TextureIndex} \"Textures/{e.GetTexture().Hash}.png\"");
+                vmat.AppendLine($"\tVS_TextureT{e.TextureIndex} \"Textures/{e.Texture.Hash}.png\"");
             }
         }
 
@@ -379,9 +379,9 @@ public static class Source2Handler
             }
 
             var diff = dye.TagData.Textures[0];
-            text = text.Replace($"DiffMap{dyeIndex}", $"{diff.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
+            text = text.Replace($"DiffMap{dyeIndex}", $"{diff.Texture.Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
             var norm = dye.TagData.Textures[1];
-            text = text.Replace($"NormMap{dyeIndex}", $"{norm.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
+            text = text.Replace($"NormMap{dyeIndex}", $"{norm.Texture.Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
             dyeIndex++;
         }
 

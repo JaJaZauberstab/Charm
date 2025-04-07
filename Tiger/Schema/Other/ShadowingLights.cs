@@ -27,7 +27,7 @@ public class ShadowingLights : Tag<SMapShadowingLight>
         Material shading = FileResourcer.Get().GetFile<Material>(_tag.Shading);
         if (shading.Pixel.EnumerateTextures().Any())
         {
-            cookie = shading.Pixel.EnumerateTextures().First().GetTexture();
+            cookie = shading.Pixel.EnumerateTextures().First().Texture;
         }
 
         Lights.LightData lightData = new()

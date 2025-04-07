@@ -73,7 +73,7 @@ public partial class MusicWemsControl : UserControl
     public void Load(List<D2Class_40668080> res)
     {
         var sounds = new ConcurrentBag<WemItem>(
-            res.SelectMany(x => GetWemItems(x.GetSound()))
+            res.SelectMany(x => GetWemItems(x.Sound))
         );
 
         WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());

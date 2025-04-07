@@ -15,7 +15,7 @@ public struct SActivity_SK
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "537D8080", 0x10)]
 public struct S537D8080
 {
-    [Tag64]
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Tag64 = true)]
     public Tag<SBubbleParent> MapReference;
 }
 

@@ -182,7 +182,7 @@ public class StaticMesh : Tag<SStaticMesh>
             }
             StaticPart part = new StaticPart(decalPartEntry);
             part.GetDecalData(decalPartEntry, _tag);
-            if (part.Material is not null)
+            if (decalPartEntry.Material is not null)
             {
                 part.Material = decalPartEntry.Material;
                 part.Material.RenderStage = (TfxRenderStage)decalPartEntry.GetRenderStage();

@@ -86,13 +86,13 @@ public struct D2Class_02218080
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "0E3C8080", 0x28)]
 public struct D2Class_0E3C8080
 {
-    //[Tag64]
+    //[SchemaField(Tag64 = true)]
     //public Tag Unk00; // Always FFFFFFFF?
     [SchemaField(0x0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true)]
     public Tag Unk00;
 
-    [SchemaField(0x10, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Tag Unk10; // Can be string container or something else
 }
 

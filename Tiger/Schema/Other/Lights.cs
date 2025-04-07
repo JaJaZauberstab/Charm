@@ -12,6 +12,7 @@ public class Lights : Tag<D2Class_656C8080>
     public void LoadIntoExporter()
     {
         using TigerReader reader = GetReader();
+        Console.WriteLine($"{Hash}");
         for (int i = 0; i < _tag.LightData.Count; i++)
         {
             var data = _tag.LightData.ElementAt(reader, i);
@@ -36,7 +37,7 @@ public class Lights : Tag<D2Class_656C8080>
 
                 if (data.Shading.Pixel.EnumerateTextures().Any())
                 {
-                    cookie = data.Shading.Pixel.EnumerateTextures().First().GetTexture();
+                    cookie = data.Shading.Pixel.EnumerateTextures().First().Texture;
                 }
             }
 

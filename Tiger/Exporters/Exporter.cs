@@ -294,7 +294,7 @@ public class ExporterScene
     {
         if (_addedEntities.TryAdd(entity.Hash, true)) // Dont want duplicate entities being added
         {
-            ExporterMesh mesh = new(dynamicResource.GetEntityHash());
+            ExporterMesh mesh = new(dynamicResource.Entity.Hash);
             var parts = entity.Model.Load(ExportDetailLevel.MostDetailed, entity.ModelParentResource);
             for (int i = 0; i < parts.Count; i++)
             {
@@ -302,12 +302,12 @@ public class ExporterScene
                 if (part.Material == null)
                     continue;
 
-                mesh.AddPart(dynamicResource.GetEntityHash(), part, i);
+                mesh.AddPart(dynamicResource.Entity.Hash, part, i);
             }
             Entities.Add(new ExporterEntity { Mesh = mesh, BoneNodes = entity.Skeleton?.GetBoneNodes() });
         }
 
-        EntityInstances.TryAdd(dynamicResource.GetEntityHash(), new());
+        EntityInstances.TryAdd(dynamicResource.Entity.Hash, new());
         if (transform is null)
         {
             transform = new Transform
@@ -318,7 +318,7 @@ public class ExporterScene
                 Scale = new Vector3(dynamicResource.Transfrom.Translation.W, dynamicResource.Transfrom.Translation.W, dynamicResource.Transfrom.Translation.W)
             };
         }
-        EntityInstances[dynamicResource.GetEntityHash()].Add((Transform)transform);
+        EntityInstances[dynamicResource.Entity.Hash].Add((Transform)transform);
     }
 
     public void AddMapModel(EntityModel model, Vector4 translation, Vector4 rotation, Vector3 scale, bool transparentsOnly = false)

@@ -378,19 +378,8 @@ public struct D2Class_9D548080
     public TigerHash ApiHash;
 
     [SchemaField(0x8, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
-    public Tag<D2Class_9F548080> StringThingROI;
-
-    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
     public Tag<D2Class_9F548080> StringThing;
-
-    public Tag<D2Class_9F548080> GetStringThing()
-    {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
-            return StringThingROI;
-        else
-            return StringThing;
-    }
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "84348080", 0xB4)]
@@ -738,9 +727,9 @@ public struct D2Class_454F8080 : IComparer<D2Class_454F8080>
 public struct D2Class_A44E8080
 {
     public long FileSize;
-    [SchemaField(0x10), Tag64]
+    [SchemaField(0x10, Tag64 = true)]
     public Tag<D2Class_8C978080> SandboxPatternAssignmentsTag;
-    [SchemaField(0x28), Tag64]
+    [SchemaField(0x28, Tag64 = true)]
     public Tag<D2Class_434F8080> EntityAssignmentsMap;
 }
 
@@ -763,25 +752,15 @@ public struct D2Class_8C978080
 public struct D2Class_0F878080 : IComparer<D2Class_0F878080>
 {
     public TigerHash ApiHash;
-    [SchemaField(0x4, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
-    public FileHash EntityRelationHashROI;
 
-    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
+    [SchemaField(0x4, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
     public FileHash EntityRelationHash;  // can be entity or smth else, if SandboxPattern is entity if ArtDyeReference idk
 
     public int Compare(D2Class_0F878080 x, D2Class_0F878080 y)
     {
         if (x.ApiHash.Equals(y.ApiHash)) return 0;
         return x.ApiHash.CompareTo(y.ApiHash);
-    }
-
-    public FileHash GetEntityRelationHash()
-    {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
-            return EntityRelationHashROI;
-        else
-            return EntityRelationHash;
     }
 }
 
@@ -817,20 +796,10 @@ public struct D2Class_AE528080
 public struct D2Class_A36F8080
 {
     public long FileSize;
+
     [SchemaField(0x10, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
-    public FileHash EntityDataROI;
-
-    [SchemaField(8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
+    [SchemaField(8, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
     public FileHash EntityData;  // can be entity, can be audio group for entity
-
-    public FileHash GetEntityData()
-    {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
-            return EntityDataROI;
-        else
-            return EntityData;
-    }
 }
 
 #endregion
@@ -868,7 +837,7 @@ public struct D2Class_015A8080
 public struct D2Class_075A8080
 {
     public TigerHash InventoryItemHash;
-    [SchemaField(0x10), Tag64]
+    [SchemaField(0x10, Tag64 = true)]
     public Tag<D2Class_B83E8080> IconContainer;
 }
 
@@ -1026,20 +995,9 @@ public struct D2Class_0E5A8080
 {
     public TigerHash BankFnvHash;  // some kind of name for the bank
 
-    [SchemaField(0x10, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
-    public LocalizedStrings LocalizedStringsROI;
-
-    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64, NoLoad]
+    [SchemaField(0x10, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true), NoLoad]
     public LocalizedStrings LocalizedStrings;
-
-    public LocalizedStrings GetLocalizedStrings()
-    {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
-            return LocalizedStringsROI;
-        else
-            return LocalizedStrings;
-    }
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CF508080", 0x18)]

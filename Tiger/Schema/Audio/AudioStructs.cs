@@ -30,7 +30,7 @@ public struct D2Class_29978080
 [SchemaStruct("2F978080", 0x48)]
 public struct D2Class_2F978080
 {
-    [SchemaField(0x10), Tag64]
+    [SchemaField(0x10, Tag64 = true)]
     public Tag Unk10;
     //[SchemaField(0x1C)]
     public TigerHash Unk20;
@@ -63,9 +63,9 @@ public struct D2Class_2A978080
 public struct D2Class_33978080
 {
     // Male
-    [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
-    [SchemaField(0x18, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
-    [SchemaField(0x20, TigerStrategy.DESTINY2_LIGHTFALL_7366), Tag64]
+    [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
+    [SchemaField(0x18, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
+    [SchemaField(0x20, TigerStrategy.DESTINY2_LIGHTFALL_7366, Tag64 = true)]
     public WwiseSound SoundM;
 
     [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
@@ -79,9 +79,9 @@ public struct D2Class_33978080
 
     // Female
     [SchemaField(0x38, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    [SchemaField(0x48, TigerStrategy.DESTINY2_WITCHQUEEN_6307), Tag64]
-    [SchemaField(0x50, TigerStrategy.DESTINY2_LIGHTFALL_7366), Tag64]
-    [SchemaField(0x58, TigerStrategy.DESTINY2_LATEST), Tag64]
+    [SchemaField(0x48, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
+    [SchemaField(0x50, TigerStrategy.DESTINY2_LIGHTFALL_7366, Tag64 = true)]
+    [SchemaField(0x58, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public WwiseSound SoundF;
 
     [SchemaField(0x48, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
@@ -126,7 +126,7 @@ public struct D2Class_2D978080
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "30978080", 0x28)]
 public struct D2Class_30978080
 {
-    [Tag64, SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
     public Tag Unk00;
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public TigerHash Unk10;

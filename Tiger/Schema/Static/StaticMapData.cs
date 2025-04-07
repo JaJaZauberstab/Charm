@@ -394,12 +394,10 @@ public struct SStaticMeshInstanceMap
 public struct SBubbleParent
 {
     public long FileSize;
-    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
-    [SchemaField(TigerStrategy.DESTINY2_LATEST, Obsolete = true)] // Changed to Tag64 in Heresy
-    public Tag<SBubbleDefinition> ChildMapReference;
 
-    [SchemaField(TigerStrategy.DESTINY2_LATEST), Tag64] // Changed to Tag64 in Heresy
-    public Tag<SBubbleDefinition> ChildMapReference64;
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_LATEST, Tag64 = true)] // Changed to Tag64 in Heresy
+    public Tag<SBubbleDefinition> ChildMapReference;
 
     [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x20, TigerStrategy.DESTINY2_LATEST)]
@@ -408,16 +406,9 @@ public struct SBubbleParent
     [SchemaField(0x40, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x48, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_C9968080> Unk40;
-    [Tag64, SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Tag Unk50;  // some kind of parent thing, very strange weird idk
 
-    public Tag<SBubbleDefinition> GetChildMapReference()
-    {
-        if (Strategy.IsLatest())
-            return ChildMapReference64;
-        else
-            return ChildMapReference;
-    }
 }
 
 /// <summary>
@@ -427,7 +418,7 @@ public struct SBubbleParent
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C9968080", 0x10)]
 public struct D2Class_C9968080
 {
-    [Tag64]
+    [SchemaField(Tag64 = true)]
     public Tag Unk00;
 }
 
@@ -451,19 +442,8 @@ public struct SBubbleDefinition
 public struct SMapContainerEntry
 {
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
-    public Tag<SMapContainer> MapContainerROI;
-
-    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601), Tag64]
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Tag64 = true)]
     public Tag<SMapContainer> MapContainer;
-
-    public Tag<SMapContainer> GetMapContainer()
-    {
-        if (MapContainerROI != null)
-            return MapContainerROI;
-        else
-            return MapContainer;
-    }
 }
 
 /// <summary>
@@ -511,18 +491,14 @@ public struct SMapDataTable
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "85988080", 0x90)]
 public struct SMapDataEntry
 {
-    // for now we'll process both entities as if they were the same
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
-    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true), NoLoad]
-    public Entity.Entity EntitySK;
+    [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true), NoLoad]
+    public Entity.Entity Entity;
 
     [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public MapTransform Transfrom;
-
-    [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64, NoLoad]
-    public Entity.Entity EntityWQ;
 
     [SchemaField(0x68)]
     public uint Unk68;
@@ -534,14 +510,6 @@ public struct SMapDataEntry
     [SchemaField(0x88, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public ResourcePointer DataResource;
-
-    public FileHash GetEntityHash()
-    {
-        if (EntitySK != null)
-            return EntitySK.Hash;
-        else
-            return EntityWQ.Hash;
-    }
 }
 
 /// <summary>
@@ -573,7 +541,7 @@ public struct SStaticMapParent
 /// Light Lens Flares
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "BF6C8080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B5678080", 0x1C)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B5678080", 0x1C)]
 public struct SMapLensFlareResource
 {
     [SchemaField(0x10)]
@@ -584,7 +552,7 @@ public struct SMapLensFlareResource
 /// Unk data resource.
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "686F8080", 0x38)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "786A8080", 0x38)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "786A8080", 0x38)]
 public struct SLensFlare
 {
     public ulong FileSize;
@@ -599,7 +567,7 @@ public struct SLensFlare
 /// Unk data resource.
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "6D6F8080", 0xC)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "7D6A8080", 0xC)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "7D6A8080", 0xC)]
 public struct SLensFlareEntry
 {
     public Material Material;
@@ -694,7 +662,8 @@ public struct D2Class_706C8080
     // Techniques between
 
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0xC4, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0xC0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0xC4, TigerStrategy.DESTINY2_LATEST)]
     public Material Shading;
 
     [SchemaField(0x84, TigerStrategy.DESTINY1_RISE_OF_IRON)]
@@ -730,7 +699,7 @@ public struct D2Class_A16D8080
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "DA1B8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "916F8080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A36A8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "A36A8080", 0x18)]
 public struct SMapSkyObjectsResource
 {
     [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
@@ -757,19 +726,26 @@ public struct SMapSkyObjects
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "1E1C8080", 0x80)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "976F8080", 0x80)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A96A8080", 0x90)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "A96A8080", 0x90)]
 public struct D2Class_A96A8080
 {
     public Matrix4x4 Transform;
     public AABB Bounds;
     public Tag<D2Class_AE6A8080> Model;
+
+    [SchemaField(0x68, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x6C, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x70, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public int Unk70; // if 5, skip the model??
+
+    [SchemaField(0x78, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x7C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public Tag<D2Class_C58A8080> Complex;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C58A8080", 0x1C)]
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "4F068080", 0x1C)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "F08E8080", 0x1C)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C58A8080", 0x1C)]
 public struct D2Class_C58A8080
 {
     public long FileSize;
@@ -778,6 +754,9 @@ public struct D2Class_C58A8080
     public ResourcePointer Pointer; // 438B8080
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "32048080", 0x80)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "728F8080", 0x80)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "438B8080", 0x80)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "438B8080", 0x70)]
 public struct D2Class_438B8080
 {
@@ -852,7 +831,7 @@ public struct D2Class_64698080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "3A1B8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "9B6F8080", 0x10)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "AE6A8080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "AE6A8080", 0x10)]
 public struct D2Class_AE6A8080
 {
     public long FileSize;
@@ -861,7 +840,7 @@ public struct D2Class_AE6A8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "E2078080", 0x30)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "73968080", 0x30)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B3938080", 0x30)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B3938080", 0x30)]
 public struct D2Class_B3938080
 {
     //Bounds
@@ -897,24 +876,39 @@ public struct SMapWaterDecal
     public EntityModel Model;
 }
 
+// 501A8080 in D1, uses 16 2D textures instead the 16-depth 3D texture D2 uses
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "86708080", 0xF0)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C16B8080", 0x130)]
 public struct SMapAtmosphere
 {
+
     // 0 and 1 used in...
     // sky_lookup_generate_near/far, result used in 'Sky' and set to T11 and T13 (transparent scope)
     // full_hemisphere_sky_color_generate,
     // hemisphere_sky_color_generate,
     // water_sky_color_generate,
-    [SchemaField(0x90), Tag64]
+    [SchemaField(0x90, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x90, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup0;
-    [Tag64]
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup1;
-    [Tag64]
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup2;
-    [Tag64]
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup3;
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Texture Lookup4; // used in atmo_depth_angle_density_lookup_generate, result set to T15 (transparent scope)
-    public FileHash UnkD4;
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public FileHash UnkD4; // Some weird RGBA byte texture that looks like when Lookup4 is sampled in atmo_depth_angle_density_lookup_generate
 
     public Vector4 UnkD8;
     public Vector4 UnkE8;

@@ -1012,7 +1012,7 @@ public partial class TagListView : UserControl
                                 {
                                     if (name.EntityName.IsValid())
                                     {
-                                        var entityHash = datatable.GetEntityHash();
+                                        var entityHash = datatable.Entity.Hash;
                                         var entityName = GlobalStrings.Get().GetString(name.EntityName);
 
                                         Ents.AddEntityName(Strategy.CurrentStrategy, entityHash, entityName);
@@ -1035,9 +1035,9 @@ public partial class TagListView : UserControl
                             var resource = (SDD078080)entry.TagData.EntityResource.TagData.Unk18.GetValue(entry.TagData.EntityResource.GetReader());
                             foreach (var dataentry in resource.DataEntries)
                             {
-                                if (dataentry.GetEntityHash().IsValid())
+                                if (dataentry.Entity.Hash.IsValid())
                                 {
-                                    var entityHash = dataentry.GetEntityHash();
+                                    var entityHash = dataentry.Entity.Hash;
                                     var entityName = resource.DevName.Value ?? entityHash.ToString();
 
                                     Ents.AddEntityName(Strategy.CurrentStrategy, entityHash, entityName);
@@ -1076,7 +1076,7 @@ public partial class TagListView : UserControl
                                         {
                                             if (name.EntityName.IsValid())
                                             {
-                                                var entityHash = value.Value.GetEntityHash();
+                                                var entityHash = value.Value.Entity.Hash;
                                                 var entityName = GlobalStrings.Get().GetString(name.EntityName);
 
                                                 Ents.AddEntityName(Strategy.CurrentStrategy, entityHash, entityName);
@@ -1105,7 +1105,7 @@ public partial class TagListView : UserControl
                         {
                             if (name.EntityName.IsValid())
                             {
-                                var entityHash = dataEntry.GetEntityHash();
+                                var entityHash = dataEntry.Entity.Hash;
                                 var entityName = GlobalStrings.Get().GetString(name.EntityName);
 
                                 Ents.AddEntityName(Strategy.CurrentStrategy, entityHash, entityName);
@@ -1143,7 +1143,7 @@ public partial class TagListView : UserControl
                                 {
                                     if (entry.Name.IsValid())
                                     {
-                                        var entityHash = dataEntry.GetEntityHash();
+                                        var entityHash = dataEntry.Entity.Hash;
                                         var entityName = GlobalStrings.Get().GetString(entry.Name);
 
                                         Ents.AddEntityName(Strategy.CurrentStrategy, entityHash, entityName);
@@ -2096,16 +2096,16 @@ public partial class TagListView : UserControl
         {
             if (resource.FallbackAudioGroup != null)
             {
-                audioGroup = FileResourcer.Get().GetSchemaTag<D2Class_0D8C8080>(resource.FallbackAudioGroup.TagData.GetEntityData());
+                audioGroup = FileResourcer.Get().GetSchemaTag<D2Class_0D8C8080>(resource.FallbackAudioGroup.TagData.EntityData);
             }
         }
         else
         {
             foreach (var entry in resource.PatternAudioGroups)
             {
-                if (entry.WeaponContentGroup1Hash.Equals(weaponContentGroupHash) && entry.GetAudioGroup() != null)
+                if (entry.WeaponContentGroup1Hash.Equals(weaponContentGroupHash) && entry.AudioGroup != null)
                 {
-                    audioGroup = FileResourcer.Get().GetSchemaTag<D2Class_0D8C8080>(entry.GetAudioGroup().TagData.GetEntityData());
+                    audioGroup = FileResourcer.Get().GetSchemaTag<D2Class_0D8C8080>(entry.AudioGroup.TagData.EntityData);
                 }
             }
         }
@@ -2116,7 +2116,7 @@ public partial class TagListView : UserControl
             {
                 foreach (var s in audio.Sounds)
                 {
-                    var sound = FileResourcer.Get().GetFile<WwiseSound>(s.GetData());
+                    var sound = FileResourcer.Get().GetFile<WwiseSound>(s.Data);
                     if (sound == null)
                         continue;
 
@@ -2176,7 +2176,7 @@ public partial class TagListView : UserControl
                 if (!entry.WeaponContentGroupHash.Equals(weaponContentGroupHash))
                     return;
 
-                List<TigerFile> entitiesParents = new() { entry.Unk60, entry.Unk78, entry.Unk90, entry.UnkA8, entry.UnkC0, entry.UnkD8, entry.GetAudioEntityParent(), entry.Unk130, entry.Unk148, entry.Unk1C0, entry.Unk1D8, entry.Unk248 };
+                List<TigerFile> entitiesParents = new() { entry.Unk60, entry.Unk78, entry.Unk90, entry.UnkA8, entry.UnkC0, entry.UnkD8, entry.AudioEntityParent, entry.Unk130, entry.Unk148, entry.Unk1C0, entry.Unk1D8, entry.Unk248 };
 
                 if (entry.Unk118.GetValue(reader) is D2Class_0A2D8080 or S40238080)
                 {
@@ -2197,7 +2197,7 @@ public partial class TagListView : UserControl
                     var reference = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON ? tag.Hash.GetReferenceHash() : tag.Hash.GetReferenceFromManifest();
                     if (reference == 0x80806fa3 || reference == 0x80803463)
                     {
-                        var entityData = FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(tag.Hash).TagData.GetEntityData();
+                        var entityData = FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(tag.Hash).TagData.EntityData;
                         var reference2 = entityData.GetReferenceHash();
                         if (reference2 == 0x80802d09 || reference2 == 0x80803165)
                         {
@@ -2262,14 +2262,14 @@ public partial class TagListView : UserControl
                     {
                         if (d2ClassF1918080.Unk10.GetValue(e.GetReader()) is D2Class_40668080 b)
                         {
-                            sounds.Add(b.GetSound());
+                            sounds.Add(b.Sound);
                         }
                     }
                     foreach (var d2ClassF1918080 in a.WwiseSounds2)
                     {
                         if (d2ClassF1918080.Unk10.GetValue(e.GetReader()) is D2Class_40668080 b)
                         {
-                            sounds.Add(b.GetSound());
+                            sounds.Add(b.Sound);
                         }
                     }
                 }

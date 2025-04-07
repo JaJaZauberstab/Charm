@@ -71,7 +71,7 @@ public class Dye : Tag<SScope>
         TextureExtractor.SetTextureFormat(outputTextureFormat);
         foreach (var entry in _tag.Textures)
         {
-            TextureExtractor.SaveTextureToFile($"{savePath}/{entry.GetTexture().Hash}", entry.GetTexture().GetScratchImage());
+            TextureExtractor.SaveTextureToFile($"{savePath}/{entry.Texture.Hash}", entry.Texture.GetScratchImage());
         }
     }
 }

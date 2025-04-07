@@ -159,7 +159,7 @@ public class Decorator : Tag<SDecorator>
 #region Decorator structs
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "361C8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "AD718080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C36C8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C36C8080", 0x18)]
 public struct SDecoratorMapResource
 {
     [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
@@ -169,7 +169,7 @@ public struct SDecoratorMapResource
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "CE1A8080", 0xA8)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "64718080", 0xA8)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "986C8080", 0xA8)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "986C8080", 0xA8)]
 public struct SDecorator
 {
     public ulong Size;
@@ -184,7 +184,7 @@ public struct SDecorator
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "17488080", 0x4)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "7D718080", 0x4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B16C8080", 0x4)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B16C8080", 0x4)]
 public struct D2Class_B16C8080
 {
     public Tag<D2Class_B26C8080> DecoratorModel;
@@ -192,6 +192,7 @@ public struct D2Class_B16C8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "221C8080", 0xD8)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "7E718080", 0xD8)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B26C8080", 0xD8)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B26C8080", 0x100)]
 public struct D2Class_B26C8080
 {
@@ -210,7 +211,7 @@ public struct D2Class_B26C8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "D81B8080", 0x18)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "84718080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B86C8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B86C8080", 0x18)]
 public struct D2Class_B86C8080
 {
     [SchemaField(0x8)]
@@ -219,7 +220,7 @@ public struct D2Class_B86C8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9A1A8080", 0x50)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "86718080", 0x50)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "BA6C8080", 0x50)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "BA6C8080", 0x50)]
 public struct D2Class_BA6C8080
 {
     // part of Speedtree cbuffer (cb10)
@@ -232,7 +233,7 @@ public struct D2Class_BA6C8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "CB1A8080", 0x20)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "70718080", 0x20)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A46C8080", 0x20)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "A46C8080", 0x20)]
 public struct D2Class_A46C8080
 {
     public ulong Size;
@@ -247,7 +248,7 @@ public struct D2Class_A46C8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "321B8080", 0x18)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "73718080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A76C8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "A76C8080", 0x18)]
 public struct SDecoratorInstanceData
 {
     [SchemaField(0x8)]
@@ -256,7 +257,7 @@ public struct SDecoratorInstanceData
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "291B8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "75718080", 0x10)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A96C8080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "A96C8080", 0x10)]
 public struct D2Class_A96C8080
 {
     // Normalized position
@@ -272,7 +273,7 @@ public struct D2Class_A96C8080
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "721A8080", 0x60)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "6B718080", 0x60)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "9F6C8080", 0x60)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "9F6C8080", 0x60)]
 public struct D2Class_9F6C8080
 {
     // SpeedtreePlacements[2-7]

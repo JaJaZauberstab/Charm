@@ -130,15 +130,15 @@ namespace Tiger.Schema.Shaders
                 psCB.Textures = new();
                 foreach (var texture in Pixel.EnumerateTextures())
                 {
-                    if (texture.GetTexture() is null)
+                    if (texture.Texture is null)
                         continue;
 
                     psCB.Textures.TryAdd((int)texture.TextureIndex, new()
                     {
-                        Hash = texture.GetTexture().Hash,
-                        Colorspace = texture.GetTexture().IsSrgb() ? "sRGB" : "Non-Color",
-                        Dimension = texture.GetTexture().GetDimension().GetEnumDescription(),
-                        Format = texture.GetTexture().TagData.GetFormat().ToString()
+                        Hash = texture.Texture.Hash,
+                        Colorspace = texture.Texture.IsSrgb() ? "sRGB" : "Non-Color",
+                        Dimension = texture.Texture.GetDimension().GetEnumDescription(),
+                        Format = texture.Texture.TagData.GetFormat().ToString()
                     });
                 }
 
@@ -189,15 +189,15 @@ namespace Tiger.Schema.Shaders
                 vsCB.Textures = new();
                 foreach (var texture in Vertex.EnumerateTextures())
                 {
-                    if (texture.GetTexture() is null)
+                    if (texture.Texture is null)
                         continue;
 
                     vsCB.Textures.TryAdd((int)texture.TextureIndex, new()
                     {
-                        Hash = texture.GetTexture().Hash,
-                        Colorspace = texture.GetTexture().IsSrgb() ? "Srgb" : "Non-Color",
-                        Dimension = texture.GetTexture().GetDimension().GetEnumDescription(),
-                        Format = texture.GetTexture().TagData.GetFormat().ToString()
+                        Hash = texture.Texture.Hash,
+                        Colorspace = texture.Texture.IsSrgb() ? "Srgb" : "Non-Color",
+                        Dimension = texture.Texture.GetDimension().GetEnumDescription(),
+                        Format = texture.Texture.TagData.GetFormat().ToString()
                     });
                 }
 
@@ -206,17 +206,17 @@ namespace Tiger.Schema.Shaders
 
             foreach (STextureTag texture in Vertex.EnumerateTextures())
             {
-                if (texture.GetTexture() == null || File.Exists($"{saveDirectory}/Textures/{texture.GetTexture().Hash}.{_config.GetOutputTextureFormat()}"))
+                if (texture.Texture == null || File.Exists($"{saveDirectory}/Textures/{texture.Texture.Hash}.{_config.GetOutputTextureFormat()}"))
                     continue;
 
-                texture.GetTexture().SavetoFile($"{saveDirectory}/Textures/{texture.GetTexture().Hash}");
+                texture.Texture.SavetoFile($"{saveDirectory}/Textures/{texture.Texture.Hash}");
             }
             foreach (STextureTag texture in Pixel.EnumerateTextures())
             {
-                if (texture.GetTexture() == null || File.Exists($"{saveDirectory}/Textures/{texture.GetTexture().Hash}.{_config.GetOutputTextureFormat()}"))
+                if (texture.Texture == null || File.Exists($"{saveDirectory}/Textures/{texture.Texture.Hash}.{_config.GetOutputTextureFormat()}"))
                     continue;
 
-                texture.GetTexture().SavetoFile($"{saveDirectory}/Textures/{texture.GetTexture().Hash}");
+                texture.Texture.SavetoFile($"{saveDirectory}/Textures/{texture.Texture.Hash}");
             }
 
 

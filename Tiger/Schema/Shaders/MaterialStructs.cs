@@ -149,20 +149,8 @@ public struct STextureTag
 {
     public uint TextureIndex;
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true)]
-    public Texture TextureSK;
-
-    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
-    public Texture TextureBL;
-
-    public Texture GetTexture()
-    {
-        if (Strategy.IsPreBL() || Strategy.IsD1())
-            return TextureSK;
-        else
-            return TextureBL;
-    }
+    [SchemaField(0x8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
+    public Texture Texture;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "CC1A8080", 0x10)]
@@ -175,10 +163,10 @@ public struct SDirectXSamplerTag
     public DirectXSampler SamplerSK;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402), Tag64]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public DirectXSampler SamplerBL;
 
-    public DirectXSampler GetSampler()
+    public DirectXSampler GetSampler() // Leaving this one here since null for D1
     {
         if (Strategy.IsD1())
             return null;

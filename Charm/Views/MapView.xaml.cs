@@ -308,7 +308,7 @@ public partial class MapView : UserControl
 
         Parallel.ForEach(dataEntries, entry =>
         {
-            Entity entity = FileResourcer.Get().GetFile(typeof(Entity), entry.GetEntityHash());
+            Entity entity = FileResourcer.Get().GetFile(typeof(Entity), entry.Entity.Hash);
             List<Entity> entities = new List<Entity> { entity };
             entities.AddRange(entity.GetEntityChildren());
             foreach (var ent in entities)

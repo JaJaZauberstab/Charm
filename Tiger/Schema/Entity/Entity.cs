@@ -239,10 +239,10 @@ public class Entity : Tag<SEntity>
                 {
                     foreach (var entry2 in entry.Unk08)
                     {
-                        if (entry2.GetEntity() is null)
+                        if (entry2.Entity is null)
                             continue;
 
-                        Entity entity = FileResourcer.Get().GetFile<Entity>(entry2.GetEntity().Hash);
+                        Entity entity = FileResourcer.Get().GetFile<Entity>(entry2.Entity.Hash);
                         if (entity.HasGeometry())
                         {
                             entities.Add(entity);

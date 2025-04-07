@@ -127,7 +127,7 @@ public partial class ActivityMapView : UserControl
         ConcurrentBag<DisplayStaticMap> items = new ConcurrentBag<DisplayStaticMap>();
         Parallel.ForEach(bubbleMaps.TagData.MapResources, m =>
         {
-            foreach (var dataTable in m.GetMapContainer().TagData.MapDataTables)
+            foreach (var dataTable in m.MapContainer.TagData.MapDataTables)
             {
                 foreach (var entry in dataTable.MapDataTable.TagData.DataEntries)
                 {
@@ -143,8 +143,8 @@ public partial class ActivityMapView : UserControl
                             int instanceCount = tag.TagData.D1StaticMapData != null ? tag.TagData.D1StaticMapData.TagData.InstanceCounts : tag.TagData.Decals.Count;
                             items.Add(new DisplayStaticMap
                             {
-                                Hash = m.GetMapContainer().Hash,
-                                Name = $"{m.GetMapContainer().Hash}: {instanceCount} instances",
+                                Hash = m.MapContainer.Hash,
+                                Name = $"{m.MapContainer.Hash}: {instanceCount} instances",
                                 Instances = instanceCount
                             });
                         }
@@ -152,8 +152,8 @@ public partial class ActivityMapView : UserControl
                         {
                             items.Add(new DisplayStaticMap
                             {
-                                Hash = m.GetMapContainer().Hash,
-                                Name = $"{m.GetMapContainer().Hash}: {tag.TagData.Instances.Count} instances, {tag.TagData.Statics.Count} uniques",
+                                Hash = m.MapContainer.Hash,
+                                Name = $"{m.MapContainer.Hash}: {tag.TagData.Instances.Count} instances, {tag.TagData.Statics.Count} uniques",
                                 Instances = tag.TagData.Instances.Count
                             });
                         }
@@ -253,7 +253,7 @@ public partial class ActivityMapView : UserControl
         var maps = new List<FileHash>();
         bubbleMaps.TagData.MapResources.ForEach(m =>
         {
-            var containerHash = m.GetMapContainer().Hash;
+            var containerHash = m.MapContainer.Hash;
             if (!maps.Contains(containerHash))
                 maps.Add(containerHash);
         });
@@ -295,11 +295,11 @@ public partial class ActivityMapView : UserControl
             maps = new ConcurrentDictionary<FileHash, List<FileHash>>();
             bubbleMaps.TagData.MapResources.ForEach(m =>
             {
-                var containerHash = m.GetMapContainer().Hash;
+                var containerHash = m.MapContainer.Hash;
                 if (!maps.ContainsKey(containerHash))
-                    maps.TryAdd(m.GetMapContainer().Hash, new());
+                    maps.TryAdd(m.MapContainer.Hash, new());
 
-                foreach (var dataTable in m.GetMapContainer().TagData.MapDataTables)
+                foreach (var dataTable in m.MapContainer.TagData.MapDataTables)
                 {
                     var hash = dataTable.MapDataTable;
                     if (dataTable.MapDataTable is not null && !maps[containerHash].Contains(hash.Hash))
@@ -462,7 +462,7 @@ public partial class ActivityMapView : UserControl
                 Tag<SBubbleDefinition> bubbleMaps = FileResourcer.Get().GetSchemaTag<SBubbleDefinition>(_currentBubble.Hash);
                 bubbleMaps.TagData.MapResources.ForEach(m =>
                 {
-                    MapControl.LoadMap(m.GetMapContainer().Hash, lod);
+                    MapControl.LoadMap(m.MapContainer.Hash, lod);
                     MainWindow.Progress.CompleteStage();
                 });
             });

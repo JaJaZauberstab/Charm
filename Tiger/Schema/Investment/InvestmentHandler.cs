@@ -424,7 +424,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         using TigerReader reader = _inventoryItemStringThing.GetReader();
         for (int i = 0; i < _inventoryItemStringThing.TagData.StringThings.Count; i++)
         {
-            InventoryItemStringThings.TryAdd(i, _inventoryItemStringThing.TagData.StringThings[reader, i].GetStringThing());
+            InventoryItemStringThings.TryAdd(i, _inventoryItemStringThing.TagData.StringThings[reader, i].StringThing);
         }
     }
 
@@ -512,7 +512,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         using TigerReader reader = _localizedStringsIndexTag.GetReader();
         for (int i = 0; i < _localizedStringsIndexTag.TagData.StringContainerMap.Count; i++)
         {
-            _localizedStringsIndexMap.Add(i, _localizedStringsIndexTag.TagData.StringContainerMap[reader, i].GetLocalizedStrings());
+            _localizedStringsIndexMap.Add(i, _localizedStringsIndexTag.TagData.StringContainerMap[reader, i].LocalizedStrings);
         }
     }
 
@@ -561,10 +561,10 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
         var patternGlobalId = GetPatternGlobalTagId(item);
         var patternData = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), patternGlobalId);
-        if (patternData.HasValue && patternData.Value.GetEntityRelationHash().IsValid()
-            && patternData.Value.GetEntityRelationHash().GetReferenceHash() == (_strategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 ? 0x80809ad8 : 0x80800734))
+        if (patternData.HasValue && patternData.Value.EntityRelationHash.IsValid()
+            && patternData.Value.EntityRelationHash.GetReferenceHash() == (_strategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 ? 0x80809ad8 : 0x80800734))
         {
-            return FileResourcer.Get().GetFile<Entity.Entity>(patternData.Value.GetEntityRelationHash());
+            return FileResourcer.Get().GetFile<Entity.Entity>(patternData.Value.EntityRelationHash);
         }
         return null;
     }
@@ -589,9 +589,9 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         var artEntry = _artDyeReferenceTag.TagData.ArtDyeReferences.ElementAt(_artDyeReferenceTag.GetReader(), index);
 
         var dyeEntry = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), artEntry.DyeManifestHash);
-        if (dyeEntry.HasValue && dyeEntry.Value.GetEntityRelationHash().GetReferenceHash() == 0x80806fa3)
+        if (dyeEntry.HasValue && dyeEntry.Value.EntityRelationHash.GetReferenceHash() == 0x80806fa3)
         {
-            return FileResourcer.Get().GetSchemaTag<D2Class_E36C8080>(FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(dyeEntry.Value.GetEntityRelationHash()).TagData.GetEntityData()).TagData.Dye;
+            return FileResourcer.Get().GetSchemaTag<D2Class_E36C8080>(FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(dyeEntry.Value.EntityRelationHash).TagData.EntityData).TagData.Dye;
         }
         return null;
     }
@@ -601,9 +601,9 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         var artEntry = _artDyeReferenceTag.TagData.ArtDyeReferences.ElementAt(_artDyeReferenceTag.GetReader(), index);
         var dyeEntry = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), artEntry.DyeManifestHash);
 
-        if (dyeEntry.HasValue && dyeEntry.Value.GetEntityRelationHash().GetReferenceFromManifest() == "63348080")
+        if (dyeEntry.HasValue && dyeEntry.Value.EntityRelationHash.GetReferenceFromManifest() == "63348080")
         {
-            return FileResourcer.Get().GetFile<DyeD1>(FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(dyeEntry.Value.GetEntityRelationHash()).TagData.GetEntityData());
+            return FileResourcer.Get().GetFile<DyeD1>(FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(dyeEntry.Value.EntityRelationHash).TagData.EntityData);
         }
         return null;
     }
@@ -741,13 +741,13 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
             return null;
         Tag<D2Class_A36F8080> tag = _sortedArrangementHashmap[assignmentHash];
         tag.Load();
-        if (tag.TagData.GetEntityData().IsInvalid() || tag.TagData.GetEntityData() is null)
+        if (tag.TagData.EntityData.IsInvalid() || tag.TagData.EntityData is null)
             return null;
 
         // if entity
-        if (tag.TagData.GetEntityData().GetReferenceHash() == (_strategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 ? 0x80809ad8 : 0x80800734))
+        if (tag.TagData.EntityData.GetReferenceHash() == (_strategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 ? 0x80809ad8 : 0x80800734))
         {
-            return FileResourcer.Get().GetFile<Entity.Entity>(tag.TagData.GetEntityData());
+            return FileResourcer.Get().GetFile<Entity.Entity>(tag.TagData.EntityData);
         }
         return null;
         // return new Entity(_entityAssignmentsMap.TagData.EntityArrangementMap[index].EntityParent.TagData.Entity);

@@ -390,13 +390,13 @@ PS
 
         foreach (var e in Textures)
         {
-            if (e.GetTexture() != null)
+            if (e.Texture != null)
             {
                 string type = isVertexShader ? "VS" : "PS";
-                string colSpace = e.GetTexture().IsSrgb() ? "Srgb" : "Linear";
+                string colSpace = e.Texture.IsSrgb() ? "Srgb" : "Linear";
                 string dimension = "2D";
 
-                switch (e.GetTexture().GetDimension())
+                switch (e.Texture.GetDimension())
                 {
                     case TextureDimension.CUBE:
                         dimension = "Cube";
@@ -408,7 +408,7 @@ PS
 
                 string tex = isVertexShader ? $"g_vt{e.TextureIndex}" : $"g_t{e.TextureIndex}";
                 funcDef.AppendLine($"\tCreateInputTexture{dimension}( {type}_TextureT{e.TextureIndex}, {colSpace}, 8, \"\", \"\",  \"{type} Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
-                funcDef.AppendLine($"\tTexture{dimension} {tex} < Channel( RGBA,  Box( {type}_TextureT{e.TextureIndex} ), {colSpace} ); OutputFormat( BC7 ); SrgbRead( {e.GetTexture().IsSrgb()} ); >; ");
+                funcDef.AppendLine($"\tTexture{dimension} {tex} < Channel( RGBA,  Box( {type}_TextureT{e.TextureIndex} ), {colSpace} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
                 //funcDef.AppendLine($"\tTextureAttribute(g_t{e.TextureIndex}, g_t{e.TextureIndex});\n"); //Prevents some inputs not appearing for some reason
             }
         }
@@ -860,7 +860,7 @@ PS
                     }
 
 
-                    if ((!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.GetTexture() is not null))) // Some kind of buffer texture or not defined in the material
+                    if ((!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.Texture is not null))) // Some kind of buffer texture or not defined in the material
                     {
                         var defaultString = $"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}";
                         // Textures provided through Scopes (static texture slots)
