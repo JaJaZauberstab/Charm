@@ -35,6 +35,7 @@ public class SchemaFieldAttribute : StrategyAttribute
 
     public SchemaFieldAttribute()
     {
+        Offset = -1; // Required
     }
 
     public SchemaFieldAttribute(int offset)
@@ -49,7 +50,7 @@ public class SchemaFieldAttribute : StrategyAttribute
 
     public SchemaFieldAttribute(TigerStrategy strategy) : base(strategy)
     {
-        Offset = -1;
+        Offset = -1; // Required
     }
 }
 

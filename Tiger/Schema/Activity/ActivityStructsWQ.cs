@@ -605,7 +605,7 @@ public struct D2Class_F5458080
 public struct D2Class_F7458080
 {
     public StringPointer AmbientMusicSetName;
-    [SchemaField(Tag64 = true)]
+    [SchemaField(0x8, Tag64 = true)]
     public Tag<D2Class_50968080> AmbientMusicSet;
     public DynamicArray<D2Class_FA458080> Unk18;
 }

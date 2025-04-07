@@ -683,7 +683,7 @@ public struct D2Class_ED9E8080
 public struct D2Class_F19E8080
 {
     public StringPointer TagPath;
-    [SchemaField(Tag64 = true)]
+    [SchemaField(0x8, Tag64 = true)]
     public Tag Tag;  // if .pattern.tft, then Entity
 }
 
@@ -698,7 +698,7 @@ public struct D2Class_7E988080
 public struct D2Class_44318080
 {
     public long FileSize;
-    [SchemaField(Tag64 = true)]
+    [SchemaField(0x8, Tag64 = true)]
     public Entity? Entity;
 }
 

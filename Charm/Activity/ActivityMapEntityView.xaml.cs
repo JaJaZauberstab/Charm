@@ -512,8 +512,11 @@ public partial class ActivityMapEntityView : UserControl
                             break;
 
                         case SMapLensFlareResource lensFlare:
-                            lensFlare.LensFlare.Transform = entry.Transfrom;
-                            lensFlare.LensFlare.LoadIntoExporter(entitiesScene);
+                            if (lensFlare.LensFlare is not null)
+                            {
+                                lensFlare.LensFlare.Transform = entry.Transfrom;
+                                lensFlare.LensFlare.LoadIntoExporter(entitiesScene);
+                            }
                             break;
 
                         case SMapRoadDecalsResource roadDecals:
