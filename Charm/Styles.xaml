@@ -1113,6 +1113,7 @@
         <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
         <Setter Property="MinWidth" Value="120" />
         <Setter Property="MinHeight" Value="20" />
+        <Setter Property="FontFamily" Value="{DynamicResource Haas Grot Text 55 Roman}" />
         <Setter Property="Foreground" Value="{StaticResource ForegroundColour80}" />
         <Setter Property="Template">
             <Setter.Value>

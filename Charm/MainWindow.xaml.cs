@@ -84,6 +84,11 @@ public partial class MainWindow
 
             // Log game version
             CheckGameVersion();
+
+            if (!ConfigSubsystem.Get().GetAcceptedAgreement())
+            {
+                ShowAgreement();
+            }
         }
         else
         {
@@ -95,24 +100,16 @@ public partial class MainWindow
         {
             Dispatcher.Invoke(() =>
             {
-                var member = typeof(TigerStrategy).GetMember(Strategy.CurrentStrategy.ToString());
-                StrategyCleanNameAttribute? attribute = (StrategyCleanNameAttribute?)member[0].GetCustomAttribute(typeof(StrategyCleanNameAttribute), false);
-
                 NotificationBanner versionChanged = new()
                 {
                     Icon = "",
                     Title = "GAME VERSION",
-                    Description = $"Changed game version to {attribute?.CleanName}",
+                    Description = $"Changed game version to {EnumExtensions.GetEnumDescription(args.Strategy)}",
                     Style = NotificationBanner.PopupStyle.Information
                 };
                 versionChanged.Show();
             });
         };
-
-        if (!ConfigSubsystem.Get().GetAcceptedAgreement())
-        {
-            ShowAgreement();
-        }
     }
 
     private void ShowAgreement()
@@ -336,6 +333,11 @@ public partial class MainWindow
         {
             Task.Run(InitialiseHandlers);
             _bHasInitialised = true;
+        }
+
+        if (!ConfigSubsystem.Get().GetAcceptedAgreement())
+        {
+            ShowAgreement();
         }
     }
 

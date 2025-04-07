@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Reflection;
 using Arithmic;
 
@@ -20,19 +21,19 @@ public class StrategyEventArgs : EventArgs
 public enum TigerStrategy
 {
     NONE = 0,
-    [StrategyCleanName("Rise of Iron (PS4)"), StrategyMetadata("ps4")]
+    [Description("Rise of Iron (PS4)"), StrategyMetadata("ps4")]
     DESTINY1_RISE_OF_IRON = 1000,
-    [StrategyCleanName("Shadowkeep (Launch)"), StrategyMetadata("w64", 1085660, 1085661, 7002268313830901797, 1085662, 2399965969279284756)]
+    [Description("Shadowkeep (Launch)"), StrategyMetadata("w64", 1085660, 1085661, 7002268313830901797, 1085662, 2399965969279284756)]
     DESTINY2_SHADOWKEEP_2601 = 2601,
-    [StrategyCleanName("Shadowkeep (Final)"), StrategyMetadata("w64", 1085660, 1085661, 4160053308690659072, 1085662, 4651412338057797072)]
+    [Description("Shadowkeep (Final)"), StrategyMetadata("w64", 1085660, 1085661, 4160053308690659072, 1085662, 4651412338057797072)]
     DESTINY2_SHADOWKEEP_2999 = 2999,
-    [StrategyCleanName("Beyond Light"), StrategyMetadata("w64", 1085660, 1085661, 5631185797932644936, 1085662, 3832609057880895101)]
+    [Description("Beyond Light"), StrategyMetadata("w64", 1085660, 1085661, 5631185797932644936, 1085662, 3832609057880895101)]
     DESTINY2_BEYONDLIGHT_3402 = 3402,
-    [StrategyCleanName("Witch Queen"), StrategyMetadata("w64", 1085660, 1085661, 6051526863119423207, 1085662, 1078048403901153652)]
+    [Description("Witch Queen"), StrategyMetadata("w64", 1085660, 1085661, 6051526863119423207, 1085662, 1078048403901153652)]
     DESTINY2_WITCHQUEEN_6307 = 6307,
-    [StrategyCleanName("Lightfall"), StrategyMetadata("w64", 1085660, 1085661, 7707143404100984016, 1085662, 5226038440689554798)]
+    [Description("Lightfall"), StrategyMetadata("w64", 1085660, 1085661, 7707143404100984016, 1085662, 5226038440689554798)]
     DESTINY2_LIGHTFALL_7366 = 7366,
-    [StrategyCleanName("Latest"), StrategyMetadata("w64")]
+    [Description("Latest"), StrategyMetadata("w64")]
     DESTINY2_LATEST = 20000,  // there probably wont be a tiger version higher than this
 }
 

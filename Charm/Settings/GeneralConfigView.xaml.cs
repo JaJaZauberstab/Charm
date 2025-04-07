@@ -139,7 +139,7 @@ public partial class GeneralConfigView : UserControl
         {
             if (filterAction(val))
             {
-                items.Add(new ComboBoxItem { Content = TagItem.GetEnumDescription(val), Tag = val });
+                items.Add(new ComboBoxItem { Content = TagItem.GetEnumDescription(val).ToUpper(), Tag = val });
             }
         }
         return items;
@@ -222,6 +222,11 @@ public partial class GeneralConfigView : UserControl
                     if (dialog.SelectedPath.Contains(exeDirectory + "\\") || dialog.SelectedPath == exeDirectory)
                     {
                         MessageBox.Show("You cannot export to the same directory as the executable.");
+                        continue;
+                    }
+                    if (dialog.SelectedPath.Contains("."))
+                    {
+                        MessageBox.Show("Export path can not contain a period, this currently breaks texture exporting.");
                         continue;
                     }
 

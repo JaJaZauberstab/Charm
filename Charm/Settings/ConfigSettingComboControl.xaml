@@ -60,7 +60,7 @@
                 x:Name="SettingsCombobox"
                 BorderBrush="Transparent"
                 BorderThickness="1"
-                FontSize="18"
+                FontSize="24"
                 IsReadOnly="False"
                 Style="{DynamicResource D2StyleComboBox}" />
             <!--  Style="{StaticResource MaterialDesignOutlinedComboBox}" />  -->
