@@ -1,9 +1,9 @@
 ﻿namespace Tiger;
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-public class Tag64Attribute : Attribute
-{
-}
+//[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+//public class Tag64Attribute : Attribute
+//{
+//}
 
 public abstract class StrategyAttribute : Attribute
 {
@@ -25,8 +25,17 @@ public class SchemaFieldAttribute : StrategyAttribute
 {
     public int Offset { get; }
     public int ArraySizeConst { get; set; } = 1;  // used for marshalled fixed arrays
-    // used to mark that this field no longer exists in this strategy onwards
+
+    // Used to mark that this field no longer exists in this strategy onwards
     public bool Obsolete { get; set; } = false;
+
+    // Used to mark that this field is a Tag64, replaces the Tag64 Attribute as that would not allow one version to have Tag64 but not another
+    // Obviously make sure that you only set this on an actual tag
+    public bool Tag64 { get; set; } = false;
+
+    public SchemaFieldAttribute()
+    {
+    }
 
     public SchemaFieldAttribute(int offset)
     {

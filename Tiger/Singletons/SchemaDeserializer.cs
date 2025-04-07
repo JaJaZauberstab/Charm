@@ -465,7 +465,7 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
 
     private bool IsTigerFile64Type(FieldInfo fieldInfo)
     {
-        return GetFirstAttribute<Tag64Attribute>(fieldInfo) != null;
+        return GetAttribute<SchemaFieldAttribute>(fieldInfo) != null && GetAttribute<SchemaFieldAttribute>(fieldInfo).Tag64;
     }
 
     private bool HasNoLoadAttribute(FieldInfo fieldInfo)
@@ -586,32 +586,71 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
         return attributes.First();
     }
 
+    private static readonly ConcurrentDictionary<(ICustomAttributeProvider provider, Type attributeType, TigerStrategy strategy), StrategyAttribute?> _attributeCache = new();
     private T? GetAttribute<T>(ICustomAttributeProvider var) where T : StrategyAttribute
     {
-        // todo all this stuff should be cached, reflection is slow
-        T[] attributes = var.GetCustomAttributes(typeof(T), false).Cast<T>().ToArray();
-        if (!attributes.Any())
+        var key = (var, typeof(T), _strategy);
+
+        if (_attributeCache.TryGetValue(key, out var cached))
         {
-            // we still want to be able to get size of non-schema types
-            return null;
-        }
-        // if there's only one attribute, presume it applies to every strategy
-        if (attributes.Length == 1)
-        {
-            return attributes.First();
+            return (T?)cached;
         }
 
-        // otherwise we need to find the one that matches the current strategy
-        Dictionary<TigerStrategy, T> map = attributes.ToDictionary(a => a.Strategy, a => a);
-        map.GetFullStrategyMap();
-        if (map.TryGetValue(_strategy, out T attribute))
+        // Reflection call (expensive, so we cache the result)
+        T[] attributes = var.GetCustomAttributes(typeof(T), false).Cast<T>().ToArray();
+        T? result = null;
+
+        if (attributes.Length == 0)
         {
-            return attribute;
+            // we still want to be able to get size of non-schema types
+            result = null;
         }
+        // if there's only one attribute, presume it applies to every strategy
+        else if (attributes.Length == 1)
+        {
+            result = attributes[0];
+        }
+        // otherwise we need to find the one that matches the current strategy
         else
         {
-            Log.Error($"Failed to get schema struct size for type {var} as it has multiple schema struct attributes but none match the current strategy {_strategy}");
-            return null;
+            Dictionary<TigerStrategy, T> map = attributes.ToDictionary(a => a.Strategy, a => a);
+            map.GetFullStrategyMap();
+            if (!map.TryGetValue(_strategy, out result))
+            {
+                Log.Error($"Failed to get schema struct size for type {var} as it has multiple schema struct attributes but none match the current strategy {_strategy}");
+            }
         }
+
+        _attributeCache[key] = result;
+        return result;
     }
+
+    //private T? GetAttribute<T>(ICustomAttributeProvider var) where T : StrategyAttribute
+    //{
+    //    // todo all this stuff should be cached, reflection is slow
+    //    T[] attributes = var.GetCustomAttributes(typeof(T), false).Cast<T>().ToArray();
+    //    if (!attributes.Any())
+    //    {
+    //        // we still want to be able to get size of non-schema types
+    //        return null;
+    //    }
+    //    // if there's only one attribute, presume it applies to every strategy
+    //    if (attributes.Length == 1)
+    //    {
+    //        return attributes.First();
+    //    }
+
+    //    // otherwise we need to find the one that matches the current strategy
+    //    Dictionary<TigerStrategy, T> map = attributes.ToDictionary(a => a.Strategy, a => a);
+    //    map.GetFullStrategyMap();
+    //    if (map.TryGetValue(_strategy, out T attribute))
+    //    {
+    //        return attribute;
+    //    }
+    //    else
+    //    {
+    //        Log.Error($"Failed to get schema struct size for type {var} as it has multiple schema struct attributes but none match the current strategy {_strategy}");
+    //        return null;
+    //    }
+    //}
 }
