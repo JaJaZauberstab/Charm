@@ -229,12 +229,14 @@ public partial class DareView : UserControl
             string savePath = config.GetExportSavePath();
             savePath += $"/AllShaders";
             Directory.CreateDirectory(savePath);
-            Directory.CreateDirectory(savePath + "/Textures");
 
             shaderItems.ToList().ForEach(item =>
             {
                 string itemName = Helpers.SanitizeString(item.Value.ItemName);
-                //itemName = Regex.Replace(string.Join("_", itemName.Split(Path.GetInvalidFileNameChars())), @"[^\u0000-\u007F]", "_");
+                string savePath = Path.Join(config.GetExportSavePath(), $"AllShaders/{itemName}");
+                Directory.CreateDirectory(savePath);
+                Directory.CreateDirectory(Path.Join(savePath, $"Textures"));
+
                 Investment.Get().ExportShader(item.Value.Item, savePath, itemName, config.GetOutputTextureFormat());
 
                 item.Value.Item.GetIconPrimaryTexture().SavetoFile($"{savePath}/{itemName}");
