@@ -2073,6 +2073,7 @@ public partial class TagListView : UserControl
         viewer.MusicPlayer.Visibility = Visibility.Visible;
     }
 
+    // Sword audio 0x18 B6368080, E043EA80 (E143EA80 pattern ent) for testing 
     private void LoadWeaponAudioList(TigerHash apiHash)
     {
         _allTagItems = new ConcurrentBag<TagItem>();
@@ -2096,6 +2097,7 @@ public partial class TagListView : UserControl
 
         if (!resource.PatternAudioGroups.Where(x => x.WeaponContentGroup1Hash == weaponContentGroupHash).Any())
         {
+            Log.Verbose($"No PatterAudioGroups with matching Content Group Hash {weaponContentGroupHash}, trying fallback audio");
             if (resource.FallbackAudioGroup != null)
             {
                 audioGroup = FileResourcer.Get().GetSchemaTag<D2Class_0D8C8080>(resource.FallbackAudioGroup.TagData.EntityData);
@@ -2166,10 +2168,13 @@ public partial class TagListView : UserControl
 
         if (!resource.PatternAudioGroups.Where(x => x.WeaponContentGroupHash == weaponContentGroupHash).Any())
         {
+            Log.Verbose($"No unnamed PatterAudioGroups with matching Content Group Hash {weaponContentGroupHash}, trying fallback audio");
             if (resource.FallbackAudio1 != null)
                 entities.Add(resource.FallbackAudio1);
             if (resource.FallbackAudio2 != null)
                 entities.Add(resource.FallbackAudio2);
+            if (resource.FallbackAudio3 != null)
+                entities.Add(resource.FallbackAudio3);
         }
         else
         {

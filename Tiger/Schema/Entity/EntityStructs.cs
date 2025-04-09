@@ -788,6 +788,7 @@ public struct D2Class_6E358080
 
     [SchemaField(0x4E8, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
+    [SchemaField(0x610, TigerStrategy.DESTINY2_LATEST)] // unsure if actually tag64
     public Tag<D2Class_A36F8080> FallbackAudioGroup;
 }
 
@@ -879,11 +880,16 @@ public struct D2Class_F42C8080
 
     [SchemaField(0xD0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
+    [SchemaField(0xD0, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public Entity? FallbackAudio1;
 
     [SchemaField(0xF0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
+    [SchemaField(0x100, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public Entity? FallbackAudio2;
+
+    [SchemaField(0x118, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
+    public Entity? FallbackAudio3;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "12238080", 0x140)]
