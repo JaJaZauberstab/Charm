@@ -116,3 +116,51 @@ public class ShadowingLights : Tag<SMapShadowingLight>
         return new(radianFOV, coneHeight);
     }
 }
+
+/// <summary>
+/// Map Shadowing Light (Casts shadows)
+/// </summary>
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "C71B8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "33718080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "5E6C8080", 0x20)]
+public struct SMapShadowingLightResource
+{
+    [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601), NoLoad]
+    public ShadowingLights ShadowingLight;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "D91B8080", 0xB0)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "40718080", 0xC0)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "716C8080", 0x110)]
+public struct SMapShadowingLight
+{
+    [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x60, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public Matrix4x4 LightToWorld;
+    public Vector4 Distance; // Unsure but only W is used?
+
+    [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x80, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0xC0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public float FarPlane;
+    public float HalfFOV; // * 2, radians->degrees
+
+    // Not really a point in even loading these
+    [SchemaField(0x90, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0xD0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public FileHash Shading; // For some reason using Material breaks tag reading....?
+    //public Material Shading_Shadowing;
+    //public Material Volumetric;
+    //public Material Volumetric_Shadowing;
+    //public Material Lightprobe;
+    //public Material Lightprobe_Shadowing;
+
+    [SchemaField(0x98, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0xA0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0xE8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public Tag<D2Class_A16D8080> BufferData;
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
+    [SchemaField(0xEC, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public Tag<D2Class_A16D8080> BufferData2;
+}

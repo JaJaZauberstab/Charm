@@ -1,4 +1,5 @@
 ﻿using Tiger.Exporters;
+using Tiger.Schema.Shaders;
 
 namespace Tiger.Schema;
 
@@ -26,4 +27,42 @@ public class LensFlare : Tag<SLensFlare>
             Materials.Add(entry.Material.Hash);
         }
     }
+}
+
+/// <summary>
+/// Light Lens Flares
+/// </summary>
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "BF6C8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B5678080", 0x1C)]
+public struct SMapLensFlareResource
+{
+    [SchemaField(0x10)]
+    public LensFlare LensFlare; // D2Class_786A8080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "686F8080", 0x38)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "786A8080", 0x38)]
+public struct SLensFlare
+{
+    public ulong FileSize;
+    [SchemaField(0x18)]
+    public Tag<D2Class_A16D8080> Unk18;
+    [SchemaField(0x20)]
+    public DynamicArrayUnloaded<SLensFlareEntry> Entries;
+    public TigerHash Unk30;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "6D6F8080", 0xC)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "7D6A8080", 0xC)]
+public struct SLensFlareEntry
+{
+    public Material Material;
+    public Tag<D2Class_A16D8080> Unk04;
+    public int Unk08;
 }

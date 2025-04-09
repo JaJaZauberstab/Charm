@@ -97,7 +97,7 @@ public class Terrain : Tag<STerrain>
         }
     }
 
-    public StaticPart MakePart(SStaticPart entry)
+    public StaticPart MakePart(STerrainPart entry)
     {
         StaticPart part = new(entry);
         part.GroupIndex = entry.GroupIndex;
@@ -256,7 +256,7 @@ public struct STerrain
     public Material Unk70;
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public DynamicArray<SStaticPart> StaticParts;
+    public DynamicArray<STerrainPart> StaticParts;
     public VertexBuffer Vertices3;
     public VertexBuffer Vertices4;
     public IndexBuffer Indices2;
@@ -293,7 +293,7 @@ public struct SMeshGroup
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "481A8080", 0x0C)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "52718080", 0x0C)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "846C8080", 0x0C)]
-public struct SStaticPart
+public struct STerrainPart
 {
     public Material Material;
     public uint IndexOffset;

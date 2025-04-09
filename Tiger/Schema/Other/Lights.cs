@@ -1,8 +1,10 @@
 ﻿using Tiger.Exporters;
+using Tiger.Schema.Entity;
+using Tiger.Schema.Shaders;
 
 namespace Tiger.Schema;
 
-public class Lights : Tag<D2Class_656C8080>
+public class Lights : Tag<SMapLights>
 {
     public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.ChunkedLights;
     public Lights(FileHash hash) : base(hash)
@@ -183,4 +185,59 @@ public class Lights : Tag<D2Class_656C8080>
         Line,
         Shadowing
     }
+}
+
+/// <summary>
+/// Map Light
+/// </summary>
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "EA1B8080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "5A6F8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "636A8080", 0x18)]
+public struct SMapLightResource
+{
+    [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601), NoLoad]
+    public Lights Lights;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "5B1A8080", 0x60)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "3A718080", 0x60)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "656C8080", 0x60)]
+public struct SMapLights
+{
+    [SchemaField(0x10)]
+    public Vector4 Unk10;
+    public Vector4 Unk20;
+    public DynamicArrayUnloaded<SMapLightCollection> LightData;
+    public DynamicArrayUnloaded<D2Class_4F9F8080> Transforms;
+    [SchemaField(0x54, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x58, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    public Tag<SOcclusionBounds> Bounds;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "2F1C8080", 0x90)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "3E718080", 0xA0)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "706C8080", 0xF0)]
+public struct SMapLightCollection
+{
+    [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x60, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public Matrix4x4 LightToWorld;
+    // Techniques between
+
+    [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0xC0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0xC4, TigerStrategy.DESTINY2_LATEST)]
+    public Material Shading;
+
+    [SchemaField(0x84, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x88, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0xCC, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0xD0, TigerStrategy.DESTINY2_LATEST)]
+    public Tag<D2Class_A16D8080> BufferData;
+
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
+    [SchemaField(0xD0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0xD4, TigerStrategy.DESTINY2_LATEST)]
+    public Tag<D2Class_A16D8080> BufferData2;
 }

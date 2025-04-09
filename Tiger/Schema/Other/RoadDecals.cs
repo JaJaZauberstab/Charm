@@ -1,5 +1,7 @@
 using Tiger.Exporters;
 using Tiger.Schema.Entity;
+using Tiger.Schema.Model;
+using Tiger.Schema.Shaders;
 
 namespace Tiger.Schema;
 
@@ -32,4 +34,37 @@ public class RoadDecals : Tag<SMapRoadDecals>
             scene.Materials.Add(new ExportMaterial(part.Material));
         }
     }
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "E8688080", 0x18)]
+public struct SMapRoadDecalsResource
+{
+    [SchemaField(0x10), NoLoad]
+    public RoadDecals RoadDecals; // Contrary to the name, it is more than just decals on roads
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "EA688080", 0x58)]
+public struct SMapRoadDecals
+{
+    public ulong FileSize;
+    public DynamicArray<D2Class_E3688080> Entries;
+    public FileHash OcclusionBounds;
+    [SchemaField(0x20)]
+    public AABB UnkBounds;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "E3688080", 0x60)]
+public struct D2Class_E3688080
+{
+    public Material Material;
+    public IndexBuffer IndexBuffer;
+    public VertexBuffer VertexBuffer;
+    public ushort IndexCount; // Is actually face count, needs multiplied by 3
+    public ushort IndexOffset; // Always 0, so idk if IndexCount is an int then
+    public Vector4 Rotation;
+    public Vector4 Position;
+    public Vector4 Scale;
+    public Vector4 Offset;
+    public Vector2 TexcoordScale;
+    public Vector2 TexcoordOffset;
 }

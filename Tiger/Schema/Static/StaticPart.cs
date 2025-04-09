@@ -4,7 +4,7 @@ namespace Tiger.Schema.Static;
 
 public class StaticPart : MeshPart
 {
-    public StaticPart(SStaticPart terrainPartEntry) : base()
+    public StaticPart(STerrainPart terrainPartEntry) : base()
     {
         IndexOffset = terrainPartEntry.IndexOffset;
         IndexCount = terrainPartEntry.IndexCount;
