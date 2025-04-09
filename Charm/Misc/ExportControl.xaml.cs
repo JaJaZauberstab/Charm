@@ -13,12 +13,8 @@ public enum ExportTypeFlag // This isn't really needed anymore
 {
     [Description("Everything")]
     Full = 1,
-    [Description("Minimal (no terrain)")]
+    [Description("Minimal")]
     Minimal = 2,
-    //[Description("Terrain only")]
-    //TerrainOnly = 4,
-    //[Description("Pre-arranged map")]
-    //ArrangedMap = 8,
 }
 
 public partial class ExportControl : UserControl
@@ -101,12 +97,11 @@ public partial class ExportControl : UserControl
         _routedFunction(info);
     }
 
-    public void SetExportInfo(string name, TigerHash hash)
+    public void SetExportInfo(string name, TigerHash hash, string subPath = "")
     {
         if (_bExportFunctionSet && DisabledOverlay.Visibility == Visibility.Visible)
             DisabledOverlay.Visibility = Visibility.Hidden;
-        ExportInfo info = new() { Name = name, Hash = hash };
-        // SetExportName(name);
+        ExportInfo info = new() { Name = name, Hash = hash, SubPath = subPath };
         ExportButton.Tag = info;
     }
 
@@ -125,6 +120,8 @@ public struct ExportInfo
         get => _name == String.Empty ? Hash : _name;
         set => _name = value;
     }
+
+    public string SubPath = string.Empty;
     public TigerHash Hash;
     public ExportTypeFlag ExportType = ExportTypeFlag.Full;
 

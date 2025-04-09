@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -37,47 +36,32 @@ public partial class StaticView : UserControl
 
     public static void ExportStatic(FileHash hash, string name, ExportTypeFlag exportType, string extraPath = "")
     {
-        ExporterScene scene = Exporter.Get().CreateScene(name, ExportType.Statics);
-        bool lodexport = false;
+        ExporterScene scene = Exporter.Get().CreateScene(hash, ExportType.Statics);
         ConfigSubsystem config = ConfigSubsystem.Get();
-
-        string savePath = config.GetExportSavePath() + "/" + extraPath + "/";
         string meshName = hash;
-        if (exportType == ExportTypeFlag.Full)
-        {
-            savePath += $"/{name}";
-        }
+
+        string savePath = Path.Combine(config.GetExportSavePath(), extraPath);
+        //if (extraPath != string.Empty)
+        //    savePath = Path.Combine(savePath, name);
 
         StaticMesh staticMesh = FileResourcer.Get().GetFile<StaticMesh>(hash);
         List<StaticPart> parts = staticMesh.Load(ExportDetailLevel.MostDetailed);
         scene.AddStatic(hash, parts);
+        staticMesh.SaveMaterialsFromParts(scene, parts);
+
         Directory.CreateDirectory(savePath);
         if (exportType == ExportTypeFlag.Full)
         {
-            staticMesh.SaveMaterialsFromParts(scene, parts);
             if (config.GetUnrealInteropEnabled())
             {
                 AutomatedExporter.SaveInteropUnrealPythonFile(savePath, meshName, AutomatedExporter.ImportType.Static, config.GetOutputTextureFormat());
             }
         }
 
-        if (lodexport)
-        {
-            ExporterScene lodScene = Exporter.Get().CreateScene($"{name}_LOD", ExportType.Statics);
-
-            List<StaticPart> lodparts = staticMesh.Load(ExportDetailLevel.LeastDetailed);
-            Directory.CreateDirectory(savePath + "/LOD");
-
-            foreach (StaticPart lodpart in lodparts)
-            {
-                Console.WriteLine($"Exporting LOD {lodpart.LodCategory}");
-                Console.WriteLine(lodpart.Material.Hash.ToString());
-            }
-
-            lodScene.AddStatic(hash, lodparts);
-        }
-
-        Exporter.Get().Export();
+        if (extraPath != string.Empty)
+            Exporter.Get().Export($"{savePath}");
+        else
+            Exporter.Get().Export();
     }
 
     private List<MainViewModel.DisplayPart> MakeDisplayParts(List<StaticPart> containerParts)

@@ -719,7 +719,8 @@ public partial class TagListView : UserControl
                 var exportInfo = new ExportInfo
                 {
                     Hash = tagItem.Hash as FileHash,
-                    Name = $"/Bulk_{groupName}/{name}",
+                    Name = name,
+                    SubPath = $"Bulk_{groupName}",
                     ExportType = ExportTypeFlag.Minimal
                 };
                 viewer.ExportControl.RoutedFunction(exportInfo);
@@ -1198,11 +1199,14 @@ public partial class TagListView : UserControl
         });
     }
 
-    private void SetExportFunction(Action<ExportInfo> function, int exportTypeFlags, bool disableLoadingBar = false)
+    private void SetExportFunction(Action<ExportInfo> function, int exportTypeFlags, bool disableLoadingBar = false, bool hideBulkExport = false)
     {
         var viewer = GetViewer();
         viewer.ExportControl.SetExportFunction(function, exportTypeFlags, disableLoadingBar);
-        ShowBulkExportButton();
+        if (!hideBulkExport)
+            ShowBulkExportButton();
+        else
+            BulkExportButton.Visibility = Visibility.Hidden;
     }
 
     private void ExportApiEntityFull(ExportInfo info)
@@ -1376,16 +1380,14 @@ public partial class TagListView : UserControl
         var viewer = GetViewer();
         SetViewer(TagView.EViewerType.Static);
         viewer.StaticControl.LoadStatic(fileHash, ExportDetailLevel.MostDetailed, Window.GetWindow(this));
-        // viewer.StaticControl.LoadStatic(fileHash, viewer.StaticControl.ModelView.GetSelectedLod());
         SetExportFunction(ExportStatic, (int)ExportTypeFlag.Full | (int)ExportTypeFlag.Minimal);
         viewer.ExportControl.SetExportInfo(fileHash);
-        // viewer.StaticControl.ModelView.SetModelFunction(() => viewer.StaticControl.LoadStatic(fileHash, viewer.StaticControl.ModelView.GetSelectedLod()));
     }
 
     private void ExportStatic(ExportInfo info)
     {
         var viewer = GetViewer();
-        StaticView.ExportStatic(info.Hash as FileHash, info.Name, info.ExportType);
+        StaticView.ExportStatic(info.Hash as FileHash, info.Name, info.ExportType, info.SubPath);
     }
 
     #endregion
@@ -1718,7 +1720,7 @@ public partial class TagListView : UserControl
         });
 
         RefreshItemList();
-        SetExportFunction(ExportString, (int)ExportTypeFlag.Full);
+        SetExportFunction(ExportString, (int)ExportTypeFlag.Full, hideBulkExport: true);
         viewer.ExportControl.SetExportInfo(fileHash);
     }
 
@@ -2285,7 +2287,7 @@ public partial class TagListView : UserControl
         if (tag.TagData.Wems.Count == 0)
             return;
         await viewer.MusicPlayer.SetSound(tag);
-        SetExportFunction(ExportSound, (int)ExportTypeFlag.Full);
+        SetExportFunction(ExportSound, (int)ExportTypeFlag.Full, hideBulkExport: true); // todo bulk export just does nothing here
         // bit of a cheat but works
         var tagItem = _previouslySelected.DataContext as TagItem;
         viewer.ExportControl.SetExportInfo(tagItem.Name == "" ? tagItem.Subname : $"{tagItem.Subname}_{tagItem.Name}", fileHash);

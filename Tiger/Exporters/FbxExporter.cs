@@ -56,14 +56,19 @@ public class FbxExporter : AbstractExporter
                 if (mesh.Parts.Count == 0)
                     continue;
 
+                // this is dumb
+                string savePath = scene.Type == ExportType.Statics
+                && scene.DataType == DataExportType.Individual
+                && args.AggregateOutput ? args.OutputDirectory : outputDirectory;
+
                 FbxScene fbxIndivScene = FbxScene.Create(_manager, mesh.Hash);
                 AddMesh(fbxIndivScene, mesh);
-                ExportScene(fbxIndivScene, Path.Join(outputDirectory, mesh.Hash));
+                ExportScene(fbxIndivScene, Path.Join(savePath, mesh.Hash));
 
                 if (_config.GetS2VMDLExportEnabled() && scene.Type != ExportType.Terrain)
                 {
                     string fbxPath = scene.DataType == DataExportType.Map ? modelSubDirectory : "Models";
-                    Source2Handler.SaveStaticVMDL(outputDirectory, fbxPath, mesh);
+                    Source2Handler.SaveStaticVMDL(savePath, fbxPath, mesh);
                 }
             }
 
