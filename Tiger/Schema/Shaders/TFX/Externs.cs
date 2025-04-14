@@ -1,5 +1,4 @@
 ﻿using Arithmic;
-using Tiger.Schema;
 
 namespace Tiger;
 
@@ -337,11 +336,13 @@ public static class Externs
                 return element switch
                 {
                     // Not using inline method for time since its an engine provided value
-                    0 => bInline ? $"float4(g_flTime.xxxx)" : "(Time)", // game_time
-                    0x04 => bInline ? $"float4(g_flTime.xxxx)" : "(Time)", // render_time
+                    0 => bInline ? $"float4(CurrentTime.xxxx)" : "(Time)", // game_time
+                    0x04 => bInline ? $"float4(CurrentTime.xxxx)" : "(Time)", // render_time
                     0x10 => InlineOrDefault("FrameTimeOfDay", "0.5"),
-                    0x14 => "float4(0.016,0.016,0.016,0.016)", // delta_game_time
-                    0x1C => "float4(16,16,16,16)", // exposure_scale
+                    0x14 => "float4(0.05.xxxx)", // delta_game_time
+                    0x18 => "float4(0.016.xxxx)", // exposure_time
+                    0x1C => InlineOrDefault("ExposureScale", "0.65"), // exposure_scale
+                    0x28 => InlineOrDefault("ExposureIllumRelative", "1"), // exposure_illum_relative
                     _ => HandleUnknownElement(element, extern_)
                 };
 
@@ -467,57 +468,5 @@ public static class Externs
                 Log.Warning($"Unimplemented extern {extern_}[{element} (0x{(element):X})]");
                 return $"float4(1, 1, 1, 1)";
         }
-    }
-}
-
-public static class GlobalChannels
-{
-    private static Vector4[] Channels = null;
-
-    public static Vector4 Get(int index)
-    {
-        if (Channels == null)
-            Fill();
-
-        return Channels[index];
-    }
-
-    public static Vector4[] Fill()
-    {
-        Channels = new Vector4[256];
-
-        for (int i = 0; i < Channels.Length; i++)
-        {
-            Channels[i] = Vector4.One;
-        }
-
-
-        Channels[10] = Vector4.One;
-        Channels[25] = new Vector4(40.0f);
-        Channels[26] = new Vector4(0.90f); // Atmos intensity but a channel?
-        Channels[27] = Vector4.One; // specular tint intensity
-        Channels[28] = Vector4.One; // specular tint
-        Channels[31] = Vector4.One; // diffuse tint 1
-        Channels[32] = Vector4.One; // diffuse tint 1 intensity
-        Channels[33] = Vector4.One; // diffuse tint 2
-        Channels[34] = Vector4.One; // diffuse tint 2 intensity
-        Channels[35] = new Vector4(0.55f);
-        Channels[37] = new Vector4(500000.0f, 0.0f, 0.0f, 0.0f); // Fog start
-        Channels[40] = Vector4.Zero;
-        Channels[41] = new Vector4(50.0f, 0.0f, 0.0f, 0.0f); // Fog falloff
-        Channels[43] = Vector4.Zero;
-        Channels[82] = Vector4.Zero;
-        Channels[83] = Vector4.Zero;
-        Channels[84] = Vector4.One;
-        Channels[93] = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
-        Channels[97] = Vector4.Zero;
-        Channels[98] = Vector4.Zero;
-        Channels[100] = Vector4.Zero; //new Vector4(0.41105f, 0.71309f, 0.56793f, 0.56793f);
-        Channels[102] = Vector4.One; // Seems like sun angle
-        Channels[113] = Vector4.Zero;
-        Channels[127] = Vector4.Zero;
-        Channels[131] = new Vector4(0.0f, 0.5f, 0.3f, 0.0f); // Seems related to line lights
-
-        return Channels;
     }
 }

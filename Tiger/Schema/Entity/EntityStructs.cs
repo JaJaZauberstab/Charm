@@ -1016,6 +1016,8 @@ public struct D2Class_092D8080
     public Entity? Unk90;
 }
 
+
+// Turns out this can be used for more than just sounds, recent findings have seen it used for map global channels?
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "10068080", 0x270)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "79818080", 0x390)]
 public struct D2Class_79818080
@@ -1023,11 +1025,12 @@ public struct D2Class_79818080
     [SchemaField(0x110, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x1A8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x1C8, TigerStrategy.DESTINY2_LATEST)] // BUNGIE PLEASE STOP CHANGING AUDIO  IM GOING INSANE
-    public DynamicArray<D2Class_F1918080> WwiseSounds1;
+    public DynamicArray<D2Class_F1918080> Array1;
+
     [SchemaField(0x130, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x1B8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x1D8, TigerStrategy.DESTINY2_LATEST)]
-    public DynamicArray<D2Class_F1918080> WwiseSounds2;
+    public DynamicArray<D2Class_F1918080> Array2;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "29068080", 0x8)]

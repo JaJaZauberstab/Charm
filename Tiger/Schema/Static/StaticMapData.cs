@@ -244,7 +244,13 @@ public class StaticMapData : Tag<SStaticMapData>
             Vector4 quat = new();
             matrix.Decompose(out trans, out quat, out scale);
 
-            scene.AddMapModel(model.Model, trans, quat, scale, true);
+            scene.AddMapModel(model.Model, new Transform
+            {
+                Position = trans.ToVec3(),
+                Rotation = Vector4.QuaternionToEulerAngles(quat),
+                Quaternion = quat,
+                Scale = scale,
+            }, true);
 
             foreach (DynamicMeshPart part in model.Model.Load(ExportDetailLevel.MostDetailed, null, true))
             {
@@ -577,7 +583,7 @@ public struct D2Class_19808080
     public StringHash EntityName;
 }
 
-// 501A8080 in D1, uses 16 2D textures instead the 16-depth 3D texture D2 uses
+// 501A8080 in D1, uses 16 2D textures instead of the 16-depth 3D texture D2 uses
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "86708080", 0xF0)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C16B8080", 0x130)]
 public struct SMapAtmosphere
@@ -615,6 +621,40 @@ public struct SMapAtmosphere
     public Vector4 UnkE8;
     public Vector4 UnkF8;
     public Vector4 Unk108;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "716A8080", 0x28)]
+public struct D2Class_716A8080
+{
+    [SchemaField(0x10)]
+    public Tag<D2Class_746A8080> Unk10;
+    public float Unk14; // always 3600? (one hour as seconds)
+    public float Unk18; // some kind of multiplier maybe?
+    public FileHash Unk1C; // Lens dirt or something
+    public FileHash Unk20; // Lens dirt or something
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "746A8080", 0x20)]
+public struct D2Class_746A8080
+{
+    public Vector4 Unk00;
+    public Tag<D2Class_C88A8080> Unk10;
+    public Tag<D2Class_C88A8080> Unk14;
+    public Tag<D2Class_C88A8080> Unk18;
+    public Tag<D2Class_C88A8080> Unk1C;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C88A8080", 0x48)]
+public struct D2Class_C88A8080
+{
+    [SchemaField(0x8)]
+    public int Unk08; // always 1800? (1/2 hour as seconds)
+    public float Unk0C; // always 108000?
+
+    // Theres actually a relative pointer here but its always(?) 498B8080 so it doesnt matter
+
+    [SchemaField(0x30)]
+    public DynamicArrayUnloaded<Vec4> Unk30; // Global Channel 102? Some type of sun/light rotation
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "406A8080", 0x18)]

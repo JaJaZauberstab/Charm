@@ -321,7 +321,7 @@ public class ExporterScene
         EntityInstances[dynamicResource.Entity.Hash].Add((Transform)transform);
     }
 
-    public void AddMapModel(EntityModel model, Vector4 translation, Vector4 rotation, Vector3 scale, bool transparentsOnly = false)
+    public void AddMapModel(EntityModel model, Transform transform, bool transparentsOnly = false)
     {
         ExporterMesh mesh = new(model.Hash);
 
@@ -337,13 +337,7 @@ public class ExporterScene
         }
 
         EntityInstances.TryAdd(model.Hash, new());
-        EntityInstances[model.Hash].Add(new Transform
-        {
-            Position = translation.ToVec3(),
-            Rotation = Vector4.QuaternionToEulerAngles(rotation),
-            Quaternion = rotation,
-            Scale = scale
-        });
+        EntityInstances[model.Hash].Add(transform);
     }
 
     public void AddModel(EntityModel model)
@@ -495,6 +489,7 @@ public struct Transform
     public Vector3 Rotation { get; set; }
     public Vector4 Quaternion { get; set; }
     public Vector3 Scale { get; set; }
+    public float Order { get; set; }
 }
 
 public struct MaterialTexture

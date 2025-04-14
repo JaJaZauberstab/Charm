@@ -21,6 +21,7 @@ public class GlobalExporter : AbstractExporter
         ExportCubemaps();
         ExportLights();
         ExportDecals();
+        ExportGlobalChannels();
     }
 
     private void ExportAtmosphere()
@@ -53,12 +54,43 @@ public class GlobalExporter : AbstractExporter
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
+            AtmosphereData data = new()
+            {
+                Texture0 = atmosphere.Lookup0?.Hash ?? "",
+                Texture1 = atmosphere.Lookup1?.Hash ?? "",
+                Texture2 = atmosphere.Lookup2?.Hash ?? "",
+                Texture3 = atmosphere.Lookup3?.Hash ?? "",
+                Texture4 = atmosphere.Lookup4?.Hash ?? "",
+
+                UnkD8 = atmosphere.UnkD8,
+                UnkE8 = atmosphere.UnkE8,
+                UnkF8 = atmosphere.UnkF8,
+                Unk108 = atmosphere.Unk108,
+            };
+
+            if (Exporter.Get().GetOrCreateGlobalScene().TryGetItem<D2Class_716A8080>(out D2Class_716A8080 dayCycle))
+            {
+                data.DayCycle = new()
+                {
+                    Seconds = dayCycle.Unk14,
+                    Unk1 = dayCycle.Unk18,
+                };
+
+                if (dayCycle.Unk10 is not null && dayCycle.Unk10.TagData.Unk10 is not null)
+                {
+                    var cycles = dayCycle.Unk10.TagData.Unk10;
+                    data.DayCycle.Unk2 = cycles.TagData.Unk08;
+                    data.DayCycle.Unk3 = cycles.TagData.Unk0C;
+                    data.DayCycle.Rotations = cycles.TagData.Unk30.Enumerate(cycles.GetReader()).Select(x => x.Vec).ToList();
+                }
+            }
+
             var jsonSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
                 Converters = new List<JsonConverter> { new StringEnumConverter() }
             };
-            File.WriteAllText($"{dataSavePath}/Atmosphere.json", JsonConvert.SerializeObject(atmosphere, jsonSettings));
+            File.WriteAllText($"{dataSavePath}/Atmosphere.json", JsonConvert.SerializeObject(data, jsonSettings));
         }
     }
 
@@ -227,6 +259,67 @@ public class GlobalExporter : AbstractExporter
         }
     }
 
+    private void ExportGlobalChannels()
+    {
+        if (GlobalScene.Any<D2Class_D1918080>())
+        {
+            List<GlobalChannelData> channels = new();
+            string dataSavePath = $"{SavePath}/Rendering";
+            Directory.CreateDirectory(dataSavePath);
+
+            foreach (var globals in GlobalScene.GetAllOfType<D2Class_D1918080>())
+            {
+                channels.Add(new GlobalChannelData
+                {
+                    Index = globals.ChannelIndex,
+                    Bytecode = globals.UnkBytecode.Select(x => x.Value).ToList(),
+                    Constants = globals.Values.Select(x => x.Vec).ToList()
+                });
+
+                //System.Console.WriteLine($"\t-{globals.Unk00}: Index {globals.ChannelIndex}");
+
+                //TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(globals.UnkBytecode));
+                //System.Console.WriteLine($"\t-Bytecode ops ({bytecode.Opcodes.Count})");
+                //foreach (var op in bytecode.Opcodes)
+                //{
+                //    System.Console.WriteLine($"\t\t--{op.op}");
+                //}
+                //System.Console.WriteLine($"\t-Values ({globals.Values.Count})");
+                //foreach (var value in globals.Values)
+                //{
+                //    System.Console.WriteLine($"\t\t--{value.Vec.ToString()}");
+                //}
+            }
+
+            File.WriteAllText($"{dataSavePath}/GlobalChannels.json", JsonConvert.SerializeObject(channels, Formatting.Indented));
+        }
+    }
+
+    private struct AtmosphereData
+    {
+        public string Texture0;
+        public string Texture1;
+        public string Texture2;
+        public string Texture3;
+        public string Texture4;
+
+        public Vector4 UnkD8;
+        public Vector4 UnkE8;
+        public Vector4 UnkF8;
+        public Vector4 Unk108;
+
+        public DayCycleData DayCycle;
+    }
+
+    private struct DayCycleData
+    {
+        public float Seconds;
+        public float Unk1;
+        public float Unk2;
+        public float Unk3;
+        public List<Vector4> Rotations;
+    }
+
     private struct DecalsData
     {
         public List<JsonInstance> Instances;
@@ -255,5 +348,12 @@ public class GlobalExporter : AbstractExporter
         public List<byte> Bytecode;
         public Vector4[] BytecodeConstants;
         public string[] Hashes; // Stupid but could be useful for debugging/finding if needed
+    }
+
+    private struct GlobalChannelData
+    {
+        public int Index;
+        public List<byte> Bytecode;
+        public List<Vector4> Constants;
     }
 }

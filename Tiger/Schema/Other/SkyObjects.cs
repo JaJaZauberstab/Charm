@@ -18,7 +18,7 @@ public class SkyObjects : Tag<SMapSkyObjects>
         if (_tag.Entries is null)
             return;
 
-        foreach (var element in _tag.Entries)
+        foreach ((int i, var element) in _tag.Entries.Select((value, index) => (index, value)))
         {
             if (element.Model.TagData.Model is null || (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 && element.Unk70 == 5))
                 continue;
@@ -30,7 +30,14 @@ public class SkyObjects : Tag<SMapSkyObjects>
             Vector4 quat = new();
             matrix.Decompose(out trans, out quat, out scale);
 
-            scene.AddMapModel(element.Model.TagData.Model, trans, quat, scale);
+            scene.AddMapModel(element.Model.TagData.Model, new Transform
+            {
+                Position = trans.ToVec3(),
+                Rotation = Vector4.QuaternionToEulerAngles(quat),
+                Quaternion = quat,
+                Scale = scale,
+                Order = element.Unk68
+            });
 
             foreach (DynamicMeshPart part in element.Model.TagData.Model.Load(ExportDetailLevel.MostDetailed, null))
             {
@@ -80,6 +87,11 @@ public struct D2Class_A96A8080
     public Matrix4x4 Transform;
     public AABB Bounds;
     public Tag<D2Class_AE6A8080> Model;
+
+    [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x64, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0x68, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    public float Unk68; // Ordering?
 
     [SchemaField(0x68, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x6C, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]

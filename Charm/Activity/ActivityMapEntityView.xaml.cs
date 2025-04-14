@@ -415,7 +415,7 @@ public partial class ActivityMapEntityView : UserControl
         GlobalExporterScene globalScene = Tiger.Exporters.Exporter.Get().GetOrCreateGlobalScene();
 
         // todo these scenes can be combined
-        ExporterScene dynamicPointScene = Exporter.Get().CreateScene($"{hash}_EntityPoints", ExportType.EntityPoints, DataExportType.Map);
+        //ExporterScene dynamicPointScene = Exporter.Get().CreateScene($"{hash}_EntityPoints", ExportType.EntityPoints, DataExportType.Map);
         ExporterScene entitiesScene = Exporter.Get().CreateScene($"{hash}_Entities", ExportType.Entities, DataExportType.Map);
         ExporterScene skyScene = Exporter.Get().CreateScene($"{hash}_SkyObjects", ExportType.SkyObjects, DataExportType.Map);
         ExporterScene decoratorsScene = Exporter.Get().CreateScene($"{hash}_Decorators", ExportType.Decorators, DataExportType.Map);
@@ -435,8 +435,8 @@ public partial class ActivityMapEntityView : UserControl
                         entitiesScene.AddMapEntity(entry, entity);
                         entity.SaveMaterialsFromParts(entitiesScene, entity.Load(ExportDetailLevel.MostDetailed));
                     }
-                    else
-                        dynamicPointScene.AddEntityPoints(entry);
+                    //else
+                    //    dynamicPointScene.AddEntityPoints(entry);
                 }
             }
             else
@@ -452,9 +452,30 @@ public partial class ActivityMapEntityView : UserControl
                     }
                     else
                     {
+                        foreach (var resourceHash in entity.TagData.EntityResources.Select(entity.GetReader(), r => r.Resource))
+                        {
+                            EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(resourceHash);
+                            switch (resource.TagData.Unk10.GetValue(resource.GetReader()))
+                            {
+                                case D2Class_79948080:
+                                    var a = ((D2Class_79818080)resource.TagData.Unk18.GetValue(resource.GetReader()));
+                                    var b = a.Array1;
+                                    b.AddRange(a.Array2);
+
+                                    foreach (var c in b)
+                                    {
+                                        if (c.Unk10.GetValue(resource.GetReader()) is D2Class_D1918080 globals)
+                                        {
+                                            globalScene.AddToGlobalScene(globals);
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+
                         //if (entry.Translation.ToVec3() == Tiger.Schema.Vector3.Zero)
                         //    System.Console.WriteLine($"World origin resource {dataTable.Hash} Resource? {entry.DataResource.GetValue(dataTable.GetReader())}");
-                        dynamicPointScene.AddEntityPoints(entry);
+                        //dynamicPointScene.AddEntityPoints(entry);
                     }
 
                     switch (entry.DataResource.GetValue(dataTable.GetReader()))
@@ -525,6 +546,10 @@ public partial class ActivityMapEntityView : UserControl
                                 return;
 
                             roadDecals.RoadDecals.LoadIntoExporter(roadDecalsScene);
+                            break;
+
+                        case D2Class_716A8080 dayCycle:
+                            globalScene.AddToGlobalScene(dayCycle, true);
                             break;
 
                         default:

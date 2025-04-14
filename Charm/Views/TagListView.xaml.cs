@@ -2265,14 +2265,14 @@ public partial class TagListView : UserControl
                 EntityResource e = FileResourcer.Get().GetFile<EntityResource>(resourceHash);
                 if (e.TagData.Unk18.GetValue(e.GetReader()) is D2Class_79818080 a)
                 {
-                    foreach (var d2ClassF1918080 in a.WwiseSounds1)
+                    foreach (var d2ClassF1918080 in a.Array1)
                     {
                         if (d2ClassF1918080.Unk10.GetValue(e.GetReader()) is D2Class_40668080 b)
                         {
                             sounds.Add(b.Sound);
                         }
                     }
-                    foreach (var d2ClassF1918080 in a.WwiseSounds2)
+                    foreach (var d2ClassF1918080 in a.Array2)
                     {
                         if (d2ClassF1918080.Unk10.GetValue(e.GetReader()) is D2Class_40668080 b)
                         {

@@ -245,7 +245,7 @@ public static class TfxBytecodeOp
                     tfxData.op = TfxBytecode.PushGlobalChannelVector;
 
                     PushGlobalChannelVectorData PushGlobalChannelVector = new();
-                    PushGlobalChannelVector.unk1 = reader.ReadByte();
+                    PushGlobalChannelVector.Index = reader.ReadByte();
                     tfxData.data = PushGlobalChannelVector;
                     break;
 
@@ -474,7 +474,7 @@ public static class TfxBytecodeOp
                 output = $"hash {GlobalStrings.Get().GetString(hash)}";
                 break;
             case PushGlobalChannelVectorData:
-                index = ((PushGlobalChannelVectorData)tfxData.data).unk1;
+                index = ((PushGlobalChannelVectorData)tfxData.data).Index;
                 output = $"index {index} {GlobalChannels.Get(index)}";
                 break;
             case Unk50Data:
@@ -761,7 +761,7 @@ public struct PushObjectChannelVectorData
 
 public struct PushGlobalChannelVectorData
 {
-    public byte unk1;
+    public byte Index;
 }
 
 public struct Unk50Data

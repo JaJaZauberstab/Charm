@@ -137,7 +137,8 @@ class MetadataScene
             {
                 Translation = new[] { transform.Position.X, transform.Position.Y, transform.Position.Z },
                 Rotation = new[] { transform.Quaternion.X, transform.Quaternion.Y, transform.Quaternion.Z, transform.Quaternion.W },
-                Scale = new[] { transform.Scale.X, transform.Scale.Y, transform.Scale.Z }
+                Scale = new[] { transform.Scale.X, transform.Scale.Y, transform.Scale.Z },
+                Order = transform.Order
             });
         }
     }
@@ -205,6 +206,7 @@ class MetadataScene
         public float[] Translation;
         public float[] Rotation;  // Quaternion
         public float[] Scale;
+        public float Order;
     }
 
     private struct JsonDecal
