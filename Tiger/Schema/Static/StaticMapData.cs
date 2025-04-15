@@ -623,6 +623,7 @@ public struct SMapAtmosphere
     public Vector4 Unk108;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "616F8080", 0x28)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "716A8080", 0x28)]
 public struct D2Class_716A8080
 {
@@ -634,6 +635,7 @@ public struct D2Class_716A8080
     public FileHash Unk20; // Lens dirt or something
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "646F8080", 0x20)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "746A8080", 0x20)]
 public struct D2Class_746A8080
 {
@@ -644,6 +646,7 @@ public struct D2Class_746A8080
     public Tag<D2Class_C88A8080> Unk1C;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "F38E8080", 0x48)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C88A8080", 0x48)]
 public struct D2Class_C88A8080
 {

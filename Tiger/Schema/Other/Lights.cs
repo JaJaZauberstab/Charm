@@ -14,7 +14,6 @@ public class Lights : Tag<SMapLights>
     public void LoadIntoExporter()
     {
         using TigerReader reader = GetReader();
-        Console.WriteLine($"{Hash}");
         for (int i = 0; i < _tag.LightData.Count; i++)
         {
             var data = _tag.LightData.ElementAt(reader, i);
@@ -71,7 +70,7 @@ public class Lights : Tag<SMapLights>
     public Vector4 GetColor(Tag<D2Class_A16D8080> data)
     {
         //Console.WriteLine($"{data.TagData.Buffer2[0].Vec} : {data.TagData.Buffer2[1].Vec} : {data.TagData.Buffer2.Count(x => x.Vec.Magnitude != 0)}");
-        if (Strategy.IsD1() && data.TagData.Buffer2.Count != 0 && !data.TagData.Buffer2[2].Vec.IsZero())
+        if ((Strategy.IsD1() || Strategy.IsPreBL()) && data.TagData.Buffer2.Count != 0 && !data.TagData.Buffer2[2].Vec.IsZero())
         {
             return data.TagData.Buffer2[2].Vec; // Always color in D1?
         }

@@ -618,26 +618,6 @@ public struct D2Class_07008080
     public uint Unk00;
 }
 
-// Used in the Trials of the Nine Spire ring things 221EC580 ent, 167BFE80 resource
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "D7848080", 0x250)]
-public struct D2Class_D7848080
-{
-}
-
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E9848080", 0x2E8)]
-public struct D2Class_E9848080
-{
-    [SchemaField(0x168)]
-    public DynamicArray<D2Class_E6938080> Unk168;
-}
-
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E6938080", 0x18)]
-public struct D2Class_E6938080
-{
-    [SchemaField(0x10)]
-    public ResourcePointer Unk10; // 81888080
-}
-
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "81888080", 0xEC)]
 public struct D2Class_81888080
 {
@@ -1019,26 +999,31 @@ public struct D2Class_092D8080
 
 // Turns out this can be used for more than just sounds, recent findings have seen it used for map global channels?
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "10068080", 0x270)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "79818080", 0x390)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E9848080", 0x2E8)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "79818080", 0x390)]
 public struct D2Class_79818080
 {
     [SchemaField(0x110, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x1A8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    [SchemaField(0x1C8, TigerStrategy.DESTINY2_LATEST)] // BUNGIE PLEASE STOP CHANGING AUDIO  IM GOING INSANE
+    [SchemaField(0x158, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x1A8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0x1C8, TigerStrategy.DESTINY2_LATEST)] // 100% gonna get changed with the next expansion, calling it now
     public DynamicArray<D2Class_F1918080> Array1;
 
     [SchemaField(0x130, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x1B8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x168, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x1B8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x1D8, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_F1918080> Array2;
 }
 
+
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "29068080", 0x8)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "F1918080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E6938080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "F1918080", 0x18)]
 public struct D2Class_F1918080
 {
     [SchemaField(0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public ResourcePointer Unk10; // B9678080, 40668080
 }
 
@@ -1100,7 +1085,8 @@ public struct D2Class_00488080
 {
 }
 
-[SchemaStruct("79948080", 0x300)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "D7848080", 0x250)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "79948080", 0x300)]
 public struct D2Class_79948080
 {
 }
