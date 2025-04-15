@@ -44,7 +44,7 @@ dotnet DepotDownloader.dll -app 1085660 -depot 1085662 -manifest 465141233805779
 
 After you've downloaded the version(s) you want:
 
-- You'll need [.NET 7.0 x64](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.400-windows-x64-installer) and [VC++ Redistributables](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) installed.
+- You'll need [.NET 8.0 x64](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.15-windows-x64-installer) and [VC++ Redistributables](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) installed.
 - Download the [latest release](https://github.com/MontagueM/Charm/releases/latest) and run Charm.exe.
 - Set the packages and export paths first.
 

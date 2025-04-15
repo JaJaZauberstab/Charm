@@ -15,7 +15,7 @@ namespace Charm
     /// </summary>
     public partial class App : Application
     {
-        public static ApplicationVersion CurrentVersion = new ApplicationVersion("2.5.5");
+        public static ApplicationVersion CurrentVersion = new ApplicationVersion("2.5.7");
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
