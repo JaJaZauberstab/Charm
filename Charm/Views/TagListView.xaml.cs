@@ -508,7 +508,18 @@ public partial class TagListView : UserControl
 
     private void RefreshItemList()
     {
-        SetItemListByString(SearchBox.Text.ToLower());
+        var searchStr = SearchBox.Text;
+
+        // Flips tag hash to the "intended" way (sigh) ex 80BB6216 -> 1662BB80
+        if ((searchStr.StartsWith("80") || searchStr.StartsWith("81")) &&
+            (!searchStr.EndsWith("80") && !searchStr.EndsWith("81")) && searchStr.Length == 8)
+        {
+            byte[] bytes = Helpers.HexStringToByteArray(searchStr);
+            Array.Reverse(bytes);
+            searchStr = BitConverter.ToString(bytes).Replace("-", "");
+        }
+
+        SetItemListByString(searchStr.ToLower());
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)

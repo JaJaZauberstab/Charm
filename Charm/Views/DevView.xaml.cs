@@ -64,6 +64,15 @@ public partial class DevView : UserControl
         }
         else
         {
+            // Flips tag hash to the "intended" way (sigh) ex 80BB6216 -> 1662BB80
+            if ((strHash.StartsWith("80") || strHash.StartsWith("81")) &&
+                (!strHash.EndsWith("80") && !strHash.EndsWith("81")) && strHash.Length == 8)
+            {
+                byte[] bytes = Helpers.HexStringToByteArray(strHash);
+                Array.Reverse(bytes);
+                strHash = BitConverter.ToString(bytes).Replace("-", "");
+            }
+
             hash = new FileHash(strHash);
         }
 
