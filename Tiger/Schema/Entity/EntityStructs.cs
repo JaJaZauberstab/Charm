@@ -1009,11 +1009,15 @@ public struct D2Class_79818080
     [SchemaField(0x1C8, TigerStrategy.DESTINY2_LATEST)] // 100% gonna get changed with the next expansion, calling it now
     public DynamicArray<D2Class_F1918080> Array1;
 
-    [SchemaField(0x130, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x120, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x168, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x1B8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x1D8, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<D2Class_F1918080> Array2;
+
+    [SchemaField(0x130, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)] // Not obsolete, just not used for anything atm
+    public DynamicArray<D2Class_F1918080> Array3;
 }
 
 
@@ -1085,6 +1089,7 @@ public struct D2Class_00488080
 {
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9A078080", 0x250)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "D7848080", 0x250)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "79948080", 0x300)]
 public struct D2Class_79948080
@@ -1345,11 +1350,6 @@ public struct SDA288080
     public Entity? Unk68;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9A078080", 0x250)]
-public struct S9A078080
-{
-}
-
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "712B8080", 0xA0)]
 public struct S712B8080
 {
@@ -1360,7 +1360,7 @@ public struct S712B8080
     public DynamicArray<S93278080> Transforms;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9A078080", 0x40)]
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "93278080", 0x40)]
 public struct S93278080
 {
     [SchemaField(0x10)]

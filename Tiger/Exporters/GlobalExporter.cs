@@ -40,6 +40,12 @@ public class GlobalExporter : AbstractExporter
             if (atmosphere.Lookup4 != null)
                 AtmosTextures.Add(atmosphere.Lookup4);
 
+            //foreach (var tex in atmosphere.D1Lookup)
+            //{
+            //    tex.Load();
+            //    AtmosTextures.Add(tex);
+            //}
+
             string texSavePath = $"{SavePath}/Textures/Atmosphere";
             Directory.CreateDirectory(texSavePath);
 

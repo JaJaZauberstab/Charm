@@ -584,37 +584,46 @@ public struct D2Class_19808080
 }
 
 // 501A8080 in D1, uses 16 2D textures instead of the 16-depth 3D texture D2 uses
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "501A8080", 0x98)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "86708080", 0xF0)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C16B8080", 0x130)]
 public struct SMapAtmosphere
 {
+    [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON, ArraySizeConst = 16), NoLoad]
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    public Texture[] D1Lookup;
+
 
     // 0 and 1 used in...
     // sky_lookup_generate_near/far, result used in 'Sky' and set to T11 and T13 (transparent scope)
     // full_hemisphere_sky_color_generate,
     // hemisphere_sky_color_generate,
     // water_sky_color_generate,
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x90, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x90, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup0;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup1;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup2;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
     [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Texture Lookup3;
 
-    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x4C, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x98, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0xD0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public Texture Lookup4; // used in atmo_depth_angle_density_lookup_generate, result set to T15 (transparent scope)
 
-    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
-    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public FileHash UnkD4; // Some weird RGBA byte texture that looks like when Lookup4 is sampled in atmo_depth_angle_density_lookup_generate
 
     public Vector4 UnkD8;
@@ -623,11 +632,13 @@ public struct SMapAtmosphere
     public Vector4 Unk108;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "131B8080", 0x28)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "616F8080", 0x28)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "716A8080", 0x28)]
 public struct D2Class_716A8080
 {
-    [SchemaField(0x10)]
+    [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Tag<D2Class_746A8080> Unk10;
     public float Unk14; // always 3600? (one hour as seconds)
     public float Unk18; // some kind of multiplier maybe?
@@ -635,17 +646,24 @@ public struct D2Class_716A8080
     public FileHash Unk20; // Lens dirt or something
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "061B8080", 0x18)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "646F8080", 0x20)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "746A8080", 0x20)]
 public struct D2Class_746A8080
 {
+    [SchemaField(0x0, TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
+    [SchemaField(0x0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Vector4 Unk00;
+
+    [SchemaField(0x8, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Tag<D2Class_C88A8080> Unk10;
     public Tag<D2Class_C88A8080> Unk14;
     public Tag<D2Class_C88A8080> Unk18;
     public Tag<D2Class_C88A8080> Unk1C;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "BF078080", 0x48)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "F38E8080", 0x48)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C88A8080", 0x48)]
 public struct D2Class_C88A8080

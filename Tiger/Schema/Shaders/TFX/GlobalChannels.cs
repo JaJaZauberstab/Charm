@@ -54,27 +54,31 @@ public static class GlobalChannels
     }
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "07058080", 0x68)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "C4938080", 0x78)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "D1918080", 0x68)]
 public struct D2Class_D1918080
 {
+    [SchemaField(0x0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public TigerHash Unk00; // Assuming name
     public int Unk04;
 
+    [SchemaField(0x14, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x24, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x14, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public float Unk14;
     public float Unk18;
     public int Unk1C;
-    public int Unk20;
 
+    [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x3C, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x24, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public int ChannelIndex;
 
+    [SchemaField(0x28, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x40, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x30, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]

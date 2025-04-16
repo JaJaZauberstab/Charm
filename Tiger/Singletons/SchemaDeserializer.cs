@@ -390,9 +390,15 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
                 for (int i = 0; i < arraySize; i++)
                 {
                     dynamic value;
-                    if (IsTigerDeserializeType(fieldType))
+                    if (IsTigerDeserializeType(fieldType)) // Does this need GetElementType()?
                     {
                         value = DeserializeTigerType(reader, fieldType.GetElementType());
+                    }
+                    else if (IsTigerFileType(fieldType.GetElementType()))
+                    {
+                        FileHash fileHash = new(reader.ReadUInt32());
+                        bool shouldLoad = !HasNoLoadAttribute(fieldInfo);
+                        value = FileResourcer.Get().GetFile(fieldType.GetElementType(), fileHash, shouldLoad);
                     }
                     else
                     {
@@ -402,7 +408,7 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
                     fieldValue[i] = value;
                 }
 
-                if (IsTigerDeserializeType(fieldType))
+                if (IsTigerDeserializeType(fieldType) || IsTigerFileType(fieldType.GetElementType()))
                 {
                     fieldSize = GetSchemaTypeSize(fieldType.GetElementType()) * arraySize;
                 }

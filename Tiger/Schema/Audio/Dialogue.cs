@@ -155,11 +155,12 @@ public class DialogueD1
                                     if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && g2.GetReferenceHash() != 0x80800861)
                                         continue;
                                     EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(g2);
-                                    if (resource.TagData.Unk10.GetValue(resource.GetReader()) is S9A078080)
+                                    if (resource.TagData.Unk10.GetValue(resource.GetReader()) is D2Class_79948080)
                                     {
                                         var h = (D2Class_79818080)resource.TagData.Unk18.GetValue(resource.GetReader());
                                         List<D2Class_F1918080> h1 = h.Array1;
                                         h1.AddRange(h.Array2);
+                                        h1.AddRange(h.Array3);
                                         foreach (var h2 in h1)
                                         {
                                             if ((h2.Unk10.GetValue(resource.GetReader()) is SAA078080 dialogue) && !sounds.Contains(dialogue))
