@@ -74,7 +74,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
         return final;
     }
 
-    public ScratchImage GetScratchImage(bool overrideConvert = false)
+    public ScratchImage GetScratchImage(bool overrideConvert = false, int index = 0)
     {
         DXGI_FORMAT format = _tag.GetFormat();
 
@@ -126,6 +126,15 @@ public class Texture : TigerReferenceFile<STextureHeader>
                 Log.Error(e.Message);
             }
 
+        }
+
+        if (index != 0 && index < scratchImage.GetImageCount())
+        {
+            // Have to change the metadata to act like its a 2D texture if we want to do anything else with it later (such as resizing)
+            var metadata = scratchImage.GetMetadata();
+            metadata.Depth = 1;
+            metadata.Dimension = TEX_DIMENSION.TEXTURE2D;
+            scratchImage = TexHelper.Instance.InitializeTemporary(new[] { scratchImage.GetImage(index) }, metadata);
         }
 
         // scratchImage = scratchImage.Convert(DXGI_FORMAT.B8G8R8A8_UNORM, TEX_FILTER_FLAGS.RGB_COPY_RED, 0);
@@ -195,7 +204,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
         return outputPlate;
     }
 
-    public static ScratchImage FlattenVolume(ScratchImage input)
+    public static ScratchImage FlattenVolume(ScratchImage input) // TODO: Figure out why R#G#_ formats dont work here
     {
         var image = input.GetImage(0);
         if (image.Width == 0)
@@ -205,7 +214,6 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
         bool bSrgb = TexHelper.Instance.IsSRGB(image.Format);
         ScratchImage outputPlate = TexHelper.Instance.Initialize2D(image.Format, image.Width * input.GetImageCount(), image.Height, 1, 0, 0);
-
         for (int i = 0; i < input.GetImageCount(); i++)
         {
             TexHelper.Instance.CopyRectangle(input.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), bSrgb ? TEX_FILTER_FLAGS.SEPARATE_ALPHA : 0, image.Width * i, 0);
@@ -239,6 +247,23 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
     public UnmanagedMemoryStream GetCubemapFace(int index)
     {
+        if (!IsCubemap())
+            index = 0;
+
+        ScratchImage scratchImage = GetScratchImage();
+
+        UnmanagedMemoryStream ms;
+        Guid guid = TexHelper.Instance.GetWICCodec(WICCodecs.BMP);
+        ms = scratchImage.SaveToWICMemory(index, WIC_FLAGS.NONE, guid);
+        scratchImage.Dispose();
+        return ms;
+    }
+
+    public UnmanagedMemoryStream GetVolumeSlice(int index)
+    {
+        if (!IsVolume())
+            index = 0;
+
         ScratchImage scratchImage = GetScratchImage();
 
         UnmanagedMemoryStream ms;
@@ -260,10 +285,10 @@ public class Texture : TigerReferenceFile<STextureHeader>
         }
     }
 
-    public void SavetoFile(string savePath)
+    public void SavetoFile(string savePath, int index = 0)
     {
-        ScratchImage simg = GetScratchImage();
-        if (ConfigSubsystem.Get().GetS2TexPow2Enabled())
+        ScratchImage simg = GetScratchImage(index: index);
+        if (ConfigSubsystem.Get().GetS2TexPow2Enabled()) // TODO make not shit
             simg = ResizeToNearestPowerOf2(simg);
 
         if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())

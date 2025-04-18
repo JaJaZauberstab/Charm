@@ -16,6 +16,7 @@
     <Color x:Key="BackgroundColour14C">#242424</Color>
     <Brush x:Key="BackgroundColour20">#333333</Brush>
     <Brush x:Key="BackgroundColour30">#4d4d4d</Brush>
+    <Brush x:Key="BackgroundColour30a">#904d4d4d</Brush>
     <Brush x:Key="BackgroundColour50">#808080</Brush>
     <Brush x:Key="ForegroundColour100">#ffffff</Brush>
     <Brush x:Key="ForegroundColour95">#FAFAFA</Brush>
@@ -787,7 +788,7 @@
     </Style>
 
     <ControlTemplate x:Key="VerticalScrollBar" TargetType="{x:Type ScrollBar}">
-        <Grid>
+        <Grid Width="10" HorizontalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition MaxHeight="18" />
                 <RowDefinition Height="0.00001*" />
@@ -795,7 +796,7 @@
             </Grid.RowDefinitions>
             <Border
                 Grid.RowSpan="3"
-                Background="{StaticResource BackgroundColour30}"
+                Background="{StaticResource BackgroundColour30a}"
                 CornerRadius="2" />
             <Track
                 x:Name="PART_Track"

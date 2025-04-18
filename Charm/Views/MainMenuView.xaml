@@ -283,7 +283,7 @@
 
                         <Button
                             Margin="10"
-                            Click="AllTexturesViewButton_OnClick"
+                            Click="AllTexturesView2Button_OnClick"
                             MouseEnter="CategoryButton_MouseEnter"
                             MouseLeave="CategoryButton_MouseLeave"
                             Style="{DynamicResource D2StyleButton}"
@@ -293,21 +293,6 @@
                                     d:FontFamily="Haas Grot Text 55 Roman"
                                     FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
                                     Text="TEXTURES" />
-                            </Border>
-                        </Button>
-
-                        <Button
-                            Margin="10"
-                            Click="AllTexturesView2Button_OnClick"
-                            MouseEnter="CategoryButton_MouseEnter"
-                            MouseLeave="CategoryButton_MouseLeave"
-                            Style="{DynamicResource D2StyleButton}"
-                            Tag="TEXTURES 2:View and export textures.">
-                            <Border Background="#BB181818">
-                                <TextBlock
-                                    d:FontFamily="Haas Grot Text 55 Roman"
-                                    FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
-                                    Text="TEXTURES 2" />
                             </Border>
                         </Button>
 

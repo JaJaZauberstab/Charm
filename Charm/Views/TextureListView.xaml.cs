@@ -90,7 +90,12 @@ public partial class TextureListView : UserControl
             new ComboBoxItem { Content = "Ability Icons", Tag = "54x54", FontSize = 10 },
             new ComboBoxItem { Content = "Weapon Icons", Tag = "137x76", FontSize = 10 },
             new ComboBoxItem { Content = "Upsell Screen", Tag = "1920x830", FontSize = 10 },
-            new ComboBoxItem { Content = "Cubemap", Tag = "Cubemap", FontSize = 10 }
+            new ComboBoxItem { Content = "Cubemap", Tag = "Cubemap", FontSize = 10 },
+            new ComboBoxItem { Content = "Volume", Tag = "Volume", FontSize = 10 },
+            new ComboBoxItem { Content = "1K", Tag = "1024", FontSize = 10 },
+            new ComboBoxItem { Content = "2K", Tag = "2048", FontSize = 10 },
+            new ComboBoxItem { Content = "4K", Tag = "4096", FontSize = 10 }
+
         };
         if (presets.Combobox.SelectedIndex == -1)
         {
@@ -253,7 +258,7 @@ public partial class TextureListView : UserControl
             {
                 displayItems.Add(tex);
             }
-            else if (searchStr == "Cubemap" && tex.ArraySize == 6) // also dumb
+            else if ((searchStr == "Cubemap" && tex.ArraySize == 6) || (searchStr == "Volume" && tex.Depth > 1)) // also dumb
             {
                 displayItems.Add(tex);
             }
@@ -303,6 +308,7 @@ public partial class TextureListView : UserControl
         }
         else
         {
+            TextureControl.CurrentSlice = 0;
             TextureControl.LoadTexture(textureHeader);
         }
     }
@@ -341,7 +347,7 @@ public partial class TextureListView : UserControl
         {
             Parallel.ForEach(items, item =>
             {
-                TextureView.ExportTexture(item.Hash);
+                TextureExtractor.ExportTexture(item.Hash);
                 MainWindow.Progress.CompleteStage();
             });
         });
@@ -364,7 +370,7 @@ public partial class TextureListView : UserControl
             return;
 
         var hash = _currentDisplayedTexture;
-        TextureView.ExportTexture(hash);
+        TextureControl.ExportCurrent();
 
         string pkgName = PackageResourcer.Get().GetPackage(hash.PackageId).GetPackageMetadata().Name.Split(".")[0];
         string savePath = Config.GetExportSavePath() + $"/Textures/{pkgName}";
@@ -376,15 +382,6 @@ public partial class TextureListView : UserControl
             Style = NotificationBanner.PopupStyle.Information
         };
         notify.Show();
-    }
-
-    private void UserControl_MouseMove(object sender, MouseEventArgs e)
-    {
-        // Currently causing cubemap viewer to not update with everything else
-        //System.Windows.Point position = e.GetPosition(this);
-        //TranslateTransform gridTransform = (TranslateTransform)MainContainer.RenderTransform;
-        //gridTransform.X = position.X * -0.0075;
-        //gridTransform.Y = position.Y * -0.0075;
     }
 
     private void ExportButtons_MouseEnter(object sender, MouseEventArgs e)
@@ -399,7 +396,7 @@ public partial class TextureListView : UserControl
         {
             Name = $"{text[0]}",
             Description = $"{text[1]}",
-            PlugRarityColor = DestinyTierType.Legendary.GetColor(),
+            PlugStyle = DestinySocketCategoryStyle.Reusable,
         };
 
         ToolTip.MakeTooltip(plugItem);
@@ -410,6 +407,16 @@ public partial class TextureListView : UserControl
         ToolTip.ClearTooltip();
         ToolTip.ActiveItem = null;
     }
+
+    private void UserControl_MouseMove(object sender, MouseEventArgs e)
+    {
+        // Currently causing cubemap viewer to not update with everything else
+        //System.Windows.Point position = e.GetPosition(this);
+        //TranslateTransform gridTransform = (TranslateTransform)MainContainer.RenderTransform;
+        //gridTransform.X = position.X * -0.0075;
+        //gridTransform.Y = position.Y * -0.0075;
+    }
+
 
     private async void TagImage_Loaded(object sender, RoutedEventArgs e)
     {

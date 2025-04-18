@@ -196,19 +196,19 @@ public partial class MainMenuView : UserControl
         _mainWindow.SetNewestTabSelected();
     }
 
-    private void AllTexturesViewButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        TagListViewerView tagListView = new TagListViewerView();
-        tagListView.LoadContent(ETagListType.TextureList);
-        _mainWindow.MakeNewTab("textures", tagListView);
-        _mainWindow.SetNewestTabSelected();
-    }
+    //private void AllTexturesViewButton_OnClick(object sender, RoutedEventArgs e)
+    //{
+    //    TagListViewerView tagListView = new TagListViewerView();
+    //    tagListView.LoadContent(ETagListType.TextureList);
+    //    _mainWindow.MakeNewTab("textures", tagListView);
+    //    _mainWindow.SetNewestTabSelected();
+    //}
 
     private void AllTexturesView2Button_OnClick(object sender, RoutedEventArgs e)
     {
         TextureListView textureListView = new TextureListView();
         textureListView.LoadContent();
-        _mainWindow.MakeNewTab("textures 2", textureListView);
+        _mainWindow.MakeNewTab("textures", textureListView);
         _mainWindow.SetNewestTabSelected();
     }
 

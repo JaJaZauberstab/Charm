@@ -225,9 +225,9 @@ public partial class TagListView : UserControl
                 case ETagListType.Static:
                     LoadStatic(contentValue as FileHash);
                     break;
-                case ETagListType.TextureList:
-                    await LoadTextureList();
-                    break;
+                //case ETagListType.TextureList:
+                //    await LoadTextureList();
+                //    break;
                 case ETagListType.Texture:
                     LoadTexture(contentValue as FileHash);
                     break;
@@ -1353,43 +1353,43 @@ public partial class TagListView : UserControl
 
     #region Texture
 
-    private async Task LoadTextureList()
-    {
-        // If there are packages, we don't want to reload the view as very poor for performance.
-        if (_allTagItems != null)
-            return;
+    //private async Task LoadTextureList()
+    //{
+    //    // If there are packages, we don't want to reload the view as very poor for performance.
+    //    if (_allTagItems != null)
+    //        return;
 
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            "Caching Textures",
-            "Adding Textures to UI",
-        });
+    //    MainWindow.Progress.SetProgressStages(new List<string>
+    //    {
+    //        "Caching Textures",
+    //        "Adding Textures to UI",
+    //    });
 
-        await Task.Run(() =>
-        {
-            _allTagItems = new ConcurrentBag<TagItem>();
-            var tex = PackageResourcer.Get().GetAllHashes<Texture>();
-            MainWindow.Progress.CompleteStage();
+    //    await Task.Run(() =>
+    //    {
+    //        _allTagItems = new ConcurrentBag<TagItem>();
+    //        var tex = PackageResourcer.Get().GetAllHashes<Texture>();
+    //        MainWindow.Progress.CompleteStage();
 
-            // Could use 'BitConverter.ToInt32(val.GetFileData(), 0))' to get the full file size from the header but this takes too long.
-            // Just gonna use the reference hash file metadata size...it really doesnt matter showing the file size anyways..
-            Parallel.ForEach(tex, val =>
-            {
-                _allTagItems.Add(new TagItem
-                {
-                    Hash = val,
-                    Name = $"Texture {val.GetFileMetadata().FileIndex}",
-                    Subname = $"{Helpers.GetReadableSize(val.GetReferenceHash().GetFileMetadata().Size)}",
-                    TagType = ETagListType.Texture
-                });
-            });
-            MainWindow.Progress.CompleteStage();
+    //        // Could use 'BitConverter.ToInt32(val.GetFileData(), 0))' to get the full file size from the header but this takes too long.
+    //        // Just gonna use the reference hash file metadata size...it really doesnt matter showing the file size anyways..
+    //        Parallel.ForEach(tex, val =>
+    //        {
+    //            _allTagItems.Add(new TagItem
+    //            {
+    //                Hash = val,
+    //                Name = $"Texture {val.GetFileMetadata().FileIndex}",
+    //                Subname = $"{Helpers.GetReadableSize(val.GetReferenceHash().GetFileMetadata().Size)}",
+    //                TagType = ETagListType.Texture
+    //            });
+    //        });
+    //        MainWindow.Progress.CompleteStage();
 
-            MakePackageTagItems();
-        });
+    //        MakePackageTagItems();
+    //    });
 
-        RefreshItemList();  // bc of async stuff
-    }
+    //    RefreshItemList();  // bc of async stuff
+    //}
 
     /// <summary>
     /// I could do it tiled, but cba to bother with it when you can just batch export to filesystem.
@@ -1414,7 +1414,7 @@ public partial class TagListView : UserControl
 
     private void ExportTexture(ExportInfo info)
     {
-        TextureView.ExportTexture(info.Hash as FileHash);
+        TextureExtractor.ExportTexture(info.Hash as FileHash);
     }
 
     #endregion
