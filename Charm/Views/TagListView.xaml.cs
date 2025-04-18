@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Arithmic;
 using ConcurrentCollections;
 using Newtonsoft.Json;
@@ -125,6 +125,7 @@ public partial class TagListView : UserControl
 {
     private struct ParentInfo
     {
+        public string ParentName;
         public ETagListType TagListType;
         public TigerHash? Hash;
         public string SearchTerm;
@@ -178,10 +179,11 @@ public partial class TagListView : UserControl
         }
         else
         {
-            if (contentValue != null && !bFromBack && !TagItem.GetEnumDescription(tagListType).Contains("[Final]")) // if the type nests no new info, it isnt a parent
+            if (contentValue != null && !bFromBack && !EnumExtensions.GetEnumDescription(tagListType).Contains("[Final]")) // if the type nests no new info, it isnt a parent
             {
                 _parentStack.Push(new ParentInfo
                 {
+                    ParentName = fullTag?.Name ?? "",
                     AllTagItems = _allTagItems,
                     Hash = _currentHash,
                     TagListType = _tagListType,
@@ -205,12 +207,6 @@ public partial class TagListView : UserControl
                     break;
                 case ETagListType.Entity:
                     LoadEntity(contentValue as FileHash);
-                    break;
-                case ETagListType.ApiList:
-                    await LoadApiList();
-                    break;
-                case ETagListType.ApiEntity:
-                    LoadApiEntity(contentValue);
                     break;
                 case ETagListType.EntityList:
                     await LoadEntityList();
@@ -309,7 +305,7 @@ public partial class TagListView : UserControl
             }
         }
 
-        if (!TagItem.GetEnumDescription(tagListType).Contains("[Final]"))
+        if (!EnumExtensions.GetEnumDescription(tagListType).Contains("[Final]"))
         {
             _currentHash = contentValue;
             _tagListType = tagListType;
@@ -389,11 +385,7 @@ public partial class TagListView : UserControl
                 return;
             }
 
-            //if (!TagItem.GetEnumDescription(_tagListType).Contains("List"))
-            //{
-            //    if (displayItems.Count > 50) return;
-            //}
-            if (TagItem.GetEnumDescription(_tagListType).Contains("[Packages]") && !bPackageSearchAllOverride)
+            if (EnumExtensions.GetEnumDescription(_tagListType).Contains("[Packages]") && !bPackageSearchAllOverride)
             {
                 // Package-enabled lists have [Packages] in their enum
                 if (item.TagType != ETagListType.Package)
@@ -401,6 +393,7 @@ public partial class TagListView : UserControl
                     return;
                 }
             }
+
             string name = item.Name != "" ? item.Name : item.Hash;
             bool bWasTrimmed = false;
             if (item.Name.Contains("\\") && _bTrimName)
@@ -408,6 +401,7 @@ public partial class TagListView : UserControl
                 name = TrimName(name);
                 bWasTrimmed = true;
             }
+
             // bool bWasTrimmed = name != item.Name;
             if (name.ToLower().Contains(searchStr)
                 || item.Hash.ToString().ToLower().Contains(searchStr)
@@ -418,15 +412,17 @@ public partial class TagListView : UserControl
                 if (pkg is not null && pkg.GetPackageMetadata().Name.Contains("redacted"))
                     name = $"🔐 {name}";
 
+                string subname = searchStr != string.Empty && item.Type != "Package" ?
+                            $"{item.Subname}" + (pkg != null ? $" : [{pkg.GetPackageMetadata().Name}]" : "")
+                            : item.Subname;
+
                 displayItems.Add(new TagItem
                 {
                     Hash = item.Hash,
                     Name = name,
                     TagType = item.TagType,
                     Type = item.Type,
-                    Subname = searchStr != string.Empty && item.Type != "Package" ?
-                            $"{item.Subname}" + (pkg != null ? $" : [{pkg.GetPackageMetadata().Name}]" : "")
-                            : item.Subname,
+                    Subname = subname,
                     FontSize = _bTrimName || !bWasTrimmed ? 16 : 12,
                     Extra = item.Extra
                 });
@@ -442,7 +438,7 @@ public partial class TagListView : UserControl
             _bShowNamedOnly = false;
         }
 
-        if (displayItems.Count == 0 && TagItem.GetEnumDescription(_tagListType).Contains("[Packages]") && !bPackageSearchAllOverride)
+        if (displayItems.Count == 0 && EnumExtensions.GetEnumDescription(_tagListType).Contains("[Packages]") && !bPackageSearchAllOverride)
         {
             SetItemListByString(searchStr, true);
             return;
@@ -465,6 +461,7 @@ public partial class TagListView : UserControl
             tagItems.Insert(0, new TagItem
             {
                 Name = "BACK",
+                Subname = $"{_parentStack.First().ParentName}",
                 TagType = ETagListType.Back,
                 FontSize = 24
             });
@@ -740,6 +737,16 @@ public partial class TagListView : UserControl
         });
         viewer.StaticControl.Visibility = bStaticShowing ? Visibility.Visible : viewer.StaticControl.Visibility;
         viewer.EntityControl.Visibility = bEntityShowing ? Visibility.Visible : viewer.EntityControl.Visibility;
+    }
+
+    private void SetExportFunction(Action<ExportInfo> function, int exportTypeFlags, bool disableLoadingBar = false, bool hideBulkExport = false)
+    {
+        var viewer = GetViewer();
+        viewer.ExportControl.SetExportFunction(function, exportTypeFlags, disableLoadingBar);
+        if (!hideBulkExport)
+            ShowBulkExportButton();
+        else
+            BulkExportButton.Visibility = Visibility.Hidden;
     }
 
     #region Destination Global Tag Bag
@@ -1170,60 +1177,6 @@ public partial class TagListView : UserControl
         }
 
         return Ents.EntityNames[Strategy.CurrentStrategy];
-    }
-
-    #endregion
-
-    #region API
-
-    private async Task LoadApiList()
-    {
-        IEnumerable<InventoryItem> inventoryItems = await Investment.Get().GetInventoryItems();
-        _allTagItems = new ConcurrentBag<TagItem>();
-        Parallel.ForEach(inventoryItems, item =>
-        {
-            if (item.GetArtArrangementIndex() == -1) return;
-            string name = Investment.Get().GetItemName(item);
-            string type = Investment.Get().InventoryItemStringThings[Investment.Get().GetItemIndex(item.TagData.InventoryItemHash)].TagData.ItemType.Value;
-            if (type == "Finisher" || type.Contains("Emote"))
-                return;  // they point to Animation instead of Entity
-            _allTagItems.Add(new TagItem
-            {
-                Hash = item.TagData.InventoryItemHash,
-                Name = name,
-                Type = type.Trim(),
-                TagType = ETagListType.ApiEntity
-            });  // for some reason some of the types have spaces after
-        });
-    }
-
-    private void LoadApiEntity(TigerHash apiHash)
-    {
-        var viewer = GetViewer();
-        SetViewer(TagView.EViewerType.Entity);
-        viewer.EntityControl.LoadEntityFromApi(apiHash, _globalFbxHandler);
-        Dispatcher.Invoke(() =>
-        {
-            SetExportFunction(ExportApiEntityFull, (int)ExportTypeFlag.Full | (int)ExportTypeFlag.Minimal);
-            viewer.ExportControl.SetExportInfo(apiHash);
-            viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadEntityFromApi(apiHash, _globalFbxHandler));
-        });
-    }
-
-    private void SetExportFunction(Action<ExportInfo> function, int exportTypeFlags, bool disableLoadingBar = false, bool hideBulkExport = false)
-    {
-        var viewer = GetViewer();
-        viewer.ExportControl.SetExportFunction(function, exportTypeFlags, disableLoadingBar);
-        if (!hideBulkExport)
-            ShowBulkExportButton();
-        else
-            BulkExportButton.Visibility = Visibility.Hidden;
-    }
-
-    private void ExportApiEntityFull(ExportInfo info)
-    {
-        var viewer = GetViewer();
-        EntityView.Export(Investment.Get().GetEntitiesFromHash(info.Hash), info.Name, info.ExportType);
     }
 
     #endregion
@@ -2360,19 +2313,50 @@ public partial class TagListView : UserControl
     }
     #endregion
 
+    private async void TagImage_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Image img && img.DataContext is TagItem tag)
+        {
+            //Console.WriteLine($"Loaded {tag.Hash}");
+            img.Tag = tag;
+            await tag.LoadTagImageAsync();
+        }
+    }
+
+    private void TagImage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Image img && img.Tag is TagItem tag)
+        {
+            tag.ClearImageSource();
+            img.Source = null;
+            img.Tag = null;
+        }
+    }
 }
 
-public class TagItem
+public class TagItem : INotifyPropertyChanged
 {
-    private string _type = String.Empty;
-    private string _name = String.Empty;
+    public event PropertyChangedEventHandler PropertyChanged;
+    private void OnPropertyChanged(string propName) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
 
+
+    private string _name = String.Empty;
     public string Name
     {
         get => _name; set => _name = value;
     }
 
-    public string Subname { get; set; } = String.Empty;
+    private string _subname = String.Empty;
+    public string Subname
+    {
+        get => _subname;
+        set
+        {
+            _subname = value;
+            OnPropertyChanged(nameof(Subname));
+        }
+    }
 
     public TigerHash Hash { get; set; }
 
@@ -2392,13 +2376,14 @@ public class TagItem
 
     public int FontSize { get; set; } = 16;
 
+    private string _type = String.Empty;
     public string Type
     {
         get
         {
             if (_type == String.Empty)
             {
-                var t = GetEnumDescription(TagType);
+                var t = EnumExtensions.GetEnumDescription(TagType);
                 if (t.Contains("[Final]"))
                     return t.Split("[Final]")[0].Trim();
                 return t;
@@ -2412,17 +2397,86 @@ public class TagItem
 
     public dynamic? Extra { get; set; } // This is dumb and should only be used sparingly
 
-    public static string GetEnumDescription(Enum value)
+    private ImageSource _tagImageSource;
+    public ImageSource TagImageSource
     {
-        FieldInfo fi = value.GetType().GetField(value.ToString());
-
-        DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
-
-        if (attributes != null && attributes.Any())
+        get => _tagImageSource;
+        private set
         {
-            return attributes.First().Description;
+            _tagImageSource = value;
+            OnPropertyChanged(nameof(TagImageSource));
         }
+    }
 
-        return value.ToString();
+    public async Task LoadTagImageAsync()
+    {
+        if (TagType != ETagListType.Texture || Hash == null || TagImageSource != null)
+            return;
+
+        var texture = await Task.Run(() => FileResourcer.Get().GetFileAsync<Texture>(Hash, shouldCache: false));
+        if (texture == null)
+            return;
+
+        var image = await Task.Run(() => TextureLoader.LoadTexture(texture, 96, 96));
+
+        if (image != null)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                TagImageSource = image;
+                // Sets the Subname to add the Textures dimensions, this gets set after the tag is
+                // added to _allTagItems so you can't search by its pixel dimensions, which is why
+                // GetTextureDimensionsRaw is used in SortItemListByString()
+                Subname = $"{texture.GetDimension().GetEnumDescription()} Texture : {texture.Width}x{texture.Height}";
+            });
+        }
+    }
+
+    public void ClearImageSource()
+    {
+        TagImageSource = null;
+    }
+}
+
+public static class TextureLoader
+{
+    public static ImageSource LoadTexture(Texture texture, int maxWidth, int maxHeight)
+    {
+        if (texture == null)
+            return null;
+
+        try
+        {
+            var image = CreateImage(texture, maxWidth, maxHeight);
+            image.Freeze();
+            return image;
+        }
+        catch (Exception) // Rare case where a "not a cubemap cubemap" doesnt want to load in time
+        {
+            return null;
+        }
+    }
+
+    private static ImageSource CreateImage(Texture texture, int maxWidth, int maxHeight)
+    {
+        using var unmanagedStream = texture.IsCubemap()
+            ? texture.GetCubemapFace(0)
+            : texture.GetTexture();
+
+        float widthRatio = (float)texture.TagData.Width / maxWidth;
+        float heightRatio = (float)texture.TagData.Height / maxHeight;
+        float scaleRatio = Math.Max(widthRatio, heightRatio);
+        int imgWidth = (int)Math.Floor(texture.TagData.Width / scaleRatio);
+        int imgHeight = (int)Math.Floor(texture.TagData.Height / scaleRatio);
+
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.StreamSource = unmanagedStream;
+        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        bitmap.DecodePixelWidth = imgWidth;
+        bitmap.DecodePixelHeight = imgHeight;
+        bitmap.EndInit();
+
+        return bitmap;
     }
 }

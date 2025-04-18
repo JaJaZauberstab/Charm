@@ -288,6 +288,20 @@ public class PackageResourcer : Strategy.StrategistSingleton<PackageResourcer>
         return fileHashes;
     }
 
+    public async Task<ConcurrentHashSet<FileHash>> GetAllHashesAsync<T>(Func<ushort, bool> packageFilterFunc)
+    {
+        ConcurrentHashSet<FileHash> fileHashes = new();
+
+        ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = 5, CancellationToken = CancellationToken.None };
+        IEnumerable<Package> packages = _packagesCache.Values.Where(package => packageFilterFunc(package.GetPackageMetadata().Id));
+        await Parallel.ForEachAsync(packages, parallelOptions, async (package, ct) =>
+        {
+            fileHashes.UnionWith(await Task.Run(() => package.GetAllHashes(typeof(T)), ct));
+        });
+
+        return fileHashes;
+    }
+
     public string GetActivityName(FileHash fileHash)
     {
         if (_activityNames.TryGetValue(fileHash.Hash32, out string activityName))

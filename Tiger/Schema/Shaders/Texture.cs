@@ -15,6 +15,9 @@ public class Texture : TigerReferenceFile<STextureHeader>
     {
     }
 
+    public int Width => _tag.Width;
+    public int Height => _tag.Height;
+
     public bool IsCubemap()
     {
         return _tag.ArraySize == 6;

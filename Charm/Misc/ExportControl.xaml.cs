@@ -54,7 +54,7 @@ public partial class ExportControl : UserControl
             var value = values[i];
             if (((int)value & exportTypeFlags) == (int)value)
             {
-                string name = TagItem.GetEnumDescription(value);
+                string name = EnumExtensions.GetEnumDescription(value);
                 ExportComboBox.Items.Add(new ComboBoxItem
                 {
                     Content = name,

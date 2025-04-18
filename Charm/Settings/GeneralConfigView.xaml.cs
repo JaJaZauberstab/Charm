@@ -139,7 +139,7 @@ public partial class GeneralConfigView : UserControl
         {
             if (filterAction(val))
             {
-                items.Add(new ComboBoxItem { Content = TagItem.GetEnumDescription(val).ToUpper(), Tag = val });
+                items.Add(new ComboBoxItem { Content = EnumExtensions.GetEnumDescription(val).ToUpper(), Tag = val });
             }
         }
         return items;

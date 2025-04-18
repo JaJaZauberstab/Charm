@@ -20,7 +20,8 @@ public partial class CubemapView : UserControl
             Texture = TextureModel.Create(textureHeader.GetTexture()),
         });
 
-        // Can't use binding since DataContext is already taken up by something else 
+        // Can't use binding since DataContext is already taken up by something else
+        Hash.Text = $"{textureHeader.Hash}";
         Dimensions.Text = $"{textureHeader.GetDimension()}: {textureHeader.TagData.Width}x{textureHeader.TagData.Height}x{textureHeader.TagData.Depth}";
         Format.Text = $"{textureHeader.TagData.GetFormat().ToString()} ({(textureHeader.IsSrgb() ? "Srgb" : "Linear")})";
     }

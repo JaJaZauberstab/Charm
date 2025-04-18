@@ -26,6 +26,9 @@ public partial class APITooltip : UserControl
 
     public async void MakeTooltip(PlugItem item)
     {
+        if (ActiveItem is null)
+            return;
+
         item.Name = item.Name.ToUpper();
         var itemStrings = item.Item?.GetItemStrings();
 

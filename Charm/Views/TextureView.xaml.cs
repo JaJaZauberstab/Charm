@@ -21,9 +21,8 @@ public partial class TextureView : UserControl
         bitmapImage.BeginInit();
         bitmapImage.StreamSource = textureHeader.GetTexture();
         bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        // Divide aspect ratio to fit 960x1000
-        float widthDivisionRatio = (float)textureHeader.TagData.Width / 960;
-        float heightDivisionRatio = (float)textureHeader.TagData.Height / 1000;
+        float widthDivisionRatio = (float)textureHeader.TagData.Width / 800;
+        float heightDivisionRatio = (float)textureHeader.TagData.Height / 800;
         float transformRatio = Math.Max(heightDivisionRatio, widthDivisionRatio);
         int imgWidth = (int)Math.Floor(textureHeader.TagData.Width / transformRatio);
         int imgHeight = (int)Math.Floor(textureHeader.TagData.Height / transformRatio);
@@ -34,6 +33,7 @@ public partial class TextureView : UserControl
 
         TextureDisplayData data = new()
         {
+            Hash = textureHeader.Hash,
             Image = bitmapImage,
             Dimensions = $"{textureHeader.GetDimension().GetEnumDescription()}: {textureHeader.TagData.Width}x{textureHeader.TagData.Height}x{textureHeader.TagData.Depth}",
             Format = $"{textureHeader.TagData.GetFormat().ToString()} ({(textureHeader.IsSrgb() ? "Srgb" : "Linear")})"
@@ -55,6 +55,7 @@ public partial class TextureView : UserControl
 
     public struct TextureDisplayData
     {
+        public FileHash Hash { get; set; }
         public ImageSource Image { get; set; }
         public string Dimensions { get; set; }
         public string Format { get; set; }
