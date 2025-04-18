@@ -12,7 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Arithmic;
 using ConcurrentCollections;
 using Newtonsoft.Json;
@@ -508,14 +507,10 @@ public partial class TagListView : UserControl
         var searchStr = SearchBox.Text;
 
         // Flips tag hash to the "intended" way (sigh) ex 80BB6216 -> 1662BB80
-        if ((searchStr.StartsWith("80") || searchStr.StartsWith("81")) &&
-            (!searchStr.EndsWith("80") && !searchStr.EndsWith("81")) && searchStr.Length == 8)
+        if (Helpers.ParseHash(searchStr, out uint parsedHash))
         {
-            byte[] bytes = Helpers.HexStringToByteArray(searchStr);
-            Array.Reverse(bytes);
-            searchStr = BitConverter.ToString(bytes).Replace("-", "");
+            searchStr = new TigerHash(parsedHash).ToString();
         }
-
         SetItemListByString(searchStr.ToLower());
     }
 
@@ -2435,48 +2430,5 @@ public class TagItem : INotifyPropertyChanged
     public void ClearImageSource()
     {
         TagImageSource = null;
-    }
-}
-
-public static class TextureLoader
-{
-    public static ImageSource LoadTexture(Texture texture, int maxWidth, int maxHeight)
-    {
-        if (texture == null)
-            return null;
-
-        try
-        {
-            var image = CreateImage(texture, maxWidth, maxHeight);
-            image.Freeze();
-            return image;
-        }
-        catch (Exception) // Rare case where a "not a cubemap cubemap" doesnt want to load in time
-        {
-            return null;
-        }
-    }
-
-    private static ImageSource CreateImage(Texture texture, int maxWidth, int maxHeight)
-    {
-        using var unmanagedStream = texture.IsCubemap()
-            ? texture.GetCubemapFace(0)
-            : texture.GetTexture();
-
-        float widthRatio = (float)texture.TagData.Width / maxWidth;
-        float heightRatio = (float)texture.TagData.Height / maxHeight;
-        float scaleRatio = Math.Max(widthRatio, heightRatio);
-        int imgWidth = (int)Math.Floor(texture.TagData.Width / scaleRatio);
-        int imgHeight = (int)Math.Floor(texture.TagData.Height / scaleRatio);
-
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.StreamSource = unmanagedStream;
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.DecodePixelWidth = imgWidth;
-        bitmap.DecodePixelHeight = imgHeight;
-        bitmap.EndInit();
-
-        return bitmap;
     }
 }

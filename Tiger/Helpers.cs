@@ -137,7 +137,8 @@ public static class Helpers
         return $"{readableValue:0.##} {sizeSuffixes[suffixIndex]}";
     }
 
-    public static (ushort width, ushort height) GetTextureDimensionsRaw(FileHash hash)
+    // This is fine :)
+    public static (ushort width, ushort height, ushort depth, ushort array_size) GetTextureDimensionsRaw(FileHash hash)
     {
         var data = PackageResourcer.Get().GetFileData(hash);
         using (TigerReader br = new TigerReader(data))
@@ -146,7 +147,9 @@ public static class Helpers
             br.Seek(offset, SeekOrigin.Begin);
             ushort width = br.ReadUInt16();
             ushort height = br.ReadUInt16();
-            return (width, height);
+            ushort depth = br.ReadUInt16();
+            ushort array_size = br.ReadUInt16();
+            return (width, height, depth, array_size);
         }
     }
 
@@ -154,6 +157,27 @@ public static class Helpers
     {
         return input.Length == 8 &&
                input.All(c => Uri.IsHexDigit(c));
+    }
+
+    public static bool ParseHash(in string searchStr, out uint parsedHash)
+    {
+        bool isValidHash = Helpers.IsValidHexHash(searchStr);
+        if (isValidHash &&
+            (searchStr.StartsWith("80") || searchStr.StartsWith("81")) &&
+            (!searchStr.EndsWith("80") && !searchStr.EndsWith("81")))
+        {
+            byte[] bytes = Helpers.HexStringToByteArray(searchStr);
+            Array.Reverse(bytes);
+            parsedHash = new TigerHash(BitConverter.ToUInt32(bytes)).Hash32;
+            return true;
+        }
+        else if (isValidHash && (searchStr.EndsWith("80") || searchStr.EndsWith("81")))
+        {
+            parsedHash = new TigerHash(searchStr).Hash32;
+            return true;
+        }
+        parsedHash = 0;
+        return false;
     }
 }
 

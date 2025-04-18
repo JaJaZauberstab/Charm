@@ -64,6 +64,19 @@ public partial class TextureListView : UserControl
         }
     }
 
+    public async void LoadContent()
+    {
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            "Creating Texture List",
+        });
+        await MakePackageItems();
+        MainWindow.Progress.CompleteStage();
+
+        CreateFilterOptions();
+    }
+
+
     private void CreateFilterOptions()
     {
         ComboBoxControl presets = new ComboBoxControl();
@@ -76,7 +89,8 @@ public partial class TextureListView : UserControl
             new ComboBoxItem { Content = "Items/Perks", Tag = "96x96", FontSize = 10 },
             new ComboBoxItem { Content = "Ability Icons", Tag = "54x54", FontSize = 10 },
             new ComboBoxItem { Content = "Weapon Icons", Tag = "137x76", FontSize = 10 },
-            new ComboBoxItem { Content = "Upsell Screen", Tag = "1920x830", FontSize = 10 }
+            new ComboBoxItem { Content = "Upsell Screen", Tag = "1920x830", FontSize = 10 },
+            new ComboBoxItem { Content = "Cubemap", Tag = "Cubemap", FontSize = 10 }
         };
         if (presets.Combobox.SelectedIndex == -1)
         {
@@ -106,29 +120,6 @@ public partial class TextureListView : UserControl
 
         sortBy.Combobox.SelectionChanged += SortBy_OnSelectionChanged;
         FilterOptions.Children.Add(sortBy);
-    }
-
-    private void SortBy_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        SortByIndex = (int)((sender as ComboBox).SelectedItem as ComboBoxItem).Tag;
-        RefreshTextureList();
-    }
-
-    private void Presets_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        TextureSearchBox.Text = (string)((sender as ComboBox).SelectedItem as ComboBoxItem).Tag;
-    }
-
-    public async void LoadContent()
-    {
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            "Creating Package List",
-        });
-        await MakePackageItems();
-        MainWindow.Progress.CompleteStage();
-
-        CreateFilterOptions();
     }
 
     private async Task MakePackageItems()
@@ -197,7 +188,9 @@ public partial class TextureListView : UserControl
                 Hash = hash,
                 Dimensions = dims_str,
                 Width = dims.width,
-                Height = dims.height
+                Height = dims.height,
+                Depth = dims.depth,
+                ArraySize = dims.array_size
             });
         }));
 
@@ -214,23 +207,8 @@ public partial class TextureListView : UserControl
 
         var searchStr = SearchBox.Text;
 
-        bool isHash = false;
         uint parsedHash = 0;
-        bool isValidHash = Helpers.IsValidHexHash(searchStr);
-        if (isValidHash &&
-            (searchStr.StartsWith("80") || searchStr.StartsWith("81")) &&
-            (!searchStr.EndsWith("80") && !searchStr.EndsWith("81")))
-        {
-            isHash = true;
-            byte[] bytes = Helpers.HexStringToByteArray(searchStr);
-            Array.Reverse(bytes);
-            parsedHash = new TigerHash(searchStr).Hash32;
-        }
-        else if (isValidHash && (searchStr.EndsWith("80") || searchStr.EndsWith("81")))
-        {
-            isHash = true;
-            parsedHash = new TigerHash(searchStr).Hash32;
-        }
+        bool isHash = Helpers.ParseHash(searchStr, out parsedHash);
 
         var displayItems = new ConcurrentBag<PackageItem>();
         Parallel.ForEach(PackageItems, pkg =>
@@ -265,28 +243,17 @@ public partial class TextureListView : UserControl
 
         var searchStr = TextureSearchBox.Text;
 
-        bool isHash = false;
         uint parsedHash = 0;
-        bool isValidHash = Helpers.IsValidHexHash(searchStr);
-        if (isValidHash &&
-            (searchStr.StartsWith("80") || searchStr.StartsWith("81")) &&
-            (!searchStr.EndsWith("80") && !searchStr.EndsWith("81")))
-        {
-            isHash = true;
-            byte[] bytes = Helpers.HexStringToByteArray(searchStr);
-            Array.Reverse(bytes);
-            parsedHash = new TigerHash(searchStr).Hash32;
-        }
-        else if (isValidHash && (searchStr.EndsWith("80") || searchStr.EndsWith("81")))
-        {
-            isHash = true;
-            parsedHash = new TigerHash(searchStr).Hash32;
-        }
+        bool isHash = Helpers.ParseHash(searchStr, out parsedHash);
 
         var displayItems = new ConcurrentBag<TextureItem>();
         Parallel.ForEach(Textures, tex =>
         {
             if (isHash && tex.Hash.Hash32 == parsedHash) // hacky but eh
+            {
+                displayItems.Add(tex);
+            }
+            else if (searchStr == "Cubemap" && tex.ArraySize == 6) // also dumb
             {
                 displayItems.Add(tex);
             }
@@ -311,17 +278,6 @@ public partial class TextureListView : UserControl
 
         BulkExportButton.IsEnabled = items.Count > 0;
     }
-
-    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        RefreshPackageList();
-    }
-
-    private void TextureSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        RefreshTextureList();
-    }
-
 
     private void Texture_OnClick(object sender, RoutedEventArgs e)
     {
@@ -349,6 +305,28 @@ public partial class TextureListView : UserControl
         {
             TextureControl.LoadTexture(textureHeader);
         }
+    }
+
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        RefreshPackageList();
+    }
+
+    private void TextureSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        RefreshTextureList();
+    }
+
+    private void SortBy_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        SortByIndex = (int)((sender as ComboBox).SelectedItem as ComboBoxItem).Tag;
+        RefreshTextureList();
+    }
+
+    private void Presets_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var preset = (string)((sender as ComboBox).SelectedItem as ComboBoxItem).Tag;
+        TextureSearchBox.Text = preset;
     }
 
     private async void BulkExportButton_Click(object sender, RoutedEventArgs e)
@@ -452,7 +430,7 @@ public partial class TextureListView : UserControl
         }
     }
 
-    public class TextureItem : INotifyPropertyChanged
+    private class TextureItem : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propName) =>
@@ -463,6 +441,8 @@ public partial class TextureListView : UserControl
 
         public int Width { get; set; }
         public int Height { get; set; }
+        public int Depth { get; set; }
+        public int ArraySize { get; set; }
 
         private ImageSource _tagImageSource;
         public ImageSource TagImageSource
@@ -501,7 +481,7 @@ public partial class TextureListView : UserControl
         }
     }
 
-    public class PackageItem
+    private class PackageItem
     {
         public string Name { get; set; }
         public int ID { get; set; }
