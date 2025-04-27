@@ -61,6 +61,7 @@ public class Entity : Tag<SEntity>
                     PhysicsModelParentResource = FileResourcer.Get().GetFile<EntityPhysicsModelParent>(resource.Hash);
                     break;
 
+                case D2Class_D5818080:
                 case D2Class_DD818080:  // Entity skeleton FK
                     Skeleton = FileResourcer.Get().GetFile<EntitySkeleton>(resource.Hash);
                     break;

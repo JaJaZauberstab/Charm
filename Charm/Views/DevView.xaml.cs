@@ -25,7 +25,6 @@ namespace Charm;
 public partial class DevView : UserControl
 {
     private static MainWindow _mainWindow = null;
-    private FbxHandler _fbxHandler = null;
 
     public DevView()
     {
@@ -35,7 +34,6 @@ public partial class DevView : UserControl
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
     {
         _mainWindow = Window.GetWindow(this) as MainWindow;
-        _fbxHandler = new FbxHandler(false);
         HashLocation.Text = $"PKG:\nPKG ID:\nEntry Index:";
 
         //RipAndTear();
@@ -164,7 +162,6 @@ public partial class DevView : UserControl
 
     private void AddWindow(FileHash hash)
     {
-        _fbxHandler.Clear();
         // Adds a new tab to the tab control
         TigerHash reference = hash.GetReferenceHash();
         FileMetadata fileMetadata = PackageResourcer.Get().GetFileMetadata(hash);
@@ -204,7 +201,7 @@ public partial class DevView : UserControl
                 case 0x80809C0F:
                 case 0x80809AD8:
                     EntityView entityView = new EntityView();
-                    entityView.LoadEntity(hash, _fbxHandler);
+                    entityView.LoadEntity(hash);
 
                     Entity entity = FileResourcer.Get().GetFile<Entity>(hash);
                     List<Entity> entities = new List<Entity> { entity };
@@ -218,7 +215,7 @@ public partial class DevView : UserControl
                 case 0x808071a7:
                 case 0x80806D44:
                     StaticView staticView = new StaticView();
-                    staticView.LoadStatic(hash, ExportDetailLevel.MostDetailed, Window.GetWindow(this));
+                    staticView.LoadStatic(hash, ExportDetailLevel.MostDetailed);
                     _mainWindow.MakeNewTab(hash, staticView);
                     _mainWindow.SetNewestTabSelected();
                     break;
@@ -252,6 +249,7 @@ public partial class DevView : UserControl
                     _mainWindow.SetNewestTabSelected();
                     break;
 
+
                 case 0x808071E8:
                 case 0x80806DAA:
                     var materialView = new MaterialView();
@@ -277,7 +275,7 @@ public partial class DevView : UserControl
                     Exporter.Get().Export();
 
                     EntityView entityModelView = new EntityView();
-                    entityModelView.LoadEntityModel(hash, _fbxHandler);
+                    entityModelView.LoadEntityModel(hash);
                     _mainWindow.MakeNewTab(hash, entityModelView);
                     _mainWindow.SetNewestTabSelected();
                     break;

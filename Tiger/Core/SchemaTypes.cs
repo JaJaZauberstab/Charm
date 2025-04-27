@@ -5,7 +5,12 @@ using Tiger.Schema.Strings;
 
 namespace Tiger;
 
-// could just be BinaryReader extensions but I like renaming it and bundling the changes together
+/// <summary>
+/// The heart of it all.
+/// A specialized binary reader for deserializing data using the Tiger schema system.
+/// Provides helper methods for reading schema-defined structs and types.
+/// The optional <see cref="Hash"/> property can be used to identify the context or origin of the stream.
+/// </summary>
 public class TigerReader : BinaryReader
 {
     public TigerReader(Stream stream, uint hash = 0xFFFFFFFF) : base(stream) { Hash = hash; }
@@ -80,6 +85,14 @@ public interface ITigerDeserialize
     public void Deserialize(TigerReader reader);
 }
 
+/// <summary>
+/// A dynamic array structure used to deserialize a list of items from data when the count and offset are explicitly defined.
+/// 
+/// This type first reads a 32-bit integer <c>Count</c>, which defines how many elements to read, followed by a <see cref="RelativePointer"/> <c>Offset</c>,
+/// which points to the start of the array data relative to the current base position.
+/// 
+/// Each element is assumed to have a fixed size based on its schema definition, and is read sequentially starting from the absolute offset.
+/// </summary>
 [SchemaType(0x10)]
 public class DynamicArray<T> : List<T>, ITigerDeserialize
 {
@@ -129,6 +142,15 @@ public class DynamicArray<T> : List<T>, ITigerDeserialize
     }
 }
 
+/// <summary>
+/// This behaves similarly to <see cref="DynamicArray{T}"/>, except it only captures the <c>Count</c> and <c>Offset</c> for later use.
+/// 
+/// Useful for handling large amounts of data sets where immediate in-memory storage is undesirable.
+/// Instead of materializing the full array, the <see cref="Enumerate"/> and <see cref="ElementAt(TigerReader, int)"/> methods allow access
+/// to elements directly from the stream via a <see cref="TigerReader"/> as needed.
+/// 
+/// Attempting to access or manipulate the array using standard list methods (e.g., indexers or LINQ) will throw, as the underlying data is not stored.
+/// </summary>
 public class DynamicArrayUnloaded<T> : DynamicArray<T>
 {
     public override void Deserialize(TigerReader reader)
@@ -385,6 +407,10 @@ public class RelativePointer : ITigerDeserialize
     }
 }
 
+/// <summary>
+/// Represents a pointer to a globally located structure within the file.
+/// Reads an absolute offset and, if non-zero, seeks to that position to deserialize a value of type <typeparamref name="T"/>.
+/// </summary>
 [SchemaType(0x04)]
 public class GlobalPointer<T> : ITigerDeserialize where T : struct
 {
@@ -610,10 +636,11 @@ public class ResourceInTablePointer<T> : ITigerDeserialize where T : struct
 }
 
 /// <summary>
-///  A structure inline with data, the defined structure should use NonSchemaStruct
-/// </summary> 
-// I really hope this is fine, im not good with this 'lower level' (is that the right way to put it?) stuff.
-// SchemaType Size has to be the size of the given struct, done in DeserializeSchema()
+/// An inline struct used when no class hash is provided, but the structure layout is known and consistent.
+/// Useful for blocks of repeating data where something like <see cref="DynamicArray{T}"/> wouldn't apply.
+/// <see cref="Tiger.Schema.SMaterial"/> is one such example, where each shader stage (Vertex, Pixel, Compute)
+/// share the same data layout.
+/// </summary>
 [SchemaType(0x0)]
 public class DynamicStruct<T> : ITigerDeserialize where T : struct
 {
@@ -626,7 +653,7 @@ public class DynamicStruct<T> : ITigerDeserialize where T : struct
 }
 
 /// <summary>
-/// A pointer to a resource in a specified tag
+/// A pointer to a resource in a specified tag, currently does nothing
 /// </summary>
 [SchemaType(0x10)]
 public class ResourceInTagPointer : ITigerDeserialize
@@ -638,7 +665,7 @@ public class ResourceInTagPointer : ITigerDeserialize
 }
 
 /// <summary>
-/// The weird one of above todo improve this comment
+/// A weird version of <see cref="ResourceInTagWeirdPointer"/>, currently does nothing
 /// </summary>
 [SchemaType(0x18)]
 public class ResourceInTagWeirdPointer : ITigerDeserialize

@@ -141,7 +141,7 @@ public class PackagePathsCache
         var path = _packagesDirectory.Split("packages")[0] + "destiny2.exe";
         if (!File.Exists(path))
         {
-            Log.Warning($"Could not get find game executable '{path}' for game version, assuming static.");
+            Log.Warning($"Could not find game executable '{path}' for game version, assuming static.");
             return 0;
         }
         FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(path);

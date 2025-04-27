@@ -263,6 +263,20 @@ public struct D2Class_DD818080
     public DynamicArray<D2Class_40868080> Unk40;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "2B058080", 0xA0)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "3D858080", 0xA0)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "D5818080", 0xA0)]
+public struct D2Class_D5818080
+{
+    //public ResourceInTagPointer Unk00;
+
+    //[SchemaField(0x38)]
+    //public DynamicArray<D2Class_07008080> Unk38;
+    //public DynamicArray<D2Class_07008080> Unk48;
+    //public DynamicArray<D2Class_4F9F8080> Unk58;
+    //public DynamicArray<D2Class_40868080> Unk68;
+}
+
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "98058080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "DC818080", 0x40)]
 public struct D2Class_DC818080
@@ -291,24 +305,25 @@ public struct D2Class_40868080
     public uint Unk04;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "67048080", 0xA8)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "3E858080", 0xB0)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "D6818080", 0xC0)]
+public struct D2Class_D6818080
+{
+    [SchemaField(0x88, TigerStrategy.DESTINY1_RISE_OF_IRON)]
+    [SchemaField(0x80, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x90, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public DynamicArrayUnloaded<D2Class_42868080> NodeHierarchy;
+    public DynamicArrayUnloaded<D2Class_4F9F8080> DefaultInverseObjectSpaceTransforms;
+    //public DynamicArrayUnloaded<D2Class_06008080> RangeIndexMap;
+    //public DynamicArrayUnloaded<D2Class_06008080> InnerIndexMap;
+}
+
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9A048080", 0xE0)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "46858080", 0xF0)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "DE818080", 0x108)]
 public struct D2Class_DE818080
 {
-    //public ResourceInTagPointer Unk00;
-    //[SchemaField(0x48)]
-    //public ResourcePointer Unk48;
-    //public Tag Unk50;  // 239B8080 WQ, 549C8080 SK
-    //[SchemaField(0x60, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
-    //[SchemaField(0x68, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    //public ResourcePointer Unk68;
-    //public Tag Unk70;  // 239B8080 WQ, 549C8080 SK
-    [SchemaField(0x70, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x78, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
-    [SchemaField(0x88, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public TigerHash Unk88;
-    public TigerHash Unk8C;  // this is actually zeros in SK
     [SchemaField(0x88, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x80, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x90, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
@@ -317,13 +332,6 @@ public struct D2Class_DE818080
     public DynamicArrayUnloaded<D2Class_4F9F8080> DefaultInverseObjectSpaceTransforms;
     public DynamicArrayUnloaded<D2Class_06008080> RangeIndexMap;
     public DynamicArrayUnloaded<D2Class_06008080> InnerIndexMap;
-    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public Vector4 UnkE0;
-    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xD8, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
-    [SchemaField(0xF0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public DynamicArrayUnloaded<D2Class_E1818080> UnkF0; // lod distance?
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "F4048080", 0x10)]

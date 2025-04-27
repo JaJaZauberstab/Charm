@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using Arithmic;
 using Tiger;
@@ -15,63 +16,52 @@ namespace Charm;
 public partial class EntityView : UserControl
 {
     public FileHash Hash;
-    private string Name;
+    private MainViewModel MVM;
 
     public EntityView()
     {
         InitializeComponent();
     }
 
-    public bool LoadEntity(FileHash entityHash, FbxHandler fbxHandler)
+    public bool LoadEntity(FileHash entityHash)
     {
-        fbxHandler.Clear();
+        Hash = entityHash;
+        SetupCheckboxHandlers();
+
         Entity entity = FileResourcer.Get().GetFile<Entity>(entityHash);
 
-        // HelixToolkit is throwing a huge fit about a lot of D1 entities and just crashes when trying to load from fbx :))))))
-        // Only option is to load them as display parts instead. Won't show skeleton and won't look as nice but no other choice.
-        // On the plus side, things load slightly faster.
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
-        {
-            var parts = MakeEntityDisplayParts(entity, ExportDetailLevel.MostDetailed);
-            Dispatcher.Invoke(() =>
-            {
-                MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
-                MVM.Clear();
-                MVM.SetChildren(parts);
-            });
-            parts.Clear();
-            return true;
-        }
-        else
-        {
-            List<Entity> entities = new List<Entity> { entity };
-            entities.AddRange(entity.GetEntityChildren());
-            entities.ForEach(entity =>
-            {
-                AddEntity(entity, ModelView.GetSelectedLod(), fbxHandler);
-            });
-            return LoadUI(fbxHandler);
-        }
+        List<Entity> entities = new List<Entity> { entity };
+        entities.AddRange(entity.GetEntityChildren());
 
+        if (MVM is null)
+            MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
+
+        MVM.Clear();
+        var displayParts = MakeEntityDisplayParts(entities, ModelView.GetSelectedLod());
+        MVM.SetChildren(displayParts);
+        MVM.Title = entityHash;
+        MVM.SubTitle = $"{displayParts.Sum(p => p.BasePart.Indices.Count)} triangles";
+
+        return true;
     }
 
-    public bool LoadEntityModel(FileHash entityModelHash, FbxHandler fbxHandler)
+    public bool LoadEntityModel(FileHash entityModelHash)
     {
-        fbxHandler.Clear();
+        Hash = entityModelHash;
+        SetupCheckboxHandlers();
+
         EntityModel entityModel = FileResourcer.Get().GetFile<EntityModel>(entityModelHash);
 
-        var dynamicParts = entityModel.Load(ModelView.GetSelectedLod(), null);
-        ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
-        if (ModelView.GetSelectedGroupIndex() != -1)
-            dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
+        if (MVM is null)
+            MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
 
-        for (int i = 0; i < dynamicParts.Count; i++)
-        {
-            var dynamicPart = dynamicParts[i];
-            fbxHandler.AddMeshPartToScene(dynamicPart, i, entityModelHash);
-        }
+        MVM.Clear();
+        var displayParts = MakeEntityModelDisplayParts(entityModel, ModelView.GetSelectedLod());
+        MVM.SetChildren(displayParts);
+        MVM.Title = entityModelHash;
+        MVM.SubTitle = $"{displayParts.Sum(p => p.BasePart.Indices.Count)} triangles";
 
-        return LoadUI(fbxHandler);
+        return true;
     }
 
     public async void LoadEntityFromApi(TigerHash apiHash, FbxHandler fbxHandler)
@@ -292,12 +282,11 @@ public partial class EntityView : UserControl
         Log.Info($"Exported Gear Shader for: {item.ItemName}");
     }
 
-    private List<MainViewModel.DisplayPart> MakeEntityDisplayParts(Entity entity, ExportDetailLevel detailLevel)
+    private List<MainViewModel.DisplayPart> MakeEntityDisplayParts(List<Entity> entities, ExportDetailLevel detailLevel)
     {
-        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
-        List<Entity> entities = new List<Entity> { entity };
-        entities.AddRange(entity.GetEntityChildren());
+        bool useTextures = ModelView.TextureCheckBox.IsChecked == true;
 
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
         foreach (var ent in entities)
         {
             if (ent.HasGeometry())
@@ -314,11 +303,74 @@ public partial class EntityView : UserControl
                     displayPart.Translations.Add(Vector3.Zero);
                     displayPart.Rotations.Add(Vector4.Zero);
                     displayPart.Scales.Add(Vector3.One);
+
+                    if (useTextures && part.Material?.Pixel.Textures.Any() == true)
+                    {
+                        var texture = TextureView.RemoveAlpha(part.Material.Pixel.Textures[0].Texture.GetTexture());
+                        displayPart.DiffuseMaterial = new()
+                        {
+                            DiffuseMap = new HelixToolkit.SharpDX.Core.TextureModel(texture, true),
+                        };
+                    }
+
                     displayParts.Add(displayPart);
                 }
+            }
+
+            if (ent.Skeleton != null)
+            {
+                MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                displayPart.BoneNodes = ent.Skeleton.GetBoneNodes();
+                displayPart.Translations.Add(Vector3.Zero);
+                displayPart.Rotations.Add(Vector4.Zero);
+                displayPart.Scales.Add(Vector3.One);
+
+                displayParts.Add(displayPart);
             }
         }
 
         return displayParts.ToList();
     }
+
+    // TODO combine with above, I don't like this
+    private List<MainViewModel.DisplayPart> MakeEntityModelDisplayParts(EntityModel entModel, ExportDetailLevel detailLevel)
+    {
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
+
+        var dynamicParts = entModel.Load(detailLevel, null);
+        ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
+        if (ModelView.GetSelectedGroupIndex() != -1)
+            dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
+
+        foreach (var part in dynamicParts)
+        {
+            MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+            displayPart.BasePart = part;
+            displayPart.Translations.Add(Vector3.Zero);
+            displayPart.Rotations.Add(Vector4.Zero);
+            displayPart.Scales.Add(Vector3.One);
+
+            displayParts.Add(displayPart);
+        }
+
+        return displayParts.ToList();
+    }
+
+    private void SetupCheckboxHandlers()
+    {
+        ModelView.TextureCheckBox.Visibility = Visibility.Visible;
+
+        // Detach first to prevent multiple subscriptions
+        ModelView.TextureCheckBox.Checked -= TextureCheckBox_Checked;
+        ModelView.TextureCheckBox.Unchecked -= TextureCheckBox_Unchecked;
+
+        ModelView.TextureCheckBox.Checked += TextureCheckBox_Checked;
+        ModelView.TextureCheckBox.Unchecked += TextureCheckBox_Unchecked;
+    }
+
+    private void TextureCheckBox_Checked(object sender, RoutedEventArgs e) =>
+        LoadEntity(Hash);
+
+    private void TextureCheckBox_Unchecked(object sender, RoutedEventArgs e) =>
+        LoadEntity(Hash);
 }

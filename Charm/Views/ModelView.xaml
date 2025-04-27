@@ -49,6 +49,20 @@
                 Style="{StaticResource MaterialDesignCheckBox}">
                 Render Details
             </CheckBox>
+            <CheckBox
+                x:Name="TextureCheckBox"
+                Margin="10,0,10,0"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
+                IsChecked="False"
+                Style="{StaticResource MaterialDesignCheckBox}"
+                ToolTipService.InitialShowDelay="150"
+                Visibility="Collapsed">
+                <CheckBox.ToolTip>
+                    <TextBlock Foreground="Black" Text="Applies the first texture of each material. Not representative of the final look." />
+                </CheckBox.ToolTip>
+                Apply Texture
+            </CheckBox>
             <ComboBox
                 x:Name="LodCombobox"
                 Margin="10,0,10,0"
