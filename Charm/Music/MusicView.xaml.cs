@@ -121,10 +121,13 @@ public partial class MusicView : UserControl
                         sounds.Add(entry1.Sound);
                     break;
                 case S944E8080 entry2:
-                    foreach (var sound in entry2.Unk00.TagData.Unk08)
+                    if (entry2.Unk00 is not null)
                     {
-                        if (sound.Sound is not null)
-                            sounds.Add(sound.Sound);
+                        foreach (var sound in entry2.Unk00.TagData.Unk08)
+                        {
+                            if (sound.Sound is not null)
+                                sounds.Add(sound.Sound);
+                        }
                     }
                     break;
                 default:
