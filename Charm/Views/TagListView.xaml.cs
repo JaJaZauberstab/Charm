@@ -1015,7 +1015,7 @@ public partial class TagListView : UserControl
             MakePackageTagItems();
         });
 
-        RefreshItemList();  // bc of async stuff  
+        RefreshItemList();  // bc of async stuff
     }
 
     private async Task<ConcurrentDictionary<string, List<String>>> TryGetEntityNames()
@@ -1827,7 +1827,7 @@ public partial class TagListView : UserControl
                 _allTagItems.Add(new TagItem
                 {
                     Hash = wem.Hash,
-                    Name = $"WEM {metadata.FileIndex}",
+                    Name = $"WEM {metadata.FileIndex} {(wem.Channels > 2 ? "⚠" : "")}",
                     Subname = $"{Helpers.GetReadableSize(metadata.Size)} | Duration: {wem.Duration}",
                     TagType = ETagListType.Sound
                 });
@@ -2106,7 +2106,7 @@ public partial class TagListView : UserControl
         viewer.MusicPlayer.Visibility = Visibility.Visible;
     }
 
-    // Sword audio 0x18 B6368080, E043EA80 (E143EA80 pattern ent) for testing 
+    // Sword audio 0x18 B6368080, E043EA80 (E143EA80 pattern ent) for testing
     private void LoadWeaponAudioList(TigerHash apiHash)
     {
         _allTagItems = new ConcurrentBag<TagItem>();
