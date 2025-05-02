@@ -159,6 +159,11 @@ namespace DataTool.ConvertLogic
             private readonly byte _blocksize0Pow;
             private readonly byte _blocksize1Pow;
 
+            public uint SampleCount => _sampleCount;
+            public ushort Channels => _channels;
+            public uint SampleRate => _sampleRate;
+            public uint AvgBytesPerSecond => _avgBytesPerSecond;
+
             public WwiseRIFFVorbis(Stream stream, string codebooksFile)
             {
                 _codebooksFile = codebooksFile;

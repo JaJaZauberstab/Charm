@@ -7,6 +7,7 @@
 using System.IO;
 using DataTool.ConvertLogic;
 using RevorbStd;
+using static DataTool.ConvertLogic.OWSound;
 
 /// <summary>
 /// <para>Converts a Wwise Encoded Media (.wem) to an Ogg Vorbis file.</para>
@@ -18,6 +19,17 @@ static class WemConverter
     private const string CodebookPath = "ThirdParty/packed_codebooks_aoTuV_603.bin";
 
     private static bool _fileChecked;
+
+    public static WwiseRIFFVorbis GetWwiseRIFFVorbis(Stream stream)
+    {
+        if (!_fileChecked)
+        {
+            CheckCodebookFile();
+        }
+
+        OWSound.WwiseRIFFVorbis vorbis = new OWSound.WwiseRIFFVorbis(stream, CodebookPath);
+        return vorbis;
+    }
 
     public static MemoryStream ConvertSoundFile(Stream stream)
     {

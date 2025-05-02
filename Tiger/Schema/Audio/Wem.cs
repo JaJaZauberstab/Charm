@@ -1,4 +1,5 @@
 ﻿using Arithmic;
+using DataTool.ConvertLogic;
 using NAudio.Vorbis;
 using NAudio.Wave;
 using Tiger.Schema.Audio.ThirdParty;
@@ -18,14 +19,15 @@ public class Wem : TigerFile
     private MemoryStream _wemStream = null;
     private WaveStream _wemReader = null;
     private bool _bDisposed = false;
+    private OWSound.WwiseRIFFVorbis WemData = null;
 
     private int _channels;
     public int Channels
     {
         get
         {
-            CheckLoaded();
-            return _channels;
+            GetWEMData();
+            return WemData.Channels;
         }
     }
 
@@ -53,6 +55,12 @@ public class Wem : TigerFile
         {
             Log.Error($"{e.Message}: {_wemReader.WaveFormat.ToString()}");
         }
+    }
+
+    private void GetWEMData()
+    {
+        if (WemData is null)
+            WemData = WemConverter.GetWwiseRIFFVorbis(GetStream());
     }
 
     private void CheckLoaded()
@@ -86,8 +94,8 @@ public class Wem : TigerFile
 
     public TimeSpan GetDuration()
     {
-        CheckLoaded();
-        return _wemReader.TotalTime;
+        GetWEMData();
+        return TimeSpan.FromSeconds((double)GetStream().Length / (double)WemData.AvgBytesPerSecond);
     }
 
     public static string GetDurationString(TimeSpan timespan)
@@ -99,9 +107,18 @@ public class Wem : TigerFile
     {
         get
         {
-            CheckLoaded();
+            GetWEMData();
             var timespan = GetDuration();
             return GetDurationString(timespan);
+        }
+    }
+
+    public int Seconds
+    {
+        get
+        {
+            GetWEMData();
+            return GetDuration().Seconds;
         }
     }
 

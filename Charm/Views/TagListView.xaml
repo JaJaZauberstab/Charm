@@ -27,12 +27,13 @@
             x:Name="BulkExportButton"
             Grid.Row="0"
             Grid.Column="0"
-            Margin="5"
+            Margin="2"
             Click="BulkExport_OnClick"
-            Style="{StaticResource MaterialDesignFlatButton}"
+            Style="{StaticResource D2StyleButton}"
             Visibility="Hidden">
             <TextBlock
                 VerticalAlignment="Center"
+                FontSize="16"
                 Text="Bulk export"
                 TextAlignment="Center" />
         </Button>

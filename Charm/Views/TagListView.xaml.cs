@@ -450,10 +450,9 @@ public partial class TagListView : UserControl
         }
         else
         {
-            //tagItems.Sort((a, b) => a.Hash.Hash32 > b.Hash.Hash32 ? 1 : -1);
             tagItems = tagItems.OrderBy(x => x.Hash.Hash32).ToList();
         }
-        //tagItems = tagItems.DistinctBy(t => t.Hash).ToList();
+
         // If we have a parent, add a TagItem that is actually a back button as first
         if (_parentStack.Count > 0)
         {
@@ -1774,13 +1773,13 @@ public partial class TagListView : UserControl
         await Task.Run(() =>
         {
             _allTagItems = new ConcurrentBag<TagItem>();
-            HashSet<Wem> vals = PackageResourcer.Get().GetAllFiles<Wem>();
+            var vals = PackageResourcer.Get().GetAllHashes<Wem>();
             MainWindow.Progress.CompleteStage();
 
             ConcurrentHashSet<int> packageIds = new();
             Parallel.ForEach(vals, wem =>
             {
-                packageIds.Add(wem.Hash.PackageId);
+                packageIds.Add(wem.PackageId);
             });
 
             Parallel.ForEach(packageIds, pkgId =>
@@ -1815,12 +1814,12 @@ public partial class TagListView : UserControl
 
         await Task.Run(() =>
         {
-            List<Wem> vals = PackageResourcer.Get().GetPackage(fileHash.PackageId).GetAllFiles<Wem>();
-            // PackageHandler.CacheHashDataList(vals.Select(x => x.Hash).ToArray());
+            var vals = PackageResourcer.Get().GetPackage(fileHash.PackageId).GetAllHashes(typeof(Wem));
             _allTagItems = new ConcurrentBag<TagItem>();
-            Parallel.ForEach(vals, wem =>
+            Parallel.ForEach(vals, hash =>
             {
-                if (wem.GetData().Length <= 1)
+                var wem = FileResourcer.Get().GetFile<Wem>(hash, false, false);
+                if (wem.GetData(false).Length <= 1)
                     return;
 
                 var metadata = wem.Hash.GetFileMetadata();
@@ -1829,13 +1828,15 @@ public partial class TagListView : UserControl
                     Hash = wem.Hash,
                     Name = $"WEM {metadata.FileIndex} {(wem.Channels > 2 ? "⚠" : "")}",
                     Subname = $"{Helpers.GetReadableSize(metadata.Size)} | Duration: {wem.Duration}",
-                    TagType = ETagListType.Sound
+                    TagType = ETagListType.Sound,
+                    Extra = wem.Seconds
                 });
             });
         });
 
         MainWindow.Progress.CompleteStage();
         RefreshItemList();
+
     }
 
     private async Task LoadBKHDGroupList()
@@ -1907,12 +1908,12 @@ public partial class TagListView : UserControl
         if (viewer.MusicPlayer.SetWem(FileResourcer.Get().GetFile<Wem>(fileHash)))
         {
             viewer.MusicPlayer.Play();
-            SetExportFunction(ExportWav, (int)ExportTypeFlag.Full);
+            SetExportFunction(ExportWav, (int)ExportTypeFlag.Full, hideBulkExport: true); // TODO make bulk sound exporting work
             viewer.ExportControl.SetExportInfo(fileHash);
         }
     }
 
-    private void ExportSound(ExportInfo info)
+    private void ExportWEM(ExportInfo info)
     {
         ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
 
@@ -2325,7 +2326,7 @@ public partial class TagListView : UserControl
         if (tag.TagData.Wems.Count == 0)
             return;
         await viewer.MusicPlayer.SetSound(tag);
-        SetExportFunction(ExportSound, (int)ExportTypeFlag.Full, hideBulkExport: true); // todo bulk export just does nothing here
+        SetExportFunction(ExportWEM, (int)ExportTypeFlag.Full, hideBulkExport: true); // todo bulk export just does nothing here
         // bit of a cheat but works
         var tagItem = _previouslySelected.DataContext as TagItem;
         viewer.ExportControl.SetExportInfo(tagItem.Name == "" ? tagItem.Subname : $"{tagItem.Subname}_{tagItem.Name}", fileHash);
