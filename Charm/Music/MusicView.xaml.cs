@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using Arithmic;
 using Tiger;
 using Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402;
+using Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601;
 using Tiger.Schema.Audio;
 using Tiger.Schema.Entity;
 
@@ -18,6 +20,12 @@ public partial class MusicView : UserControl
 
     public void Load(FileHash fileHash, dynamic extra = null)
     {
+        if (Strategy.IsPreBL())
+        {
+            LoadPreBL(fileHash);
+            return;
+        }
+
         if (extra is Entity entity)
         {
             List<D2Class_40668080> sounds = new();
@@ -98,6 +106,35 @@ public partial class MusicView : UserControl
                 Log.Error($"Music Resource F7458080 Not Implemented");
             }
         }
+    }
+
+    public void LoadPreBL(FileHash hash)
+    {
+        List<WwiseSound> sounds = new();
+        EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(hash);
+        foreach (var value in ((S8F4E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Pointers.Select(x => x.Pointer.GetValue(resource.GetReader())))
+        {
+            switch (value)
+            {
+                case S954E8080 entry1:
+                    if (entry1.Sound is not null)
+                        sounds.Add(entry1.Sound);
+                    break;
+                case S944E8080 entry2:
+                    foreach (var sound in entry2.Unk00.TagData.Unk08)
+                    {
+                        if (sound.Sound is not null)
+                            sounds.Add(sound.Sound);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"{hash}");
+            }
+        }
+
+        WemsControl.Load(sounds.DistinctBy(x => x.Hash).ToList());
+        //FileHash sbhash = sound.TagData.SoundbankBL.Hash;
+        //SoundbankHash.Text = $"Soundbank: {sbhash} / {sbhash.PackageId:X4}-{sbhash.FileIndex:X4}";
     }
 
     // This is bit of a hack since music stuff isnt actually a part of TagListView so gotta jump through some hoops to

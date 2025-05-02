@@ -24,6 +24,9 @@ public class Wem : TigerFile
 
     public void Load()
     {
+        if (GetReferenceHash() is null || GetReferenceHash().IsInvalid())
+            return;
+
         _bDisposed = false;
         _wemStream = GetWemStream();
         _wemReader = new VorbisWaveReader(_wemStream);

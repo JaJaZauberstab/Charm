@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,7 @@ using Tiger.Schema.Shaders;
 using Tiger.Schema.Static;
 using Tiger.Schema.Strings;
 using ActivityROI = Tiger.Schema.Activity.DESTINY1_RISE_OF_IRON.Activity;
+using ActivitySK = Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601.Activity;
 using ActivityWQ = Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402.Activity;
 
 namespace Charm;
@@ -190,12 +192,12 @@ public partial class TagListView : UserControl
 
             switch (tagListType)
             {
-                case ETagListType.DestinationGlobalTagBagList:
-                    await LoadDestinationGlobalTagBagList();
-                    break;
                 case ETagListType.Back:
                     Back_Clicked();
                     return;
+                case ETagListType.DestinationGlobalTagBagList:
+                    await LoadDestinationGlobalTagBagList();
+                    break;
                 case ETagListType.DestinationGlobalTagBag:
                     LoadDestinationGlobalTagBag(contentValue as FileHash);
                     break;
@@ -750,26 +752,49 @@ public partial class TagListView : UserControl
     private async Task LoadDestinationGlobalTagBagList()
     {
         _allTagItems = new ConcurrentBag<TagItem>();
-        var vals = await PackageResourcer.Get().GetAllHashesAsync<D2Class_1D478080>();
-        Parallel.ForEach(vals, val =>
+        if (Strategy.IsPreBL())
         {
-            Tag<D2Class_1D478080> dgtbParent = FileResourcer.Get().GetSchemaTag<D2Class_1D478080>(val);
-            if (dgtbParent.TagData.DestinationGlobalTagBags.Count < 1)
-                return;
-            foreach (D2Class_D3598080 destinationGlobalTagBag in dgtbParent.TagData.DestinationGlobalTagBags)
+            var vals = await PackageResourcer.Get().GetAllHashesAsync<D2Class_30898080>();
+            Parallel.ForEach(vals, val =>
             {
-                if (!destinationGlobalTagBag.DestinationGlobalTagBag.IsValid())
-                    continue;
+                Tag<D2Class_30898080> bag = FileResourcer.Get().GetSchemaTag<D2Class_30898080>(val);
+                if (bag.TagData.Entries.Count == 0)
+                    return;
 
                 _allTagItems.Add(new TagItem
                 {
-                    Hash = destinationGlobalTagBag.DestinationGlobalTagBag,
-                    Name = destinationGlobalTagBag.DestinationGlobalTagBagName,
-                    Subname = $"{Helpers.GetReadableSize(destinationGlobalTagBag.DestinationGlobalTagBag.GetFileMetadata().Size)}",
+                    Hash = bag.Hash,
+                    Name = bag.Hash,
+                    Subname = $"",
                     TagType = ETagListType.DestinationGlobalTagBag
                 });
-            }
-        });
+
+            });
+        }
+        else
+        {
+            var vals = await PackageResourcer.Get().GetAllHashesAsync<D2Class_1D478080>();
+            Parallel.ForEach(vals, val =>
+            {
+                Tag<D2Class_1D478080> dgtbParent = FileResourcer.Get().GetSchemaTag<D2Class_1D478080>(val);
+                if (dgtbParent.TagData.DestinationGlobalTagBags.Count == 0)
+                    return;
+                foreach (D2Class_D3598080 destinationGlobalTagBag in dgtbParent.TagData.DestinationGlobalTagBags)
+                {
+                    if (!destinationGlobalTagBag.DestinationGlobalTagBag.IsValid())
+                        continue;
+
+                    _allTagItems.Add(new TagItem
+                    {
+                        Hash = destinationGlobalTagBag.DestinationGlobalTagBag,
+                        Name = destinationGlobalTagBag.DestinationGlobalTagBagName,
+                        Subname = $"{Helpers.GetReadableSize(destinationGlobalTagBag.DestinationGlobalTagBag.GetFileMetadata().Size)}",
+                        TagType = ETagListType.DestinationGlobalTagBag
+                    });
+                }
+            });
+        }
+
     }
 
     private void LoadDestinationGlobalTagBag(FileHash hash)
@@ -777,21 +802,26 @@ public partial class TagListView : UserControl
         Tag<D2Class_30898080> destinationGlobalTagBag = FileResourcer.Get().GetSchemaTag<D2Class_30898080>(hash);
 
         _allTagItems = new ConcurrentBag<TagItem>();
-        Parallel.ForEach(destinationGlobalTagBag.TagData.Unk18, val =>
+        Parallel.ForEach(destinationGlobalTagBag.TagData.Entries, val =>
         {
             if (val.Tag == null)
                 return;
             FileHash reference = val.Tag.Hash.GetReferenceHash();
             ETagListType tagType;
             string overrideType = String.Empty;
+
             switch (reference.Hash32)
             {
-                case 0x8080987e:
+                case 0x808099D1 when Strategy.CurrentStrategy <= TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                case 0x8080987E when Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
                     tagType = ETagListType.BudgetSet;
                     break;
-                case 0x80809ad8:
+
+                case 0x80809C0F when Strategy.CurrentStrategy <= TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                case 0x80809AD8 when Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
                     tagType = ETagListType.Entity;
                     break;
+
                 default:
                     if (val.Tag.Hash.GetFileMetadata().Type == 32)
                     {
@@ -805,8 +835,8 @@ public partial class TagListView : UserControl
             _allTagItems.Add(new TagItem
             {
                 Hash = val.Tag.Hash,
-                Name = val.TagPath,
-                Subname = val.TagNote,
+                Name = val.TagPath ?? "",
+                Subname = val.TagNote ?? "",
                 TagType = tagType,
                 Type = overrideType
             });
@@ -820,13 +850,13 @@ public partial class TagListView : UserControl
     private void LoadBudgetSet(FileHash hash)
     {
         Tag<D2Class_7E988080> budgetSetHeader = FileResourcer.Get().GetSchemaTag<D2Class_7E988080>(hash);
-        Tag<D2Class_ED9E8080> budgetSet = FileResourcer.Get().GetSchemaTag<D2Class_ED9E8080>(budgetSetHeader.TagData.Unk00.Hash);
+        Tag<D2Class_ED9E8080> budgetSet = FileResourcer.Get().GetSchemaTag<D2Class_ED9E8080>(budgetSetHeader.TagData.Bag.Hash);
         _allTagItems = new ConcurrentBag<TagItem>();
         Parallel.ForEach(budgetSet.TagData.Unk28, val =>
         {
-            if (!val.Tag.Hash.IsValid())
+            if (val.Tag is null || !val.Tag.Hash.IsValid())
             {
-                Log.Error($"BudgetSet {budgetSetHeader.TagData.Unk00.Hash} has an invalid tag hash.");
+                Log.Error($"BudgetSet {budgetSetHeader.TagData.Bag.Hash} has an invalid tag hash.");
                 return;
             }
             ETagListType tagType = ETagListType.None;
@@ -834,9 +864,11 @@ public partial class TagListView : UserControl
             string overrideType = String.Empty;
             switch (reference.Hash32)
             {
-                case 0x80809ad8:
+                case 0x80809C0F when Strategy.CurrentStrategy <= TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                case 0x80809AD8 when Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
                     tagType = ETagListType.Entity;
                     break;
+
                 default:
                     if (val.Tag.Hash.GetFileMetadata().Type == 32)
                     {
@@ -850,7 +882,7 @@ public partial class TagListView : UserControl
             _allTagItems.Add(new TagItem
             {
                 Hash = val.Tag.Hash,
-                Name = val.TagPath,
+                Name = val.TagPath ?? "",
                 TagType = tagType,
                 Type = overrideType
             });
@@ -922,10 +954,13 @@ public partial class TagListView : UserControl
         if (_allTagItems != null)
             return;
 
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
         MainWindow.Progress.SetProgressStages(new List<string>
         {
-            "Caching Entity Names\nFirst time process, may take some time",
-            "Loading Entities"
+            "Caching Entity Names, may take some time",
+            "Loading Entities, may take some time"
         });
 
         await Task.Run(() =>
@@ -974,10 +1009,13 @@ public partial class TagListView : UserControl
                 }
             });
             MainWindow.Progress.CompleteStage();
+            stopwatch.Stop();
+            Log.Info($"Loaded {_allTagItems.Count} Entities in {stopwatch.Elapsed.TotalSeconds} seconds");
+
             MakePackageTagItems();
         });
 
-        RefreshItemList();  // bc of async stuff
+        RefreshItemList();  // bc of async stuff  
     }
 
     private async Task<ConcurrentDictionary<string, List<String>>> TryGetEntityNames()
@@ -1424,11 +1462,6 @@ public partial class TagListView : UserControl
     /// </summary>
     private void LoadDialogueList(FileHash fileHash)
     {
-        if (Strategy.CurrentStrategy <= TigerStrategy.DESTINY2_SHADOWKEEP_2999 && Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON)
-        {
-            return;
-        }
-
         _allTagItems = new ConcurrentBag<TagItem>();
 
         // Dialogue tables can be in the 0x80808948 entries
@@ -1469,6 +1502,25 @@ public partial class TagListView : UserControl
                 {
                     if (resource.DialogueTableBL != null)
                         dialogueTables.TryAdd(resource.DialogueTableBL.Hash, resource.DialogueTableBL.Hash);
+                }
+                break;
+
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2601:
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
+                var valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
+                foreach (var val in valsSK)
+                {
+                    Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
+                    string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
+
+                    if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                    {
+                        foreach (var tableHash in activitySK.GetActivityDialogueTables(val))
+                        {
+                            dialogueTables.TryAdd($"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}", tableHash);
+                        }
+                    }
                 }
                 break;
 
@@ -1518,15 +1570,9 @@ public partial class TagListView : UserControl
 
     private void LoadDirectiveList(FileHash fileHash)
     {
-        if (Strategy.CurrentStrategy <= TigerStrategy.DESTINY2_SHADOWKEEP_2999 && Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON)
-        {
-            return;
-        }
         _allTagItems = new ConcurrentBag<TagItem>();
 
-        // Dialogue tables can be in the 0x80808948 entries
-
-        // TODO: shrink this? extra if/else statement for single type change looks ugly imo
+        ConcurrentDictionary<string, FileHash> directiveItems = new();
         switch (Strategy.CurrentStrategy)
         {
             case >= TigerStrategy.DESTINY2_WITCHQUEEN_6307:
@@ -1537,12 +1583,7 @@ public partial class TagListView : UserControl
 
                     Parallel.ForEach(directiveTables, hash =>
                     {
-                        _allTagItems.Add(new TagItem
-                        {
-                            Hash = hash,
-                            Name = hash,
-                            TagType = ETagListType.Directive
-                        });
+                        directiveItems.TryAdd(hash, hash);
                     });
                 }
                 else if (activityWQ.TagData.Unk18.GetValue(activityWQ.GetReader()) is D2Class_20978080 class20978080)
@@ -1551,12 +1592,7 @@ public partial class TagListView : UserControl
 
                     Parallel.ForEach(directiveTables, hash =>
                     {
-                        _allTagItems.Add(new TagItem
-                        {
-                            Hash = hash,
-                            Name = hash,
-                            TagType = ETagListType.Directive
-                        });
+                        directiveItems.TryAdd(hash, hash);
                     });
                 }
                 break;
@@ -1569,15 +1605,30 @@ public partial class TagListView : UserControl
 
                     Parallel.ForEach(directiveTables, hash =>
                     {
-                        _allTagItems.Add(new TagItem
-                        {
-                            Hash = hash,
-                            Name = hash ?? "",
-                            TagType = ETagListType.Directive
-                        });
+                        directiveItems.TryAdd(hash ?? "", hash);
                     });
                 }
                 break;
+
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2601:
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
+                var valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
+                foreach (var val in valsSK)
+                {
+                    Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
+                    string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
+
+                    if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                    {
+                        foreach (var tableHash in activitySK.GetActivityDirectiveTables(val))
+                        {
+                            directiveItems.TryAdd($"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}", tableHash);
+                        }
+                    }
+                }
+                break;
+
 
             case TigerStrategy.DESTINY1_RISE_OF_IRON:
                 ActivityROI activityROI = FileResourcer.Get().GetFile<ActivityROI>(fileHash);
@@ -1590,17 +1641,22 @@ public partial class TagListView : UserControl
                         string activityName = PackageResourcer.Get().GetActivityName(activityROI.FileHash).Split(':')[1];
                         if (tag.TagData.ActivityDevName.Value.Contains(activityName))
                         {
-                            _allTagItems.Add(new TagItem
-                            {
-                                Hash = val.Key,
-                                Name = PackageResourcer.Get().GetActivityName(val.Key).Split(":").First(),
-                                TagType = ETagListType.Directive
-                            });
+                            directiveItems.TryAdd(PackageResourcer.Get().GetActivityName(val.Key).Split(":").First(), val.Key);
                         }
                     }
                 }
                 break;
         }
+
+        Parallel.ForEach(directiveItems, entry =>
+        {
+            _allTagItems.Add(new TagItem
+            {
+                Name = entry.Key,
+                Hash = entry.Value,
+                TagType = ETagListType.Directive
+            });
+        });
     }
 
     // TODO replace with taglist control
@@ -1892,16 +1948,35 @@ public partial class TagListView : UserControl
     /// </summary>
     private void LoadMusicList(FileHash fileHash)
     {
-        if (Strategy.CurrentStrategy <= TigerStrategy.DESTINY2_SHADOWKEEP_2999)
-        {
-            return;
-        }
-        ActivityWQ activity = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
         _allTagItems = new ConcurrentBag<TagItem>();
-
         ConcurrentBag<FileHash> musics = new();
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY2_BEYONDLIGHT_3402)
+
+        if (Strategy.IsPreBL())
         {
+            ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
+            var valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
+            foreach (var val in valsSK)
+            {
+                Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
+                string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
+
+                if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                {
+                    foreach (var tableHash in activitySK.GetActivityMusicList(val).Distinct())
+                    {
+                        _allTagItems.Add(new TagItem
+                        {
+                            Hash = tableHash,
+                            Name = $"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}",
+                            TagType = ETagListType.Music
+                        });
+                    }
+                }
+            }
+        }
+        else if (Strategy.IsBL())
+        {
+            ActivityWQ activity = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
             // TODO: check if wq way of music is also in beyond light
             if (activity.TagData.Unk18.GetValue(activity.GetReader()) is D2Class_19978080 res)
             {
@@ -1909,8 +1984,9 @@ public partial class TagListView : UserControl
                     musics.Add(res.Music.Hash);
             }
         }
-        else if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307)
+        else if (Strategy.IsPostBL())
         {
+            ActivityWQ activity = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
             Parallel.ForEach(activity.TagData.Unk50, val =>
             {
                 foreach (var d2Class48898080 in val.Unk18)

@@ -14,7 +14,6 @@ namespace Tiger;
 public class TigerFile
 {
     public readonly FileHash Hash;
-    public readonly TigerHash ReferenceHash;
     private byte[]? _data = null;
 
     public TigerFile(FileHash hash)
@@ -30,6 +29,15 @@ public class TigerFile
     public MemoryStream GetStream()
     {
         return new MemoryStream(GetData());
+    }
+
+    public FileHash GetReferenceHash()
+    {
+        if (Hash.IsInvalid())
+        {
+            throw new Exception($"Cannot get reference hash for invalid file hash {Hash}.");
+        }
+        return new FileHash(Hash.GetFileMetadata().Reference.Hash32);
     }
 
     public byte[] GetData(bool shouldCache = true)

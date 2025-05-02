@@ -222,6 +222,9 @@ namespace Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601
             {
                 foreach (var entry2 in entry.Unk08)
                 {
+                    if (entry2.Unk44 is null)
+                        continue;
+
                     yield return new ActivityEntities
                     {
                         BubbleName = GlobalStrings.Get().GetString(entry2.UnkName1),
@@ -237,11 +240,18 @@ namespace Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601
         {
             ConcurrentBag<FileHash> items = new();
 
-            var entry = FileResourcer.Get().GetSchemaTag<DESTINY2_SHADOWKEEP_2601.S5B928080>(hash);
+            var tag = FileResourcer.Get().GetSchemaTag<DESTINY2_SHADOWKEEP_2601.S5B928080>(hash);
+            if (tag.TagData.Unk14 is null)
+                return items.ToList();
 
-            // :)))
-            foreach (var resource in entry.TagData.Unk14.TagData.Unk08)
+            List<S60928080> tables = tag.TagData.Unk14.TagData.Unk08;
+            tables.AddRange(tag.TagData.Unk14.TagData.Unk18);
+            tables.AddRange(tag.TagData.Unk14.TagData.Unk28);
+
+            foreach (var resource in tables)
             {
+                if (resource.Unk00 is null)
+                    continue;
                 foreach (var a in resource.Unk00.TagData.Unk38)
                 {
                     foreach (var table in a.Unk08)
@@ -256,40 +266,94 @@ namespace Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601
                     }
                 }
             }
-            foreach (var resource in entry.TagData.Unk14.TagData.Unk18)
-            {
-                foreach (var a in resource.Unk00.TagData.Unk38)
-                {
-                    foreach (var table in a.Unk08)
-                    {
-                        if (table.Unk00 is null || table.Unk00.TagData.DataTable is null)
-                            continue;
-
-                        if (table.Unk00.TagData.DataTable.TagData.DataEntries.Count > 0)
-                        {
-                            items.Add(table.Unk00.TagData.DataTable.Hash);
-                        }
-                    }
-                }
-            }
-            foreach (var resource in entry.TagData.Unk14.TagData.Unk28)
-            {
-                foreach (var a in resource.Unk00.TagData.Unk38)
-                {
-                    foreach (var table in a.Unk08)
-                    {
-                        if (table.Unk00 is null || table.Unk00.TagData.DataTable is null)
-                            continue;
-
-                        if (table.Unk00.TagData.DataTable.TagData.DataEntries.Count > 0)
-                        {
-                            items.Add(table.Unk00.TagData.DataTable.Hash);
-                        }
-                    }
-                }
-            }
-
             return items.ToList();
+        }
+
+        public List<FileHash> GetActivityDialogueTables(FileHash UnkActivity)
+        {
+            List<FileHash> entries = new();
+            foreach (var resource in GetActivityResources(UnkActivity))
+            {
+                if (resource.TagData.Unk18.GetValue(resource.GetReader()) is S4C4F8080 d)
+                {
+                    if (d.DialogueTable is null)
+                        continue;
+                    entries.Add(d.DialogueTable.Hash);
+                }
+            }
+            return entries;
+        }
+
+        public List<FileHash> GetActivityDirectiveTables(FileHash UnkActivity)
+        {
+            List<FileHash> entries = new();
+            foreach (var resource in GetActivityResources(UnkActivity))
+            {
+                if (resource.TagData.Unk18.GetValue(resource.GetReader()) is S544F8080 d)
+                {
+                    if (d.DirectiveTable is null)
+                        continue;
+                    entries.Add(d.DirectiveTable.Hash);
+                }
+            }
+            return entries;
+        }
+
+        public List<FileHash> GetActivityMusicList(FileHash UnkActivity)
+        {
+            List<FileHash> entries = new();
+            foreach (var resource in GetActivityResources(UnkActivity))
+            {
+                if (resource.TagData.Unk18.GetValue(resource.GetReader()) is S8F4E8080 d)
+                {
+                    entries.Add(resource.Hash);
+                }
+            }
+            return entries;
+        }
+
+        private List<EntityResource> GetActivityResources(FileHash UnkActivity)
+        {
+            Tag<SUnkActivity_SK> activity = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(UnkActivity);
+            List<EntityResource> entries = new();
+            foreach (var entry in activity.TagData.Unk50.Select(x => x.Unk08))
+            {
+                foreach (var entry2 in entry)
+                {
+                    if (entry2.Unk44 is null)
+                        continue;
+                    var tag = FileResourcer.Get().GetSchemaTag<S5B928080>(entry2.Unk44.Hash);
+                    if (tag.TagData.Unk14 is null)
+                        continue;
+
+                    List<S60928080> tables = tag.TagData.Unk14.TagData.Unk08;
+                    tables.AddRange(tag.TagData.Unk14.TagData.Unk18);
+                    tables.AddRange(tag.TagData.Unk14.TagData.Unk28);
+
+                    foreach (var entry3 in tables)
+                    {
+                        if (entry3.Unk00 is null)
+                            continue;
+                        foreach (var a in entry3.Unk00.TagData.Unk38)
+                        {
+                            foreach (var b in a.Unk08)
+                            {
+                                if (b.Unk00 is null)
+                                    continue;
+                                foreach (var c in b.Unk00.TagData.Unk10)
+                                {
+                                    var resource = c.Unk00.TagData.EntityResource;
+                                    if (resource is null)
+                                        continue;
+
+                                    entries.Add(resource);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return entries;
         }
     }
 } // Shadowkeep launch to SK last

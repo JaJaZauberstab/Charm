@@ -21,7 +21,7 @@ public partial class MainMenuView : UserControl
         InitializeComponent();
 
         ApiButton.IsEnabled = ShowAPIButton(Strategy.CurrentStrategy);
-        BagsButton.IsEnabled = ShowWQButtons(Strategy.CurrentStrategy);
+        BagsButton.IsEnabled = ShowIfD2(Strategy.CurrentStrategy);
         WeaponAudioButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy) || ShowIfD1(Strategy.CurrentStrategy);
         StaticsButton.IsEnabled = ShowIfD2(Strategy.CurrentStrategy);
         SoundBanksButton.Visibility = ShowIfD1(Strategy.CurrentStrategy) ? Visibility.Visible : Visibility.Hidden;
@@ -32,7 +32,7 @@ public partial class MainMenuView : UserControl
             Dispatcher.Invoke(() =>
             {
                 ApiButton.IsEnabled = ShowAPIButton(args.Strategy);
-                BagsButton.IsEnabled = ShowWQButtons(args.Strategy);
+                BagsButton.IsEnabled = ShowIfD2(args.Strategy);
                 WeaponAudioButton.IsEnabled = ShowIfLatest(args.Strategy) || ShowIfD1(args.Strategy);
                 StaticsButton.IsEnabled = ShowIfD2(args.Strategy);
                 SoundBanksButton.Visibility = ShowIfD1(Strategy.CurrentStrategy) ? Visibility.Visible : Visibility.Hidden;

@@ -23,31 +23,51 @@ public partial class DirectiveView : UserControl
         else
         {
             Tag<D2Class_C78E8080> directive = FileResourcer.Get().GetSchemaTag<D2Class_C78E8080>(hash);
-            ListView.ItemsSource = GetDirectiveItems(directive, directive.TagData.DirectiveTable);
+            ListView.ItemsSource = GetDirectiveItems(directive);
         }
-
     }
 
-    public List<DirectiveItem> GetDirectiveItems(Tag<D2Class_C78E8080> directiveTag, DynamicArray<D2Class_C98E8080> directiveTable)
+    public List<DirectiveItem> GetDirectiveItems(Tag<D2Class_C78E8080> directiveTag)
     {
         // List to maintain order of directives
         var items = new List<DirectiveItem>();
 
-        foreach (var directive in directiveTable)
+
+        if (Strategy.IsPreBL())
         {
-            // TODO: this looks ugly, but eh?
-            string nameString = Strategy.IsBL() ? directive.NameStringBL.Value.ToString() : directive.NameString.Value.ToString();
-            string descString = Strategy.IsBL() ? directive.DescriptionStringBL.Value.ToString() : directive.DescriptionString.Value.ToString();
-            string objString = Strategy.IsBL() ? directive.ObjectiveStringBL.Value.ToString() : directive.ObjectiveString.Value.ToString();
-            string unk58String = Strategy.IsBL() ? directive.Unk58BL.Value.ToString() : directive.Unk58.Value.ToString();
-            items.Add(new DirectiveItem
+            foreach (var directives in directiveTag.TagData.DirectiveTableSK)
             {
-                Name = nameString,
-                Description = descString,
-                Objective = $"{objString}" + (directive.ObjectiveTargetCount != 0 ? $" 0/{directive.ObjectiveTargetCount}" : ""),
-                Unknown = unk58String,
-                Hash = directive.Hash
-            });
+                foreach (var directive in directives.Directives)
+                {
+                    items.Add(new DirectiveItem
+                    {
+                        Name = directive.NameStringBL.Value.ToString() ?? "",
+                        Description = directive.DescriptionStringBL.Value.ToString() ?? "",
+                        Objective = $"{directive.ObjectiveStringBL.Value.ToString() ?? ""}" + (directive.ObjectiveTargetCount != 0 ? $" 0/{directive.ObjectiveTargetCount}" : ""),
+                        Unknown = directive.Unk58BL.Value.ToString() ?? "",
+                        Hash = directives.Unk00
+                    });
+                }
+            }
+        }
+        else
+        {
+            foreach (var directive in directiveTag.TagData.DirectiveTable)
+            {
+                // TODO: this looks ugly, but eh?
+                string nameString = Strategy.IsBL() ? directive.NameStringBL.Value.ToString() : directive.NameString.Value.ToString();
+                string descString = Strategy.IsBL() ? directive.DescriptionStringBL.Value.ToString() : directive.DescriptionString.Value.ToString();
+                string objString = Strategy.IsBL() ? directive.ObjectiveStringBL.Value.ToString() : directive.ObjectiveString.Value.ToString();
+                string unk58String = Strategy.IsBL() ? directive.Unk58BL.Value.ToString() : directive.Unk58.Value.ToString();
+                items.Add(new DirectiveItem
+                {
+                    Name = nameString,
+                    Description = descString,
+                    Objective = $"{objString}" + (directive.ObjectiveTargetCount != 0 ? $" 0/{directive.ObjectiveTargetCount}" : ""),
+                    Unknown = unk58String,
+                    Hash = directive.Hash
+                });
+            }
         }
 
         return items;

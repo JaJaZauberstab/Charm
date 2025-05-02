@@ -62,9 +62,24 @@ public class NoLoadAttribute : Attribute
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple = true)]
 public class SchemaStructAttribute : StrategyAttribute
 {
-    public string ClassHash { get; }
     public int SerializedSize { get; }
 
+    private string _classHash;
+    public string ClassHash
+    {
+        get { return _classHash; }
+        set
+        {
+            if (value.StartsWith("8080") && !value.EndsWith("8080"))
+            {
+                byte[] bytes = Helpers.HexStringToByteArray(value);
+                Array.Reverse(bytes);
+                _classHash = Endian.U32ToString(BitConverter.ToUInt32(bytes));
+            }
+            else
+                _classHash = value;
+        }
+    }
     public SchemaStructAttribute(int serializedSize)
     {
         ClassHash = "";

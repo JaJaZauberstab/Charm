@@ -88,6 +88,12 @@ public partial class MusicWemsControl : UserControl
         WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());
     }
 
+    public void Load(WwiseSound res)
+    {
+        var sounds = new ConcurrentBag<WemItem>(GetWemItems(res));
+        WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());
+    }
+
     public async void Load(D2Class_F7458080 res)
     {
         if (res.AmbientMusicSet == null)

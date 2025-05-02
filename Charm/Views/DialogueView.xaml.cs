@@ -104,6 +104,9 @@ public partial class DialogueView : UserControl
                 else
                 {
                     D2Class_33978080 entry = dyn;
+                    if (entry.SoundM is null || entry.SoundM.TagData.Wems[0].GetReferenceHash().IsInvalid())
+                        continue;
+
                     result.Add(new VoicelineItem
                     {
                         Narrator = GlobalStrings.Get().GetString(entry.NarratorString),

@@ -1,4 +1,6 @@
-﻿using Tiger.Schema.Entity;
+﻿using Tiger.Schema.Activity.DESTINY2_BEYONDLIGHT_3402;
+using Tiger.Schema.Audio;
+using Tiger.Schema.Entity;
 using Tiger.Schema.Strings;
 
 namespace Tiger.Schema.Activity.DESTINY2_SHADOWKEEP_2601;
@@ -68,23 +70,19 @@ public struct SUnkActivity_SK
 {
     public long FileSize;
     public StringHash LocationName;  // these all have actual string hashes but have no string container given directly
-    [SchemaField(0x18)]
-    public uint Unk18;
+
+    [SchemaField(0x1C)]
     public StringHash Unk1C;
     public StringHash DestinationName;
     public StringHash Unk24;
     public LocalizedStrings LocalizedStrings;
+
     [SchemaField(0x30)]
     public StringPointer ActivityDevName;
-    // public Tag Unk38;  // 80978080
-    //[SchemaField(0x40)]
-    //public DynamicArray<S4A928080> Unk40;
+    public Tag DescentMusic; // 0x38
+
     [SchemaField(0x50)]
     public DynamicArray<S4D928080> Unk50;
-    // [SchemaField(0x78)]
-    // public Tag Unk78;
-    // [SchemaField(0x80)]
-    // public Tag Unk80;  // 40948080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "4A928080", 0x10)]
@@ -107,14 +105,10 @@ public struct S4F928080
 {
     public uint Unk00;
     public StringHash UnkName0;
-    public uint Unk0C;
-    [SchemaField(0x1C)]
-    public uint Unk1C;
-    public uint Unk20;
+
     [SchemaField(0x40)]
     public StringHash UnkName1;
     public Tag Unk44;
-    public uint Unk48;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "5B928080", 0x18)]
@@ -126,7 +120,7 @@ public struct S5B928080
     public Tag<S5E928080> Unk14;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "5E928080", 0x38)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "5E928080", 0x3C)]
 public struct S5E928080
 {
     public long FileSize;
@@ -185,4 +179,59 @@ public struct D2Class_149B8080
 {
     [SchemaField(0xC)]
     public EntityResource EntityResource; // Theres another after but its always the same as this one?
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "4C4F8080", 0x60)] // Entity Resource 0x18
+public struct S4C4F8080
+{
+    [SchemaField(0x58)]
+    public Dialogue DialogueTable;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "544F8080", 0x60)] // Entity Resource 0x18
+public struct S544F8080
+{
+    [SchemaField(0x5C)]
+    public Tag<D2Class_C78E8080> DirectiveTable;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "8F4E8080", 0xA8)] // Entity Resource 0x18
+public struct S8F4E8080
+{
+    [SchemaField(0x68)]
+    public DynamicArray<S934E8080> Pointers;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "934E8080", 0x8)]
+public struct S934E8080
+{
+    public ResourcePointer Pointer;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "954E8080", 0xC)]
+public struct S954E8080
+{
+    public WwiseSound Sound;
+    public TigerHash Unk04;
+    public TigerHash Unk08;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "944E8080", 0x8)]
+public struct S944E8080
+{
+    public Tag<S80809851> Unk00;
+    public TigerHash Unk04;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "80809851", 0x18)]
+public struct S80809851
+{
+    [SchemaField(0x8)]
+    public DynamicArray<S5A8E8080> Unk08;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "5A8E8080", 0x1C)]
+public struct S5A8E8080
+{
+    public WwiseSound Sound;
 }

@@ -41,6 +41,13 @@ public class Dialogue : Tag<SDialogueTable>
                     case D2Class_33978080:
                         result.Add(entry);
                         break;
+                    case S1D8D8080: // Shadowkeep
+                        List<dynamic?> res1d = Collapse1D8D(entry);
+                        if (res1d.Count > 0)
+                        {
+                            result.Add(res1d.Count > 1 ? res1d : res1d[0]);
+                        }
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
@@ -67,6 +74,7 @@ public class Dialogue : Tag<SDialogueTable>
                     sounds.Add(e);
                     break;
                 default:
+                    Console.WriteLine($"{Hash}");
                     throw new NotImplementedException();
             }
         }
@@ -96,6 +104,38 @@ public class Dialogue : Tag<SDialogueTable>
                     if (result2.Count > 0)
                     {
                         sounds.Add(result2.Count > 1 ? result2 : result2[0]);
+                    }
+                    break;
+                case D2Class_33978080:
+                    sounds.Add(e);
+                    break;
+                case S1D8D8080: // Shadowkeep
+                    List<dynamic?> result3 = Collapse1D8D(e);
+                    if (result3.Count > 0)
+                    {
+                        sounds.Add(result3.Count > 1 ? result3 : result3[0]);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        return sounds;
+    }
+
+    private List<dynamic?> Collapse1D8D(S1D8D8080 entry)
+    {
+        List<dynamic?> sounds = new();
+        foreach (dynamic? e in entry.Unk18.Select(u => u.Pointer.GetValue(GetReader())))
+        {
+            switch (e)
+            {
+                case D2Class_2A978080:
+                    List<dynamic?> result = Collapse2A97(e);
+                    if (result.Count > 0)
+                    {
+                        sounds.Add(result.Count > 1 ? result : result[0]);
                     }
                     break;
                 case D2Class_33978080:

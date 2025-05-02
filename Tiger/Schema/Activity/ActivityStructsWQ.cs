@@ -496,65 +496,74 @@ public struct D2Class_B7978080
     public Tag<SDialogueTable> DialogueTable;
 }
 
-[SchemaStruct("C78E8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "80804F72", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C78E8080", 0x18)]
 public struct D2Class_C78E8080
 {
     public long FileSize;
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public DynamicArray<D2Class_C98E8080> DirectiveTable;
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Obsolete = true)]
+    public DynamicArray<S744F8080> DirectiveTableSK;
 }
 
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "764F8080", 0x24)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C98E8080", 0x3C)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C98E8080", 0x80)]
 public struct D2Class_C98E8080
 {
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public TigerHash Hash;
 
+    [SchemaField(0x0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x10, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public StringReference NameStringBL;
+
     [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public StringReference64 NameString;
 
+    [SchemaField(0x8, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public StringReference DescriptionStringBL;
+
     [SchemaField(0x28, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public StringReference64 DescriptionString;
 
+    [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x20, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public StringReference ObjectiveStringBL;
+
     [SchemaField(0x40, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public StringReference64 ObjectiveString;
 
+    [SchemaField(0x18, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
     public StringReference Unk58BL;
+
     [SchemaField(0x58, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public StringReference64 Unk58;
 
-
+    [SchemaField(0x20, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x38, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x70, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     public int ObjectiveTargetCount;
 }
 
-[SchemaStruct("0B978080", 0x38)]
-public struct D2Class_0B978080
-{
-    public StringPointer BubbleName;
-    public TigerHash Unk08;
-    public TigerHash Unk0C;
-    public TigerHash Unk10;
-    [SchemaField(0x40)]
-    public DynamicArray<D2Class_0C008080> Unk40;
-}
-
-[SchemaStruct("0C008080", 8)]
-public struct D2Class_0C008080
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "744F8080", 0x28)]
+public struct S744F8080
 {
     public TigerHash Unk00;
     public TigerHash Unk04;
+    [SchemaField(0x10)]
+    public DynamicArray<D2Class_C98E8080> Directives;
 }
 
 #region Audio

@@ -633,55 +633,6 @@ public struct D2Class_81888080
     public Tag Entity;
 }
 
-// General, parents that reference Entity
-
-[SchemaStruct("30898080", 0x28)]
-public struct D2Class_30898080
-{
-    public long FileSize;
-    public DynamicArray<D2Class_34898080> Unk08;
-    public DynamicArray<D2Class_33898080> Unk18;
-}
-
-[SchemaStruct("34898080", 0x20)]
-public struct D2Class_34898080
-{
-}
-
-[SchemaStruct("33898080", 0x20)]
-public struct D2Class_33898080
-{
-    public StringPointer TagPath;
-    [SchemaField(Tag64 = true)]
-    public Tag Tag;  // if .pattern.tft, then Entity - if .budget_set.tft, then parent of itself
-    public StringPointer TagNote;
-}
-
-[SchemaStruct("ED9E8080", 0x58)]
-public struct D2Class_ED9E8080
-{
-    public long FileSize;
-    [SchemaField(0x18)]
-    public Tag Unk18;
-    [SchemaField(0x28)]
-    public DynamicArray<D2Class_F19E8080> Unk28;
-}
-
-[SchemaStruct("F19E8080", 0x18)]
-public struct D2Class_F19E8080
-{
-    public StringPointer TagPath;
-    [SchemaField(0x8, Tag64 = true)]
-    public Tag Tag;  // if .pattern.tft, then Entity
-}
-
-[SchemaStruct("7E988080", 8)]
-public struct D2Class_7E988080
-{
-    public Tag Unk00;
-    public Tag Unk08;
-}
-
 [SchemaStruct("44318080", 8)]
 public struct D2Class_44318080
 {
@@ -727,37 +678,81 @@ public struct D2Class_B67E8080
     public StringHash EntityName;
 }
 
-#region Named entities
+#region Named Bags
 
-//I think this is the old struct for named bags, it seems like it changed to 1D478080?
-
-//[SchemaStruct("C96C8080", 0x50)]
-//public struct D2Class_75988080
-//{
-//    public long FileSize;
-//    // [DestinyField(FieldType.RelativePointer)]
-//    // public string DestinationGlobalTagBagName;
-//    public FileHash DestinationGlobalTagBag;
-//    // [SchemaField(0x20)]
-//    // public FileHash PatrolTable1;
-//    // [SchemaField(0x28), DestinyField(FieldType.RelativePointer)]
-//    // public string PatrolTableName;
-//    // public FileHash PatrolTable2;
-//}
-
-[SchemaStruct("1D478080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "1D478080", 0x18)]
 public struct D2Class_1D478080
 {
     public long FileSize;
     public DynamicArray<D2Class_D3598080> DestinationGlobalTagBags;
 }
 
-[SchemaStruct("D3598080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "D3598080", 0x10)]
 public struct D2Class_D3598080
 {
+    [SchemaField(0x0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public FileHash DestinationGlobalTagBag;
-    [SchemaField(0x8)]
+
+    [SchemaField(0x8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     public StringPointer DestinationGlobalTagBagName;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "80809478", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "30898080", 0x28)]
+public struct D2Class_30898080
+{
+    public long FileSize;
+
+    [SchemaField(0x8, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public DynamicArray<D2Class_33898080> Entries;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "7A948080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "33898080", 0x20)]
+public struct D2Class_33898080
+{
+    public StringPointer TagPath;
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
+    public Tag Tag;  // if .pattern.tft, then Entity - if .budget_set.tft, then parent of itself
+
+    [SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public StringPointer TagNote;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "808099D1", 0x8)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "7E988080", 0x8)]
+public struct D2Class_7E988080
+{
+    public Tag Bag;
+    public Tag UnkMapDatatable;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "80809F10", 0x58)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "ED9E8080", 0x58)]
+public struct D2Class_ED9E8080
+{
+    public long FileSize;
+
+    [SchemaField(0x18)]
+    public Tag Unk18;
+
+    [SchemaField(0x20, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    public DynamicArray<D2Class_F19E8080> Unk28;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "149F8080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "F19E8080", 0x18)]
+public struct D2Class_F19E8080
+{
+    public StringPointer TagPath;
+    [SchemaField(0x8, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
+    public Tag Tag;  // if .pattern.tft, then Entity
 }
 
 #endregion

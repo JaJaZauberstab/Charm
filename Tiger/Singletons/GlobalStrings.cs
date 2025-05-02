@@ -44,9 +44,15 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
                 var tag = FileResourcer.Get().GetSchemaTag<D2Class_02218080>(val);
                 foreach (var entry in tag.TagData.Unk28)
                 {
-                    if ((Strategy.IsPostBL() || Strategy.IsBL()) && entry.Unk10 is not null && entry.Unk10.Hash.GetReferenceHash() == 0x808099EF) // EF998080
+                    if (Strategy.IsPostBL() && entry.Unk10 is not null && entry.Unk10.Hash.GetReferenceHash() == 0x808099EF) // EF998080
                     {
                         AddStrings(FileResourcer.Get().GetFile<LocalizedStrings>(entry.Unk10.Hash));
+                    }
+                    else if (Strategy.IsBL() && entry.Unk00 is not null)
+                    {
+                        var tag2 = FileResourcer.Get().GetSchemaTag<S8080760A>(entry.Unk00.Hash);
+                        if (tag2.TagData.Container is not null && tag2.TagData.Container.Hash.GetReferenceHash() == 0x808099EF)
+                            AddStrings(FileResourcer.Get().GetFile<LocalizedStrings>(tag2.TagData.Container.Hash));
                     }
                     else if (Strategy.IsPreBL() && entry.Unk00 is not null && entry.Unk00.Hash.GetReferenceHash() == 0x80809A88)
                     {
