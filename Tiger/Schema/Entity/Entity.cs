@@ -51,61 +51,61 @@ public class Entity : Tag<SEntity>
             EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(resourceHash);
             switch (resource.TagData.Unk10.GetValue(resource.GetReader()))
             {
-                case D2Class_8A6D8080:  // Entity model
-                    Model = ((D2Class_8F6D8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Model;
+                case S8A6D8080:  // Entity model
+                    Model = ((S8F6D8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Model;
                     ModelParentResource = resource;
                     break;
 
-                case D2Class_5B6D8080:  // Entity physics model
-                    PhysicsModel = ((D2Class_6C6D8080)resource.TagData.Unk18.GetValue(resource.GetReader())).PhysicsModel;
+                case S5B6D8080:  // Entity physics model
+                    PhysicsModel = ((S6C6D8080)resource.TagData.Unk18.GetValue(resource.GetReader())).PhysicsModel;
                     PhysicsModelParentResource = FileResourcer.Get().GetFile<EntityPhysicsModelParent>(resource.Hash);
                     break;
 
-                case D2Class_D5818080:
-                case D2Class_DD818080:  // Entity skeleton FK
+                case SD5818080:
+                case SDD818080:  // Entity skeleton FK
                     Skeleton = FileResourcer.Get().GetFile<EntitySkeleton>(resource.Hash);
                     break;
 
-                //case D2Class_668B8080:  // Entity skeleton IK  todo shadowkeep
+                //case S668B8080:  // Entity skeleton IK  todo shadowkeep
                 //    ControlRig = FileResourcer.Get().GetFile<EntityControlRig>(resource.Hash);
                 //    break;
 
-                case D2Class_97318080: // todo shadowkeep
+                case S97318080: // todo shadowkeep
                     PatternAudio = resource;
                     break;
 
-                case D2Class_F62C8080: // todo shadowkeep
+                case SF62C8080: // todo shadowkeep
                     PatternAudioUnnamed = resource;
                     break;
 
-                case D2Class_357C8080: // Generic name
+                case S357C8080: // Generic name
                     // we care more about the specific name so if the entity name is already assigned, dont assign this one
                     if (EntityName == null)
                     {
-                        StringHash genericName = ((D2Class_18808080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk3C0.TagData.EntityName;
+                        StringHash genericName = ((S18808080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk3C0.TagData.EntityName;
                         if (GlobalStrings.Get().GetString(genericName) != genericName)
                             EntityName = GlobalStrings.Get().GetString(genericName);
                     }
                     break;
 
-                case D2Class_DA5E8080: // Specific name
+                case SDA5E8080: // Specific name
                     StringHash specificName = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON ?
-                        ((D2Class_DB5E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk108.TagData.EntityName :
-                        ((D2Class_DB5E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).EntityName;
+                        ((SDB5E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk108.TagData.EntityName :
+                        ((SDB5E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).EntityName;
 
                     // Don't assign a name if the name hash doesnt return an actual string (returns the name hash instead)
                     if (GlobalStrings.Get().GetString(specificName) != specificName)
                         EntityName = GlobalStrings.Get().GetString(specificName);
                     break;
 
-                case D2Class_79948080 when Strategy.IsPreBL(): // No idea if this is SK only
+                case S79948080 when Strategy.IsPreBL(): // No idea if this is SK only
                     if (EntityChildren2 is null)
                         EntityChildren2 = new();
 
                     EntityChildren2.Add(resource);
                     break;
 
-                case D2Class_12848080:
+                case S12848080:
                     EntityChildren = resource;
                     break;
 
@@ -150,7 +150,7 @@ public class Entity : Tag<SEntity>
             return;
 
         Directory.CreateDirectory($"{saveDirectory}/Textures/");
-        var parentResource = (D2Class_8F6D8080)ModelParentResource.TagData.Unk18.GetValue(ModelParentResource.GetReader());
+        var parentResource = (S8F6D8080)ModelParentResource.TagData.Unk18.GetValue(ModelParentResource.GetReader());
 
         if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_SHADOWKEEP_2601 && parentResource.TexturePlates is null)
             return;
@@ -158,7 +158,7 @@ public class Entity : Tag<SEntity>
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && (parentResource.TexturePlatesROI.Count == 0 || parentResource.TexturePlatesROI[0].TexturePlates is null))
             return;
 
-        D2Class_1C6E8080 rsrc = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
+        S1C6E8080 rsrc = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
             ? parentResource.TexturePlates.TagData : parentResource.TexturePlatesROI[0].TexturePlates.TagData;
 
 
@@ -209,7 +209,7 @@ public class Entity : Tag<SEntity>
 
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
         {
-            foreach (S712B8080 entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk100)
+            foreach (S712B8080 entry in ((S0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk100)
             {
                 if (entry.Entity is null)
                     continue;
@@ -234,11 +234,11 @@ public class Entity : Tag<SEntity>
         }
         else
         {
-            if (EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader()) is D2Class_0E848080)
+            if (EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader()) is S0E848080)
             {
-                foreach (D2Class_1B848080 entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk88)
+                foreach (S1B848080 entry in ((S0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk88)
                 {
-                    foreach (D2Class_1D848080 entry2 in entry.Unk08)
+                    foreach (S1D848080 entry2 in entry.Unk08)
                     {
                         if (entry2.Entity is null)
                             continue;
@@ -267,11 +267,11 @@ public class Entity : Tag<SEntity>
 
         foreach (EntityResource resource in EntityChildren2)
         {
-            if (resource.TagData.Unk18.GetValue(resource.GetReader()) is D2Class_79818080)
+            if (resource.TagData.Unk18.GetValue(resource.GetReader()) is S79818080)
             {
-                foreach (D2Class_F1918080 entry in ((D2Class_79818080)resource.TagData.Unk18.GetValue(resource.GetReader())).Array2)
+                foreach (SF1918080 entry in ((S79818080)resource.TagData.Unk18.GetValue(resource.GetReader())).Array2)
                 {
-                    if (entry.Unk10.GetValue(resource.GetReader()) is D2Class_81888080 entry2)
+                    if (entry.Unk10.GetValue(resource.GetReader()) is S81888080 entry2)
                     {
                         if (entry2.Entity is null)
                             continue;

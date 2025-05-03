@@ -64,13 +64,13 @@ public partial class MusicWemsControl : UserControl
         return _currentWem;
     }
 
-    public void Load(D2Class_F5458080 res)
+    public void Load(SF5458080 res)
     {
         WwiseSound loop = res.MusicLoopSound;
         WemList.ItemsSource = GetWemItems(loop).OrderByDescending(x => x.Wem.GetDuration());
     }
 
-    public void Load(List<D2Class_40668080> res)
+    public void Load(List<S40668080> res)
     {
         var sounds = new ConcurrentBag<WemItem>(
             res.SelectMany(x => GetWemItems(x.Sound))
@@ -94,7 +94,7 @@ public partial class MusicWemsControl : UserControl
         WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());
     }
 
-    public async void Load(D2Class_F7458080 res)
+    public async void Load(SF7458080 res)
     {
         if (res.AmbientMusicSet == null)
             return;

@@ -76,17 +76,17 @@ public struct S50058080
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "B7478080", 0x58)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "808021F7", 0x68)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "02218080", 0x68)]
-public struct D2Class_02218080
+public struct S02218080
 {
     [SchemaField(0x20, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public DynamicArray<D2Class_0E3C8080> Unk28;
+    public DynamicArray<S0E3C8080> Unk28;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "C6478080", 0x8)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "0E3C8080", 0x8)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "0E3C8080", 0x28)]
-public struct D2Class_0E3C8080
+public struct S0E3C8080
 {
     [SchemaField(0x0, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Tag Unk00;

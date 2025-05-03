@@ -22,12 +22,12 @@ public partial class DirectiveView : UserControl
         }
         else
         {
-            Tag<D2Class_C78E8080> directive = FileResourcer.Get().GetSchemaTag<D2Class_C78E8080>(hash);
+            Tag<SC78E8080> directive = FileResourcer.Get().GetSchemaTag<SC78E8080>(hash);
             ListView.ItemsSource = GetDirectiveItems(directive);
         }
     }
 
-    public List<DirectiveItem> GetDirectiveItems(Tag<D2Class_C78E8080> directiveTag)
+    public List<DirectiveItem> GetDirectiveItems(Tag<SC78E8080> directiveTag)
     {
         // List to maintain order of directives
         var items = new List<DirectiveItem>();
@@ -37,7 +37,7 @@ public partial class DirectiveView : UserControl
         {
             foreach (S744F8080 directives in directiveTag.TagData.DirectiveTableSK)
             {
-                foreach (D2Class_C98E8080 directive in directives.Directives)
+                foreach (SC98E8080 directive in directives.Directives)
                 {
                     items.Add(new DirectiveItem
                     {
@@ -52,7 +52,7 @@ public partial class DirectiveView : UserControl
         }
         else
         {
-            foreach (D2Class_C98E8080 directive in directiveTag.TagData.DirectiveTable)
+            foreach (SC98E8080 directive in directiveTag.TagData.DirectiveTable)
             {
                 // TODO: this looks ugly, but eh?
                 string nameString = Strategy.IsBL() ? directive.NameStringBL.Value.ToString() : directive.NameString.Value.ToString();

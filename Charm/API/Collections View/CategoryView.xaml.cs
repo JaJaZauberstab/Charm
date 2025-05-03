@@ -31,8 +31,8 @@ public partial class CategoryView : UserControl
 
     private List<SubcategoryChild> _subcategoriesChildren;
 
-    public Tag<D2Class_D7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
-    public Tag<D2Class_03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
+    public Tag<SD7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
+    public Tag<S03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
 
     private const int ItemsPerPage = 21;
     private const int ItemSetsPerPage = 7;
@@ -79,15 +79,15 @@ public partial class CategoryView : UserControl
 
     public void LoadSubcategories(CollectionsView.ItemCategory itemCategory)
     {
-        DynamicArray<D2Class_DB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-        DynamicArray<D2Class_07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
         List<Subcategory> items = new();
         for (int i = 0; i < nodes[itemCategory.ItemCategoryIndex].PresentationNodes.Count; i++)
         {
-            D2Class_ED788080 node = nodes[itemCategory.ItemCategoryIndex].PresentationNodes[i];
-            D2Class_DB788080 curNode = nodes[node.PresentationNodeIndex];
-            D2Class_07588080 curNodeStrings = strings[node.PresentationNodeIndex];
+            SED788080 node = nodes[itemCategory.ItemCategoryIndex].PresentationNodes[i];
+            SDB788080 curNode = nodes[node.PresentationNodeIndex];
+            S07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
             Subcategory subcategory = new()
             {
@@ -180,10 +180,10 @@ public partial class CategoryView : UserControl
         foreach (KeyValuePair<int, InventoryItem> item in inventoryItems)
         {
             string name = Investment.Get().GetItemName(item.Value);
-            D2Class_9F548080 itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
+            S9F548080 itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
 
             TigerHash plugCategoryHash = null;
-            if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is D2Class_A1738080 plug)
+            if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is SA1738080 plug)
                 plugCategoryHash = plug.PlugCategoryHash;
 
             var newItem = new ApiItem
@@ -202,14 +202,14 @@ public partial class CategoryView : UserControl
             };
             if (newItem.ItemDamageType == DestinyDamageTypeEnum.None)
             {
-                if (newItem.Item.TagData.Unk70.GetValue(newItem.Item.GetReader()) is D2Class_C0778080 sockets)
+                if (newItem.Item.TagData.Unk70.GetValue(newItem.Item.GetReader()) is SC0778080 sockets)
                 {
                     sockets.SocketEntries.ForEach(entry =>
                     {
                         if (entry.SocketTypeIndex == -1 || entry.SingleInitialItemIndex == -1)
                             return;
-                        D2Class_BA768080 socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
-                        foreach (D2Class_C5768080 a in socket.PlugWhitelists)
+                        SBA768080 socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
+                        foreach (SC5768080 a in socket.PlugWhitelists)
                         {
                             if (a.PlugCategoryHash.Hash32 == 1466776700) // 'v300.weapon.damage_type.energy', Y1 weapon that uses a damage type mod from ye olden days
                             {
@@ -249,12 +249,12 @@ public partial class CategoryView : UserControl
 
     private void LoadItemSets(int categoryIndex)
     {
-        D2Class_DB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[categoryIndex];
-        DynamicArray<D2Class_07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        SDB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[categoryIndex];
+        DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
         for (int i = 0; i < node.PresentationNodes.Count; i++)
         {
-            D2Class_ED788080 CurNode = node.PresentationNodes[i];
+            SED788080 CurNode = node.PresentationNodes[i];
             Dictionary<int, InventoryItem> inventoryItems = GetInventoryItems(CurNode.PresentationNodeIndex);
 
             CollectableSet collectableSet = new()
@@ -268,10 +268,10 @@ public partial class CategoryView : UserControl
             foreach (KeyValuePair<int, InventoryItem> item in inventoryItems)
             {
                 string name = Investment.Get().GetItemName(item.Value);
-                D2Class_9F548080 itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
+                S9F548080 itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
 
                 TigerHash plugCategoryHash = null;
-                if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is D2Class_A1738080 plug)
+                if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is SA1738080 plug)
                     plugCategoryHash = plug.PlugCategoryHash;
 
                 var newItem = new ApiItem
@@ -322,11 +322,11 @@ public partial class CategoryView : UserControl
     public Dictionary<int, InventoryItem> GetInventoryItems(int index)
     {
         Dictionary<int, InventoryItem> inventoryItems = new();
-        DynamicArray<D2Class_DB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
 
         for (int i = 0; i < nodes[index].Collectables.Count; i++)
         {
-            D2Class_EA788080 item = nodes[index].Collectables[i];
+            SEA788080 item = nodes[index].Collectables[i];
             InventoryItem invItem = Investment.Get().GetInventoryItem(Investment.Get().GetCollectible(item.CollectableIndex).Value.InventoryItemIndex);
             inventoryItems.Add(item.CollectableIndex, invItem);
         }
@@ -345,15 +345,15 @@ public partial class CategoryView : UserControl
             Subcategory item = ((RadioButton)sender).DataContext as Subcategory;
             CurrentSubcategory = item;
 
-            DynamicArray<D2Class_DB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-            DynamicArray<D2Class_07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+            DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+            DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
             _subcategoriesChildren = new();
             for (int i = 0; i < nodes[item.ItemCategoryIndex].PresentationNodes.Count; i++)
             {
-                D2Class_ED788080 node = nodes[item.ItemCategoryIndex].PresentationNodes[i];
-                D2Class_DB788080 curNode = nodes[node.PresentationNodeIndex];
-                D2Class_07588080 curNodeStrings = strings[node.PresentationNodeIndex];
+                SED788080 node = nodes[item.ItemCategoryIndex].PresentationNodes[i];
+                SDB788080 curNode = nodes[node.PresentationNodeIndex];
+                S07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
                 SubcategoryChild subcategory = new()
                 {
@@ -642,7 +642,7 @@ public partial class CategoryView : UserControl
             MainWindow.Progress.SetProgressStages(new() { $"Exporting {item.ItemName}" });
             await Task.Run(() =>
             {
-                if ((item.ItemType == "Artifact" || item.ItemType == "Seasonal Artifact") && item.Item.TagData.Unk28.GetValue(item.Item.GetReader()) is D2Class_C5738080 gearSet)
+                if ((item.ItemType == "Artifact" || item.ItemType == "Seasonal Artifact") && item.Item.TagData.Unk28.GetValue(item.Item.GetReader()) is SC5738080 gearSet)
                 {
                     if (gearSet.ItemList.Count != 0)
                         item.Item = Investment.Get().GetInventoryItem(gearSet.ItemList.First().ItemIndex);

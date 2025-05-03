@@ -12,8 +12,8 @@ public partial class CollectionsView : UserControl
 {
     private static MainWindow _mainWindow = null;
 
-    public Tag<D2Class_D7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
-    public Tag<D2Class_03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
+    public Tag<SD7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
+    public Tag<S03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
     public int TotalItemAmount { get; set; }
     private APITooltip ToolTip;
 
@@ -51,13 +51,13 @@ public partial class CollectionsView : UserControl
     // Badges -> hash 498211331
     public void LoadMainItemCategory(int i = 0)
     {
-        DynamicArray<D2Class_DB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-        DynamicArray<D2Class_07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
-        foreach (D2Class_ED788080 node in nodes[0].PresentationNodes)
+        foreach (SED788080 node in nodes[0].PresentationNodes)
         {
-            D2Class_DB788080 curNode = nodes[node.PresentationNodeIndex];
-            D2Class_07588080 curNodeStrings = strings[node.PresentationNodeIndex];
+            SDB788080 curNode = nodes[node.PresentationNodeIndex];
+            S07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
             ItemCategory itemCategory = new()
             {
@@ -83,7 +83,7 @@ public partial class CollectionsView : UserControl
 
     public int GetItemCategoryAmount(int index)
     {
-        D2Class_DB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[index];
+        SDB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[index];
         int count = node.Collectables.Count;
 
         for (int j = 0; j < node.PresentationNodes.Count; j++)

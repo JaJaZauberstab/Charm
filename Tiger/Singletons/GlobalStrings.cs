@@ -38,11 +38,11 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
         // surely this is fine..
         else
         {
-            ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<D2Class_02218080>(); //TODO: Beyond Light
+            ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<S02218080>(); //TODO: Beyond Light
             Parallel.ForEach(vals, val =>
             {
-                Tag<D2Class_02218080> tag = FileResourcer.Get().GetSchemaTag<D2Class_02218080>(val);
-                foreach (D2Class_0E3C8080 entry in tag.TagData.Unk28)
+                Tag<S02218080> tag = FileResourcer.Get().GetSchemaTag<S02218080>(val);
+                foreach (S0E3C8080 entry in tag.TagData.Unk28)
                 {
                     if (Strategy.IsPostBL() && entry.Unk10 is not null && entry.Unk10.Hash.GetReferenceHash() == 0x808099EF) // EF998080
                     {

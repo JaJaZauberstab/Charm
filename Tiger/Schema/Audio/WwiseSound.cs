@@ -3,7 +3,7 @@ using NAudio.Wave.SampleProviders;
 
 namespace Tiger.Schema.Audio;
 
-public class WwiseSound : TigerReferenceFile<D2Class_38978080>
+public class WwiseSound : TigerReferenceFile<S38978080>
 {
     private MemoryStream _soundStream;
     private WaveFileReader _soundReader;

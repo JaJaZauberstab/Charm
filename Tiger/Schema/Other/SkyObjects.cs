@@ -18,7 +18,7 @@ public class SkyObjects : Tag<SMapSkyObjects>
         if (_tag.Entries is null)
             return;
 
-        foreach ((int i, D2Class_A96A8080 element) in _tag.Entries.Select((value, index) => (index, value)))
+        foreach ((int i, SA96A8080 element) in _tag.Entries.Select((value, index) => (index, value)))
         {
             if (element.Model.TagData.Model is null || (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 && element.Unk70 == 5))
                 continue;
@@ -71,9 +71,9 @@ public struct SMapSkyObjectsResource
 public struct SMapSkyObjects
 {
     public long FileSize;
-    public DynamicArray<D2Class_A96A8080> Entries;
-    //public DynamicArray<D2Class_B3938080> Unk18;
-    //public DynamicArray<D2Class_07008080> Unk28;
+    public DynamicArray<SA96A8080> Entries;
+    //public DynamicArray<SB3938080> Unk18;
+    //public DynamicArray<S07008080> Unk28;
     [SchemaField(0x40)]
     public Vector4 Unk40;
     public Vector4 Unk50;
@@ -82,11 +82,11 @@ public struct SMapSkyObjects
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "1E1C8080", 0x80)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "976F8080", 0x80)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "A96A8080", 0x90)]
-public struct D2Class_A96A8080
+public struct SA96A8080
 {
     public Matrix4x4 Transform;
     public AABB Bounds;
-    public Tag<D2Class_AE6A8080> Model;
+    public Tag<SAE6A8080> Model;
 
     [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x64, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
@@ -100,13 +100,13 @@ public struct D2Class_A96A8080
 
     [SchemaField(0x78, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x7C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    public Tag<D2Class_C58A8080> Complex;
+    public Tag<SC58A8080> Complex;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "4F068080", 0x1C)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "F08E8080", 0x1C)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "C58A8080", 0x1C)]
-public struct D2Class_C58A8080
+public struct SC58A8080
 {
     public long FileSize;
     public int Unk08;
@@ -118,17 +118,17 @@ public struct D2Class_C58A8080
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "728F8080", 0x80)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "438B8080", 0x80)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "438B8080", 0x70)]
-public struct D2Class_438B8080
+public struct S438B8080
 {
     [SchemaField(0x10)]
-    public DynamicArray<D2Class_06008080> Unk00;
-    public DynamicArray<D2Class_06008080> Unk10;
+    public DynamicArray<S06008080> Unk00;
+    public DynamicArray<S06008080> Unk10;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "3A1B8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "9B6F8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "AE6A8080", 0x10)]
-public struct D2Class_AE6A8080
+public struct SAE6A8080
 {
     public long FileSize;
     public EntityModel Model;

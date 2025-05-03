@@ -165,17 +165,17 @@ public struct S68948080
     public long FileSize;
     public Tag<SMapDataTable> DataTable;
     [SchemaField(0x10)]
-    public DynamicArray<D2Class_139B8080> Unk10;
+    public DynamicArray<S139B8080> Unk10;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "139B8080", 0x4)]
-public struct D2Class_139B8080
+public struct S139B8080
 {
-    public Tag<D2Class_149B8080> Unk00;
+    public Tag<S149B8080> Unk00;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "149B8080", 0x50)]
-public struct D2Class_149B8080
+public struct S149B8080
 {
     [SchemaField(0xC)]
     public EntityResource EntityResource; // Theres another after but its always the same as this one?
@@ -192,7 +192,7 @@ public struct S4C4F8080
 public struct S544F8080
 {
     [SchemaField(0x5C)]
-    public Tag<D2Class_C78E8080> DirectiveTable;
+    public Tag<SC78E8080> DirectiveTable;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "8F4E8080", 0xA8)] // Entity Resource 0x18

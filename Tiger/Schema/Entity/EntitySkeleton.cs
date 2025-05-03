@@ -15,7 +15,7 @@ public class EntitySkeleton : EntityResource
         var nodes = new List<BoneNode>();
 
         dynamic? resource = _tag.Unk18.GetValue(reader);
-        if (resource is D2Class_DE818080 skelInfo)
+        if (resource is SDE818080 skelInfo)
         {
             for (int i = 0; i < skelInfo.NodeHierarchy.Count; i++)
             {
@@ -37,7 +37,7 @@ public class EntitySkeleton : EntityResource
                 nodes.Add(node);
             }
         }
-        else if (resource is D2Class_D6818080 weirdSkeleInfo)
+        else if (resource is SD6818080 weirdSkeleInfo)
         {
             for (int i = 0; i < weirdSkeleInfo.NodeHierarchy.Count; i++)
             {

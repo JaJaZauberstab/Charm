@@ -43,8 +43,8 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
 
         //0x80a00000 represents 0100 package
         //var vals = PackageHandler.GetAllEntriesOfReference(0x100, 0x80803c0f);
-        ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<D2Class_0F3C8080>();
-        Tag<D2Class_0F3C8080> fontsContainer = FileResourcer.Get().GetSchemaTag<D2Class_0F3C8080>(vals.First());
+        ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<S0F3C8080>();
+        Tag<S0F3C8080> fontsContainer = FileResourcer.Get().GetSchemaTag<S0F3C8080>(vals.First());
         // Check if the font exists in the Fonts/ folder, if not extract it
         if (!Directory.Exists("fonts/"))
         {

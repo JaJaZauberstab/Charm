@@ -5,7 +5,7 @@ using Tiger.Schema.Shaders;
 
 public static class TfxBytecodeOp
 {
-    public static List<TfxData> ParseAll(DynamicArray<D2Class_09008080> bytecode)
+    public static List<TfxData> ParseAll(DynamicArray<S09008080> bytecode)
     {
         byte[] data = new byte[bytecode.Count];
         for (int i = 0; i < bytecode.Count; i++)

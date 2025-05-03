@@ -226,9 +226,9 @@ public partial class EntityView : UserControl
         if (Strategy.IsD1())
         {
             Dictionary<TigerHash, DyeD1> dyes = new();
-            if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is D2Class_77738080 translationBlock)
+            if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is S77738080 translationBlock)
             {
-                foreach (D2Class_7B738080 dyeEntry in translationBlock.DefaultDyes)
+                foreach (S7B738080 dyeEntry in translationBlock.DefaultDyes)
                 {
                     DyeD1 dye = Investment.Get().GetD1DyeFromIndex(dyeEntry.DyeIndex);
                     if (dye != null)
@@ -237,7 +237,7 @@ public partial class EntityView : UserControl
                         dye.ExportTextures($"{savePath}/Textures", config.GetOutputTextureFormat());
                     }
                 }
-                foreach (D2Class_7B738080 dyeEntry in translationBlock.LockedDyes)
+                foreach (S7B738080 dyeEntry in translationBlock.LockedDyes)
                 {
                     DyeD1 dye = Investment.Get().GetD1DyeFromIndex(dyeEntry.DyeIndex);
                     if (dye != null)
@@ -252,9 +252,9 @@ public partial class EntityView : UserControl
         else
         {
             Dictionary<TigerHash, Dye> dyes = new();
-            if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is D2Class_77738080 translationBlock)
+            if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is S77738080 translationBlock)
             {
-                foreach (D2Class_7B738080 dyeEntry in translationBlock.DefaultDyes)
+                foreach (S7B738080 dyeEntry in translationBlock.DefaultDyes)
                 {
                     Dye dye = Investment.Get().GetDyeFromIndex(dyeEntry.DyeIndex);
                     dyes.Add(Investment.Get().GetChannelHashFromIndex(dyeEntry.ChannelIndex), dye);
@@ -262,7 +262,7 @@ public partial class EntityView : UserControl
                     System.Console.WriteLine($"{item.ItemName}: DefaultDye {dye.Hash}");
 #endif
                 }
-                foreach (D2Class_7B738080 dyeEntry in translationBlock.LockedDyes)
+                foreach (S7B738080 dyeEntry in translationBlock.LockedDyes)
                 {
                     Dye dye = Investment.Get().GetDyeFromIndex(dyeEntry.DyeIndex);
                     dyes.Add(Investment.Get().GetChannelHashFromIndex(dyeEntry.ChannelIndex), dye);

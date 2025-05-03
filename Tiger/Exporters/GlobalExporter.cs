@@ -74,7 +74,7 @@ public class GlobalExporter : AbstractExporter
                 Unk108 = atmosphere.Unk108,
             };
 
-            if (Exporter.Get().GetOrCreateGlobalScene().TryGetItem<D2Class_716A8080>(out D2Class_716A8080 dayCycle))
+            if (Exporter.Get().GetOrCreateGlobalScene().TryGetItem<S716A8080>(out S716A8080 dayCycle))
             {
                 data.DayCycle = new()
                 {
@@ -84,7 +84,7 @@ public class GlobalExporter : AbstractExporter
 
                 if (dayCycle.Unk10 is not null && dayCycle.Unk10.TagData.Unk10 is not null)
                 {
-                    Tag<D2Class_C88A8080> cycles = dayCycle.Unk10.TagData.Unk10;
+                    Tag<SC88A8080> cycles = dayCycle.Unk10.TagData.Unk10;
                     data.DayCycle.Unk2 = cycles.TagData.Unk08;
                     data.DayCycle.Unk3 = cycles.TagData.Unk0C;
                     data.DayCycle.Rotations = cycles.TagData.Unk30.Enumerate(cycles.GetReader()).Select(x => x.Vec).ToList();
@@ -238,7 +238,7 @@ public class GlobalExporter : AbstractExporter
             foreach (Decals decal in GlobalScene.GetAllOfType<Decals>())
             {
                 List<Transform> transforms = decal.GetTransforms();
-                foreach (D2Class_63698080 instance in decal.TagData.DecalResources.Enumerate(decal.GetReader()))
+                foreach (S63698080 instance in decal.TagData.DecalResources.Enumerate(decal.GetReader()))
                 {
                     for (int i = instance.StartIndex; i < instance.StartIndex + instance.Count; i++)
                     {
@@ -267,13 +267,13 @@ public class GlobalExporter : AbstractExporter
 
     private void ExportGlobalChannels()
     {
-        if (GlobalScene.Any<D2Class_D1918080>())
+        if (GlobalScene.Any<SD1918080>())
         {
             List<GlobalChannelData> channels = new();
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
-            foreach (D2Class_D1918080 globals in GlobalScene.GetAllOfType<D2Class_D1918080>())
+            foreach (SD1918080 globals in GlobalScene.GetAllOfType<SD1918080>())
             {
                 channels.Add(new GlobalChannelData
                 {

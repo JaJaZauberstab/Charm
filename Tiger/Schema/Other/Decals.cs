@@ -15,7 +15,7 @@ public class Decals : Tag<SMapDecals>
     {
         Exporter.Get().GetGlobalScene().AddToGlobalScene(this);
 
-        foreach (D2Class_63698080 instance in _tag.DecalResources.Enumerate(GetReader()))
+        foreach (S63698080 instance in _tag.DecalResources.Enumerate(GetReader()))
         {
             for (int i = instance.StartIndex; i < instance.StartIndex + instance.Count; i++)
             {
@@ -149,10 +149,10 @@ public struct SMapDecalsResource
 public struct SMapDecals
 {
     public ulong FileSize;
-    public DynamicArrayUnloaded<D2Class_63698080> DecalResources;
+    public DynamicArrayUnloaded<S63698080> DecalResources;
 
     [SchemaField(0x18)]
-    public DynamicArrayUnloaded<D2Class_64698080> UnkLocations;
+    public DynamicArrayUnloaded<S64698080> UnkLocations;
 
     [SchemaField(0x28)]
     public VertexBuffer Transforms;
@@ -173,7 +173,7 @@ public struct SMapDecals
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "831A8080", 0x8)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "6C6E8080", 0x8)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "63698080", 0x8)]
-public struct D2Class_63698080
+public struct S63698080
 {
     public Material Material;
     public short StartIndex;
@@ -186,7 +186,7 @@ public struct D2Class_63698080
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "531A8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "6D6E8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "64698080", 0x10)]
-public struct D2Class_64698080
+public struct S64698080
 {
     public Vector4 Location;
 }

@@ -18,7 +18,7 @@ public class Lights : Tag<SMapLights>
         {
             SMapLightCollection data = _tag.LightData.ElementAt(reader, i);
 
-            Tag<D2Class_A16D8080>? bufferData = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || data.BufferData2 is null) ? data.BufferData : data.BufferData2;
+            Tag<SA16D8080>? bufferData = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || data.BufferData2 is null) ? data.BufferData : data.BufferData2;
             if (bufferData is null)
                 continue;
 
@@ -44,7 +44,7 @@ public class Lights : Tag<SMapLights>
 
             Vector3 size = GetSize(data.LightToWorld, lightType, $"{lightType}_{data.BufferData.Hash}_{i}");
             SMeshInstanceOcclusionBounds bounds = _tag.Bounds.TagData.InstanceBounds.ElementAt(_tag.Bounds.GetReader(), i);
-            D2Class_4F9F8080 transforms = _tag.Transforms.ElementAt(reader, i);
+            S4F9F8080 transforms = _tag.Transforms.ElementAt(reader, i);
             LightData lightData = new()
             {
                 Hash = bufferData.Hash,
@@ -67,7 +67,7 @@ public class Lights : Tag<SMapLights>
         }
     }
 
-    public Vector4 GetColor(Tag<D2Class_A16D8080> data)
+    public Vector4 GetColor(Tag<SA16D8080> data)
     {
         //Console.WriteLine($"{data.TagData.Buffer2[0].Vec} : {data.TagData.Buffer2[1].Vec} : {data.TagData.Buffer2.Count(x => x.Vec.Magnitude != 0)}");
         if ((Strategy.IsD1() || Strategy.IsPreBL()) && data.TagData.Buffer2.Count != 0 && !data.TagData.Buffer2[2].Vec.IsZero())
@@ -208,7 +208,7 @@ public struct SMapLights
     public Vector4 Unk10;
     public Vector4 Unk20;
     public DynamicArrayUnloaded<SMapLightCollection> LightData;
-    public DynamicArrayUnloaded<D2Class_4F9F8080> Transforms;
+    public DynamicArrayUnloaded<S4F9F8080> Transforms;
     [SchemaField(0x54, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x58, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     public Tag<SOcclusionBounds> Bounds;
@@ -233,10 +233,10 @@ public struct SMapLightCollection
     [SchemaField(0x88, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0xCC, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0xD0, TigerStrategy.DESTINY2_LATEST)]
-    public Tag<D2Class_A16D8080> BufferData;
+    public Tag<SA16D8080> BufferData;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0xD0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0xD4, TigerStrategy.DESTINY2_LATEST)]
-    public Tag<D2Class_A16D8080> BufferData2;
+    public Tag<SA16D8080> BufferData2;
 }

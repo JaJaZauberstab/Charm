@@ -40,7 +40,7 @@ public partial class APIItemView : UserControl
         string? type = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash)).TagData.ItemType.Value;
         type ??= "";
 
-        D2Class_C3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+        SC3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
         string sourceString = source.Value.SourceName.Value ?? "";
 
         ImageSource foundryBanner = type != "EMBLEM" ? ApiImageUtils.MakeFoundryBanner(item) : null;
@@ -65,7 +65,7 @@ public partial class APIItemView : UserControl
     {
         InitializeComponent();
 
-        D2Class_C3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(apiItem.Item.TagData.InventoryItemHash));
+        SC3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(apiItem.Item.TagData.InventoryItemHash));
         string? sourceString = source != null ? source.Value.SourceName.Value.ToString() : "";
 
         TigerHash hash = apiItem.Item.TagData.InventoryItemHash;
@@ -141,14 +141,14 @@ public partial class APIItemView : UserControl
         }
         if (ApiItem.ItemDamageType == "")
         {
-            if (ApiItem.Item.TagData.Unk70.GetValue(ApiItem.Item.GetReader()) is D2Class_C0778080 sockets)
+            if (ApiItem.Item.TagData.Unk70.GetValue(ApiItem.Item.GetReader()) is SC0778080 sockets)
             {
                 sockets.SocketEntries.ForEach(entry =>
                 {
                     if (entry.SocketTypeIndex == -1)
                         return;
-                    D2Class_BA768080 socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
-                    foreach (D2Class_C5768080 a in socket.PlugWhitelists)
+                    SBA768080 socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
+                    foreach (SC5768080 a in socket.PlugWhitelists)
                     {
                         if (a.PlugCategoryHash.Hash32 == 1466776700) // 'v300.weapon.damage_type.energy', Y1 weapon that uses a damage type mod from ye olden days
                         {
@@ -178,7 +178,7 @@ public partial class APIItemView : UserControl
             return null;
 
         InventoryItem item = Investment.Get().GetInventoryItem(plugIndex);
-        Tag<D2Class_9F548080>? strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+        Tag<S9F548080>? strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
         string? type = strings.TagData.ItemType.Value.ToString();
         if (type is "Shader" or "Ghost Projection" or "Transmat Effect") // Too slow atm, not really important either
             return null;
@@ -191,7 +191,7 @@ public partial class APIItemView : UserControl
             return null;
 
         TigerHash plugCategoryHash = null;
-        if (item.TagData.Unk48.GetValue(item.GetReader()) is D2Class_A1738080 plug)
+        if (item.TagData.Unk48.GetValue(item.GetReader()) is SA1738080 plug)
             plugCategoryHash = plug.PlugCategoryHash;
 
         PlugItem PlugItem = new()
@@ -216,20 +216,20 @@ public partial class APIItemView : UserControl
 
     private void CreateSocketCategories()
     {
-        if (ApiItem.Item.TagData.Unk70.GetValue(ApiItem.Item.GetReader()) is D2Class_C0778080 sockets)
+        if (ApiItem.Item.TagData.Unk70.GetValue(ApiItem.Item.GetReader()) is SC0778080 sockets)
         {
             List<SocketCategoryItem> socketCategories = new();
             List<SocketEntryItem> socketEntries = new();
 
-            foreach (D2Class_C8778080 socket in sockets.IntrinsicSockets)
+            foreach (SC8778080 socket in sockets.IntrinsicSockets)
             {
                 if (socket.PlugItemIndex == -1)
                     continue;
 
                 List<PlugItem> plugItems = new();
 
-                D2Class_BA768080 type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
-                D2Class_5D4F8080 category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
+                SBA768080 type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
+                S5D4F8080 category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
                 SocketCategoryItem socketCategory = new()
                 {
                     Hash = category.SocketCategoryHash,
@@ -266,16 +266,16 @@ public partial class APIItemView : UserControl
 
             for (int i = 0; i < sockets.SocketEntries.Count; i++)
             {
-                D2Class_C3778080 socket = sockets.SocketEntries[i];
+                SC3778080 socket = sockets.SocketEntries[i];
                 if (socket.SocketTypeIndex == -1)
                     continue;
 
                 List<PlugItem> plugItems = new();
-                D2Class_BA768080 type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
+                SBA768080 type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
                 if (type.SocketVisiblity == 1) // Hidden
                     continue;
 
-                D2Class_5D4F8080 category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
+                S5D4F8080 category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
                 SocketCategoryItem socketCategory = new()
                 {
                     Hash = category.SocketCategoryHash,
@@ -298,7 +298,7 @@ public partial class APIItemView : UserControl
                 {
                     if (index != -1)
                     {
-                        foreach (D2Class_D5778080 randomPlugs in Investment.Get().GetRandomizedPlugSet(index))
+                        foreach (SD5778080 randomPlugs in Investment.Get().GetRandomizedPlugSet(index))
                         {
                             if (randomPlugs.PlugInventoryItemIndex == -1)
                                 continue;
@@ -314,7 +314,7 @@ public partial class APIItemView : UserControl
                     }
                 }
 
-                foreach (D2Class_D5778080 plug in socket.PlugItems)
+                foreach (SD5778080 plug in socket.PlugItems)
                 {
                     if (plug.PlugInventoryItemIndex == -1)
                         continue;
@@ -401,15 +401,15 @@ public partial class APIItemView : UserControl
 
     private void GetItemStats()
     {
-        if (ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader()) is D2Class_81738080 stats)
+        if (ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader()) is S81738080 stats)
         {
-            D2Class_C4548080? statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
+            SC4548080? statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
 
             if (statGroup is not null)
             {
-                foreach (D2Class_C8548080 scaledStat in statGroup.Value.ScaledStats)
+                foreach (SC8548080 scaledStat in statGroup.Value.ScaledStats)
                 {
-                    D2Class_6F588080 statItem = Investment.Get().StatStrings[scaledStat.StatIndex];
+                    S6F588080 statItem = Investment.Get().StatStrings[scaledStat.StatIndex];
 
                     int statValue = stats.InvestmentStats.Where(x => x.StatTypeIndex == scaledStat.StatIndex).FirstOrDefault().Value;
                     int displayValue = MakeDisplayValue(scaledStat.StatIndex, statValue);
@@ -441,13 +441,13 @@ public partial class APIItemView : UserControl
 
     private int MakeDisplayValue(int statIndex, int statValue)
     {
-        if (ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader()) is D2Class_81738080 investmentStats)
+        if (ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader()) is S81738080 investmentStats)
         {
-            D2Class_C4548080? statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
+            SC4548080? statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
             if (!statGroup.HasValue || statGroup is null)
                 return statValue;
 
-            D2Class_C8548080 stat = statGroup.Value.ScaledStats.FirstOrDefault(x => x.StatIndex == statIndex);
+            SC8548080 stat = statGroup.Value.ScaledStats.FirstOrDefault(x => x.StatIndex == statIndex);
             if (statValue < 0 || stat.DisplayInterpolation is null)
                 return statValue;
 
@@ -465,7 +465,7 @@ public partial class APIItemView : UserControl
                 int? upperKey = null;
 
                 // Get all keys
-                DynamicArray<D2Class_257A8080> keys = stat.DisplayInterpolation;
+                DynamicArray<S257A8080> keys = stat.DisplayInterpolation;
 
                 // Find the keys that are just below and above the targetKey
                 for (int i = 0; i < keys.Count - 1; i++)
@@ -503,11 +503,11 @@ public partial class APIItemView : UserControl
         ToolTip.ActiveItem = (sender as Button);
         PlugItem item = (PlugItem)(sender as Button).DataContext;
 
-        if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
+        if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is S81738080 stats)
         {
-            foreach (D2Class_86738080 stat in stats.InvestmentStats)
+            foreach (S86738080 stat in stats.InvestmentStats)
             {
-                D2Class_6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
+                S6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
                 int adjustValue = MakeDisplayValue(stat.StatTypeIndex, stat.Value);
 
                 if (statItem.StatName.Value is not null)
@@ -529,11 +529,11 @@ public partial class APIItemView : UserControl
         ToolTip.ActiveItem = null;
 
         PlugItem item = (PlugItem)(sender as Button).DataContext;
-        if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
+        if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is S81738080 stats)
         {
-            foreach (D2Class_86738080 stat in stats.InvestmentStats)
+            foreach (S86738080 stat in stats.InvestmentStats)
             {
-                D2Class_6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
+                S6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
 
                 if (statItem.StatName.Value is not null)
                 {
@@ -553,7 +553,7 @@ public partial class APIItemView : UserControl
         Console.WriteLine($"{item.Name} {item.Item.Hash} ({item.PlugRarity})");
 #endif
 
-        //        if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
+        //        if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is S81738080 stats)
         //        {
         //            foreach (var stat in stats.InvestmentStats)
         //            {
@@ -561,7 +561,7 @@ public partial class APIItemView : UserControl
         //                if (statItem.StatName.Value is null)
         //                    continue;
 
-        //                var mainStat = ((D2Class_81738080)ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader())).InvestmentStats.FirstOrDefault(x => x.StatTypeIndex == stat.StatTypeIndex);
+        //                var mainStat = ((S81738080)ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader())).InvestmentStats.FirstOrDefault(x => x.StatTypeIndex == stat.StatTypeIndex);
         //#if DEBUG
         //                Console.WriteLine($"{statItem.StatName.Value.ToString()} : {stat.Value} ({MakeDisplayValue(stat.StatTypeIndex, stat.Value)}) (perk) + {mainStat.Value} ({MakeDisplayValue(mainStat.StatTypeIndex, mainStat.Value)}) (main) = {stat.Value + mainStat.Value}");
         //#endif
@@ -960,7 +960,7 @@ public static class ApiImageUtils
 
     public static ImageSource MakeIcon(int index, int texIndex = 0, int listIndex = 0)
     {
-        Tag<D2Class_B83E8080>? container = Investment.Get().GetItemIconContainer(index);
+        Tag<SB83E8080>? container = Investment.Get().GetItemIconContainer(index);
         if (container == null || container.TagData.IconPrimaryContainer == null)
             return null;
 
@@ -975,11 +975,11 @@ public static class ApiImageUtils
 
     public static ImageSource MakeFullIcon(int index, int containerIndex = 0, int iconIndex = 0, int listIndex = 0)
     {
-        Tag<D2Class_B83E8080>? container = Investment.Get().GetItemIconContainer(index);
+        Tag<SB83E8080>? container = Investment.Get().GetItemIconContainer(index);
         if (container == null)
             return null;
 
-        List<Tag<D2Class_CF3E8080>> containers = new()
+        List<Tag<SCF3E8080>> containers = new()
         {
             container.TagData.IconPrimaryContainer,
             container.TagData.IconAdContainer,
@@ -1001,18 +1001,18 @@ public static class ApiImageUtils
         return dw.ImageSource;
     }
 
-    private static Texture? GetTexture(Tag<D2Class_CF3E8080> iconContainer, int texIndex = 0, int listIndex = 0)
+    private static Texture? GetTexture(Tag<SCF3E8080> iconContainer, int texIndex = 0, int listIndex = 0)
     {
         using TigerReader reader = iconContainer.GetReader();
         dynamic? prim = iconContainer.TagData.Unk10.GetValue(reader);
-        if (prim is D2Class_CD3E8080 structCD3E8080)
+        if (prim is SCD3E8080 structCD3E8080)
         {
             // TextureList[0] is default, others are for colourblind modes
             if (listIndex >= structCD3E8080.Unk00.Count || texIndex >= structCD3E8080.Unk00[reader, listIndex].TextureList.Count)
                 return null;
             return structCD3E8080.Unk00[reader, listIndex].TextureList[reader, texIndex].IconTexture;
         }
-        if (prim is D2Class_CB3E8080 structCB3E8080)
+        if (prim is SCB3E8080 structCB3E8080)
         {
             if (listIndex >= structCB3E8080.Unk00.Count || texIndex >= structCB3E8080.Unk00[reader, listIndex].TextureList.Count)
                 return null;
@@ -1023,7 +1023,7 @@ public static class ApiImageUtils
 
     public static BitmapImage MakeDyedIcon(InventoryItem item)
     {
-        Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(item);
+        Tag<SB83E8080>? iconContainer = Investment.Get().GetItemIconContainer(item);
         UnmanagedMemoryStream? primaryStream = item.GetIconPrimaryStream();
         UnmanagedMemoryStream? maskStream = item.GetIconBackgroundOverlayStream();
 

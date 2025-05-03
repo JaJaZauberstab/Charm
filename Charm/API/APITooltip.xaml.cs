@@ -30,7 +30,7 @@ public partial class APITooltip : UserControl
             return;
 
         item.Name = item.Name.ToUpper();
-        Tag<D2Class_9F548080>? itemStrings = item.Item?.GetItemStrings();
+        Tag<S9F548080>? itemStrings = item.Item?.GetItemStrings();
 
         // TODO: Make this better, it sucks
         if (itemStrings is not null &&
@@ -51,9 +51,9 @@ public partial class APITooltip : UserControl
                 InfoBox.DataContext = item;
             });
 
-            if (itemStrings?.TagData.Unk38.GetValue(itemStrings.GetReader()) is D2Class_D8548080 warning)
+            if (itemStrings?.TagData.Unk38.GetValue(itemStrings.GetReader()) is SD8548080 warning)
             {
-                foreach (D2Class_DC548080 rule in warning.InsertionRules)
+                foreach (SDC548080 rule in warning.InsertionRules)
                 {
                     if (rule.FailureMessage.Value is null || rule.FailureMessage.Value.Value == "Requires Mod Item")
                         continue;
@@ -71,7 +71,7 @@ public partial class APITooltip : UserControl
             //    AddToTooltip(item, TooltipType.Element);
             //}
 
-            if (itemStrings?.TagData.Unk40.GetValue(itemStrings.GetReader()) is D2Class_D7548080 preview)
+            if (itemStrings?.TagData.Unk40.GetValue(itemStrings.GetReader()) is SD7548080 preview)
             {
                 if (preview.ScreenStyle == DestinyScreenStyle.Emblem)
                 {
@@ -100,11 +100,11 @@ public partial class APITooltip : UserControl
 
             if (item.Item is not null)
             {
-                if (item.Item.TagData.Unk38.GetValue(item.Item.GetReader()) is D2Class_B0738080 objectives)
+                if (item.Item.TagData.Unk38.GetValue(item.Item.GetReader()) is SB0738080 objectives)
                 {
-                    foreach (D2Class_15908080 objective in objectives.Objectives)
+                    foreach (S15908080 objective in objectives.Objectives)
                     {
-                        D2Class_50588080? obj = Investment.Get().GetObjective(objective.ObjectiveIndex);
+                        S50588080? obj = Investment.Get().GetObjective(objective.ObjectiveIndex);
                         if (obj is null)
                             continue;
 
@@ -135,16 +135,16 @@ public partial class APITooltip : UserControl
                     }
                 }
 
-                if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
+                if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is S81738080 stats)
                 {
                     if (item.PlugStyle == DestinySocketCategoryStyle.Reusable)
                         return;
 
                     if (itemStrings is not null && itemStrings.TagData.DisplayStyle == DestinyUIDisplayStyle.EnergyMod)
                     {
-                        foreach (D2Class_86738080 stat in stats.InvestmentStats)
+                        foreach (S86738080 stat in stats.InvestmentStats)
                         {
-                            D2Class_6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
+                            S6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
                             if (statItem.StatHash.Hash32 is 3578062600 or 514071887)
                             {
                                 PlugItem energy = new()
@@ -160,9 +160,9 @@ public partial class APITooltip : UserControl
                         }
                     }
 
-                    foreach (D2Class_87738080 perk in stats.Perks)
+                    foreach (S87738080 perk in stats.Perks)
                     {
-                        D2Class_33548080 perkStrings = Investment.Get().SandboxPerkStrings[perk.PerkIndex];
+                        S33548080 perkStrings = Investment.Get().SandboxPerkStrings[perk.PerkIndex];
                         if (perkStrings.IconIndex == -1)
                             continue;
 
@@ -179,7 +179,7 @@ public partial class APITooltip : UserControl
                 }
 
 
-                foreach (D2Class_B2548080 notif in itemStrings.TagData.TooltipNotifications)
+                foreach (SB2548080 notif in itemStrings.TagData.TooltipNotifications)
                 {
                     PlugItem notifItem = new()
                     {

@@ -18,7 +18,7 @@ public class EntityModel : Tag<SEntityModel>
      */
     public List<DynamicMeshPart> Load(ExportDetailLevel detailLevel, EntityResource parentResource, bool transparentsOnly = false, bool hasSkeleton = false)
     {
-        Dictionary<int, Dictionary<int, D2Class_CB6E8080>> dynamicParts = GetPartsOfDetailLevel(detailLevel);
+        Dictionary<int, Dictionary<int, SCB6E8080>> dynamicParts = GetPartsOfDetailLevel(detailLevel);
         List<DynamicMeshPart> parts = GenerateParts(dynamicParts, parentResource, hasSkeleton);
         if (transparentsOnly) // ROI decal/transparent mesh purposes. I hate this and its not the right way to do this
             return parts.Where(x => x.Material.RenderStates.BlendState() != -1).ToList();
@@ -37,9 +37,9 @@ public class EntityModel : Tag<SEntityModel>
     /// </summary>
     /// <param name="detailLevel">The desired level of detail to get parts for.</param>
     /// <returns></returns>
-    private Dictionary<int, Dictionary<int, D2Class_CB6E8080>> GetPartsOfDetailLevel(ExportDetailLevel eDetailLevel)
+    private Dictionary<int, Dictionary<int, SCB6E8080>> GetPartsOfDetailLevel(ExportDetailLevel eDetailLevel)
     {
-        Dictionary<int, Dictionary<int, D2Class_CB6E8080>> parts = new();
+        Dictionary<int, Dictionary<int, SCB6E8080>> parts = new();
 
         using TigerReader reader = GetReader();
 
@@ -47,10 +47,10 @@ public class EntityModel : Tag<SEntityModel>
         foreach (SEntityModelMesh mesh in _tag.Meshes.Enumerate(GetReader()))
         {
             int partIndex = 0;
-            parts.Add(meshIndex, new Dictionary<int, D2Class_CB6E8080>());
+            parts.Add(meshIndex, new Dictionary<int, SCB6E8080>());
             for (int i = 0; i < mesh.Parts.Count; i++)
             {
-                D2Class_CB6E8080 part = mesh.Parts[reader, i];
+                SCB6E8080 part = mesh.Parts[reader, i];
                 //Console.WriteLine($"{i}--------------");
                 //Console.WriteLine($"Material {part.Material?.FileHash}");
                 //Console.WriteLine($"VariantShaderIndex {part.VariantShaderIndex}");
@@ -88,7 +88,7 @@ public class EntityModel : Tag<SEntityModel>
         return parts;
     }
 
-    private List<DynamicMeshPart> GenerateParts(Dictionary<int, Dictionary<int, D2Class_CB6E8080>> dynamicParts, EntityResource parentResource, bool hasSkeleton = false)
+    private List<DynamicMeshPart> GenerateParts(Dictionary<int, Dictionary<int, SCB6E8080>> dynamicParts, EntityResource parentResource, bool hasSkeleton = false)
     {
         TigerStrategy _strategy = Strategy.CurrentStrategy;
 
@@ -99,7 +99,7 @@ public class EntityModel : Tag<SEntityModel>
         foreach (SEntityModelMesh mesh in _tag.Meshes.Enumerate(GetReader()))
         {
             exportPartRange = GetExportRanges(mesh);
-            foreach ((int i, D2Class_CB6E8080 part) in dynamicParts[meshIndex])
+            foreach ((int i, SCB6E8080 part) in dynamicParts[meshIndex])
             {
                 if (!exportPartRange.Contains(i))
                     continue;
@@ -171,7 +171,7 @@ public class DynamicMeshPart : MeshPart
 
     public TfxRenderStage RenderStage;
 
-    public DynamicMeshPart(D2Class_CB6E8080 part, EntityResource parentResource) : base()
+    public DynamicMeshPart(SCB6E8080 part, EntityResource parentResource) : base()
     {
         IndexOffset = part.IndexOffset;
         IndexCount = part.IndexCount;
@@ -309,12 +309,12 @@ public class DynamicMeshPart : MeshPart
         using TigerReader reader = parentResource.GetReader();
 
         DynamicArrayUnloaded<SExternalMaterialMapEntry> map = parentResource is EntityPhysicsModelParent ?
-            ((D2Class_6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap :
-            ((D2Class_8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap;
+            ((S6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap :
+            ((S8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap;
 
-        DynamicArrayUnloaded<D2Class_14008080> mats = parentResource is EntityPhysicsModelParent ?
-            ((D2Class_6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials :
-            ((D2Class_8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials;
+        DynamicArrayUnloaded<S14008080> mats = parentResource is EntityPhysicsModelParent ?
+            ((S6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials :
+            ((S8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials;
 
         if (map.Count == 0 || mats.Count == 0)
         {

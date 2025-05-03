@@ -7,20 +7,20 @@ namespace Tiger.Schema.Audio;
 public struct SDialogueTable
 {
     public long FileSize;
-    public DynamicArray<D2Class_28978080> Unk08;
-    public DynamicArray<D2Class_29978080> Unk18;
+    public DynamicArray<S28978080> Unk08;
+    public DynamicArray<S29978080> Unk18;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "188D8080", 8)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "28978080", 8)]
-public struct D2Class_28978080
+public struct S28978080
 {
     public TigerHash Unk00;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "198D8080", 0x10)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "29978080", 0x10)]
-public struct D2Class_29978080
+public struct S29978080
 {
     public TigerHash Unk00;
     [SchemaField(0x8)]
@@ -28,11 +28,11 @@ public struct D2Class_29978080
 }
 
 /// <summary>
-/// Group of D2Class_33978080, used for accessing random sounds to play out of a bundle.
+/// Group of S33978080, used for accessing random sounds to play out of a bundle.
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "1F8D8080", 0x38)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "2F978080", 0x48)]
-public struct D2Class_2F978080
+public struct S2F978080
 {
     [SchemaField(0x30, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x40, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
@@ -45,13 +45,13 @@ public struct D2Class_2F978080
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "2A978080", 0x38)]
 [SchemaStruct(TigerStrategy.DESTINY2_LIGHTFALL_7366, "2A978080", 0x40)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "2A978080", 0x40)]
-public struct D2Class_2A978080
+public struct S2A978080
 {
     [SchemaField(0x20, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
     [SchemaField(0x20, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x30, TigerStrategy.DESTINY2_LIGHTFALL_7366)]
-    public DynamicArray<D2Class_2F978080> Unk28;
+    public DynamicArray<S2F978080> Unk28;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "238D8080", 0x44)]
@@ -59,7 +59,7 @@ public struct D2Class_2A978080
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "33978080", 0x8C)]
 [SchemaStruct(TigerStrategy.DESTINY2_LIGHTFALL_7366, "33978080", 0x94)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "33978080", 0xA4)]
-public struct D2Class_33978080
+public struct S33978080
 {
     // Male
     [SchemaField(0x18, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
@@ -116,17 +116,17 @@ public struct D2Class_33978080
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "2D978080", 0x30)]
 [SchemaStruct(TigerStrategy.DESTINY2_LIGHTFALL_7366, "2D978080", 0x38)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "2D978080", 0x38)]
-public struct D2Class_2D978080
+public struct S2D978080
 {
     [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x20, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x28, TigerStrategy.DESTINY2_LIGHTFALL_7366)]
-    public DynamicArray<D2Class_30978080> Unk20;
+    public DynamicArray<S30978080> Unk20;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "30978080", 0x8)]
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "30978080", 0x28)]
-public struct D2Class_30978080
+public struct S30978080
 {
     [SchemaField(0x0, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x20, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
@@ -136,7 +136,7 @@ public struct D2Class_30978080
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "0A088080", 0x58)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "02988080", 0x38)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "38978080", 0x38)]
-public struct D2Class_38978080
+public struct S38978080
 {
     public long FileSize;
     public StringHash SoundbankName;
@@ -148,7 +148,7 @@ public struct D2Class_38978080
     public BKHD SoundbankBL;
 
     [SchemaField(0x18, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    public Tag<D2Class_63838080> SoundbankWQ;
+    public Tag<S63838080> SoundbankWQ;
 
     [SchemaField(0x38, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x18, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
@@ -157,20 +157,20 @@ public struct D2Class_38978080
 }
 
 [SchemaStruct("418A8080", 0x38)]
-public struct D2Class_418A8080
+public struct S418A8080
 {
     public long Unk00;
     public float Unk08;
 }
 
 [SchemaStruct("63838080", 4)]
-public struct D2Class_63838080
+public struct S63838080
 {
     public BKHD SoundBank;
 }
 
 [SchemaStruct("438A8080", 0x28)]
-public struct D2Class_438A8080
+public struct S438A8080
 {
     public long FileSize;
 }
@@ -182,12 +182,12 @@ public struct SAA078080
     public StringHash Narrator;
 
     // Male
-    public Tag<D2Class_38978080> Dialogue;
+    public Tag<S38978080> Dialogue;
     public LocalizedStrings Strings;
     public StringHash VoiceLine;
 
     // Female
-    public Tag<D2Class_38978080> DialogueF;
+    public Tag<S38978080> DialogueF;
     public LocalizedStrings StringsF;
     public StringHash VoiceLineF;
 }

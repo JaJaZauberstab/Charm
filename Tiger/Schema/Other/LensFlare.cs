@@ -37,7 +37,7 @@ public class LensFlare : Tag<SLensFlare>
 public struct SMapLensFlareResource
 {
     [SchemaField(0x10)]
-    public LensFlare LensFlare; // D2Class_786A8080
+    public LensFlare LensFlare; // S786A8080
 }
 
 /// <summary>
@@ -49,7 +49,7 @@ public struct SLensFlare
 {
     public ulong FileSize;
     [SchemaField(0x18)]
-    public Tag<D2Class_A16D8080> Unk18;
+    public Tag<SA16D8080> Unk18;
     [SchemaField(0x20)]
     public DynamicArrayUnloaded<SLensFlareEntry> Entries;
     public TigerHash Unk30;
@@ -63,6 +63,6 @@ public struct SLensFlare
 public struct SLensFlareEntry
 {
     public Material Material;
-    public Tag<D2Class_A16D8080> Unk04;
+    public Tag<SA16D8080> Unk04;
     public int Unk08;
 }
