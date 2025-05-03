@@ -11,9 +11,6 @@ namespace Tiger.Schema.Entity;
 public struct SEntity
 {
     public long FileSize;
-    //[SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    //[SchemaField(TigerStrategy.DESTINY2_SHADOWKEEP_2601, Obsolete = true)]
-    //public ResourcePointer Unk08; // D1 06098080
 
     [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x10, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]

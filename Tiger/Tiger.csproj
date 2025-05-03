@@ -22,11 +22,11 @@
       <PackageReference Include="NVorbis" Version="0.10.5" />
       <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
       <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-      <PackageReference Include="SonarAnalyzer.CSharp" Version="10.7.0.110445">
+      <PackageReference Include="SonarAnalyzer.CSharp" Version="10.9.0.115408">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
+      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
     </ItemGroup>
 
     <ItemGroup>
