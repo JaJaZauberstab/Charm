@@ -22,7 +22,7 @@ public partial class MapView : UserControl
 
     private static MainWindow _mainWindow = null;
 
-    private static ConfigSubsystem _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+    private static ConfigSubsystem _config = TigerInstance.GetSubsystem<ConfigSubsystem>();
 
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
     {
@@ -51,9 +51,9 @@ public partial class MapView : UserControl
     private void GetStaticMapData(FileHash fileHash, ExportDetailLevel detailLevel)
     {
         Tag<SMapContainer> tag = FileResourcer.Get().GetSchemaTag<SMapContainer>(fileHash);
-        foreach (var tables in tag.TagData.MapDataTables)
+        foreach (SMapDataTableEntry tables in tag.TagData.MapDataTables)
         {
-            foreach (var entry in tables.MapDataTable.TagData.DataEntries)
+            foreach (SMapDataEntry entry in tables.MapDataTable.TagData.DataEntries)
             {
                 if (entry.DataResource.GetValue(tables.MapDataTable.GetReader()) is SMapDataResource resource)
                 {
@@ -78,7 +78,7 @@ public partial class MapView : UserControl
 
     private void SetMapUI(StaticMapData staticMapData, ExportDetailLevel detailLevel)
     {
-        var displayParts = MakeDisplayParts(staticMapData, detailLevel);
+        List<MainViewModel.DisplayPart> displayParts = MakeDisplayParts(staticMapData, detailLevel);
         Dispatcher.Invoke(() =>
         {
             MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
@@ -90,7 +90,7 @@ public partial class MapView : UserControl
 
     private void SetEntityMapUI(FileHash dataentry, ExportDetailLevel detailLevel)
     {
-        var displayParts = MakeEntityDisplayParts(dataentry, detailLevel);
+        List<MainViewModel.DisplayPart> displayParts = MakeEntityDisplayParts(dataentry, detailLevel);
         Dispatcher.Invoke(() =>
         {
             MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
@@ -101,7 +101,7 @@ public partial class MapView : UserControl
 
     private void SetTerrainMapUI(Terrain terrain, ExportDetailLevel detailLevel)
     {
-        var displayParts = MakeTerrainDisplayParts(terrain, detailLevel);
+        List<MainViewModel.DisplayPart> displayParts = MakeTerrainDisplayParts(terrain, detailLevel);
         Dispatcher.Invoke(() =>
         {
             MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
@@ -113,14 +113,14 @@ public partial class MapView : UserControl
     public bool LoadEntity(List<Entity> entities, FbxHandler fbxHandler)
     {
         fbxHandler.Clear();
-        foreach (var entity in entities)
+        foreach (Entity entity in entities)
             AddEntity(entity, ExportDetailLevel.MostDetailed, fbxHandler);
         return LoadUI(fbxHandler);
     }
 
     private void AddEntity(Entity entity, ExportDetailLevel detailLevel, FbxHandler fbxHandler)
     {
-        var dynamicParts = entity.Load(detailLevel);
+        List<DynamicMeshPart> dynamicParts = entity.Load(detailLevel);
         //ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
         //dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
         fbxHandler.AddEntityToScene(entity, dynamicParts, detailLevel);
@@ -130,7 +130,7 @@ public partial class MapView : UserControl
     private bool LoadUI(FbxHandler fbxHandler)
     {
         MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         string filePath = $"{config.GetExportSavePath()}/temp.fbx";
         fbxHandler.ExportScene(filePath);
         bool loaded = MVM.LoadEntityFromFbx(filePath);
@@ -214,24 +214,24 @@ public partial class MapView : UserControl
     // TODO: Merge all this into one, or simplify it?
     private List<MainViewModel.DisplayPart> MakeDisplayParts(StaticMapData staticMap, ExportDetailLevel detailLevel)
     {
-        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
         {
             if (staticMap.TagData.D1StaticMapData is not null)
             {
-                var d1MapData = staticMap.TagData.D1StaticMapData;
-                var statics = d1MapData.GetStatics();
-                var instances = d1MapData.ParseTransforms();
+                StaticMapData_D1 d1MapData = staticMap.TagData.D1StaticMapData;
+                Dictionary<FileHash, List<StaticMapData_D1.MeshInfo>> statics = d1MapData.GetStatics();
+                List<StaticMapData_D1.InstanceTransform> instances = d1MapData.ParseTransforms();
                 Parallel.ForEach(statics, mesh =>
                 {
-                    var parts = d1MapData.Load(mesh.Value, instances);
-                    foreach (var info in mesh.Value)
+                    List<StaticPart> parts = d1MapData.Load(mesh.Value, instances);
+                    foreach (StaticMapData_D1.MeshInfo info in mesh.Value)
                     {
                         for (int i = info.TransformIndex; i < info.TransformIndex + info.InstanceCount; i++)
                         {
-                            foreach (var part in parts)
+                            foreach (StaticPart part in parts)
                             {
-                                MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                                MainViewModel.DisplayPart displayPart = new();
                                 displayPart.BasePart = part;
                                 displayPart.Translations.Add(instances[i].Translation.ToVec3());
                                 displayPart.Rotations.Add(instances[i].Rotation);
@@ -248,13 +248,13 @@ public partial class MapView : UserControl
             Parallel.ForEach(staticMap.TagData.InstanceCounts, c =>
             {
                 // inefficiency as sometimes there are two instance count entries with same hash. why? idk
-                var model = staticMap.TagData.Statics[c.StaticIndex].Static;
-                var parts = model.Load(ExportDetailLevel.MostDetailed);
+                StaticMesh model = staticMap.TagData.Statics[c.StaticIndex].Static;
+                List<StaticPart> parts = model.Load(ExportDetailLevel.MostDetailed);
                 for (int i = c.InstanceOffset; i < c.InstanceOffset + c.InstanceCount; i++)
                 {
-                    foreach (var part in parts)
+                    foreach (StaticPart part in parts)
                     {
-                        MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                        MainViewModel.DisplayPart displayPart = new();
                         displayPart.BasePart = part;
                         displayPart.Translations.Add(staticMap.TagData.Instances[i].Position);
                         displayPart.Rotations.Add(staticMap.TagData.Instances[i].Rotation);
@@ -271,22 +271,22 @@ public partial class MapView : UserControl
 
     private List<MainViewModel.DisplayPart> MakeTerrainDisplayParts(Terrain terrain, ExportDetailLevel detailLevel)
     {
-        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
         List<StaticPart> parts = new();
-        foreach (var partEntry in terrain.TagData.StaticParts)
+        foreach (STerrainPart partEntry in terrain.TagData.StaticParts)
         {
             if (partEntry.DetailLevel == 0)
             {
-                var part = terrain.MakePart(partEntry);
+                StaticPart part = terrain.MakePart(partEntry);
                 terrain.TransformPositions(part);
                 terrain.TransformTexcoords(part);
                 parts.Add(part);
             }
         }
 
-        foreach (var part in parts)
+        foreach (StaticPart part in parts)
         {
-            MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+            MainViewModel.DisplayPart displayPart = new();
             displayPart.BasePart = part;
             displayPart.Translations.Add(Vector3.Zero);
             displayPart.Rotations.Add(Vector4.Zero);
@@ -298,7 +298,7 @@ public partial class MapView : UserControl
 
     private List<MainViewModel.DisplayPart> MakeEntityDisplayParts(FileHash hash, ExportDetailLevel detailLevel)
     {
-        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
 
         List<SMapDataEntry> dataEntries = new();
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && hash.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
@@ -309,17 +309,17 @@ public partial class MapView : UserControl
         Parallel.ForEach(dataEntries, entry =>
         {
             Entity entity = FileResourcer.Get().GetFile(typeof(Entity), entry.Entity.Hash);
-            List<Entity> entities = new List<Entity> { entity };
+            List<Entity> entities = new() { entity };
             entities.AddRange(entity.GetEntityChildren());
-            foreach (var ent in entities)
+            foreach (Entity ent in entities)
             {
                 if (ent.HasGeometry())
                 {
-                    var parts = ent.Load(ExportDetailLevel.MostDetailed);
+                    List<DynamicMeshPart> parts = ent.Load(ExportDetailLevel.MostDetailed);
 
-                    foreach (var part in parts)
+                    foreach (DynamicMeshPart part in parts)
                     {
-                        MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                        MainViewModel.DisplayPart displayPart = new();
                         displayPart.BasePart = part;
                         displayPart.Translations.Add(entry.Transfrom.Translation.ToVec3());
                         displayPart.Rotations.Add(entry.Transfrom.Rotation);

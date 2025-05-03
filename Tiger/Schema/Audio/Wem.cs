@@ -59,8 +59,7 @@ public class Wem : TigerFile
 
     private void GetWEMData()
     {
-        if (WemData is null)
-            WemData = WemConverter.GetWwiseRIFFVorbis(GetStream());
+        WemData ??= WemConverter.GetWwiseRIFFVorbis(GetStream());
     }
 
     private void CheckLoaded()
@@ -95,7 +94,7 @@ public class Wem : TigerFile
     public TimeSpan GetDuration()
     {
         GetWEMData();
-        return TimeSpan.FromSeconds((double)GetStream().Length / (double)WemData.AvgBytesPerSecond);
+        return TimeSpan.FromSeconds(GetStream().Length / (double)WemData.AvgBytesPerSecond);
     }
 
     public static string GetDurationString(TimeSpan timespan)
@@ -108,7 +107,7 @@ public class Wem : TigerFile
         get
         {
             GetWEMData();
-            var timespan = GetDuration();
+            TimeSpan timespan = GetDuration();
             return GetDurationString(timespan);
         }
     }
@@ -144,7 +143,7 @@ public class Wem : TigerFile
     // This is no where near perfect but it's good enough for preview audio...
     public WaveStream DownmixToStereo(WaveStream waveStream)
     {
-        var inputFormat = waveStream.WaveFormat;
+        WaveFormat inputFormat = waveStream.WaveFormat;
         //if (inputFormat.Channels != 4) // For testing, C8FC1A81 has 5
         //    throw new ArgumentException($"Input stream {Hash} must have 4 channels. Has {waveStream.WaveFormat.Channels}");
 
@@ -156,7 +155,7 @@ public class Wem : TigerFile
 
         int bytesPerSample = inputFormat.BitsPerSample / 8; // 4 bytes for 32-bit IEEE Float
         int frameSize = inputFormat.Channels * bytesPerSample; // Total size of one frame
-        var buffer = new byte[frameSize * 1024]; // Buffer size for reading, can be adjusted
+        byte[] buffer = new byte[frameSize * 1024]; // Buffer size for reading, can be adjusted
         int read;
 
         while ((read = waveStream.Read(buffer, 0, buffer.Length)) > 0)

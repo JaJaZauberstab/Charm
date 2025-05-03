@@ -93,7 +93,7 @@ public struct PackageHeader : IPackageHeader
         reader.Seek(Hash64TableOffset + 0x50, SeekOrigin.Begin);
         for (int i = 0; i < Hash64TableSize; i++)
         {
-            var entry = reader.ReadBytes(0x10).ToType<SHash64Definition>();
+            SHash64Definition entry = reader.ReadBytes(0x10).ToType<SHash64Definition>();
             hash64List.Add(entry);
         }
 

@@ -14,9 +14,9 @@ public static class TfxBytecodeOp
         }
 
         List<TfxData> opcodes = new();
-        using (MemoryStream stream = new MemoryStream(data))
+        using (MemoryStream stream = new(data))
         {
-            using (BinaryReader reader = new BinaryReader(stream))
+            using (BinaryReader reader = new(stream))
             {
                 while (stream.Position < data.Length)
                 {
@@ -31,7 +31,7 @@ public static class TfxBytecodeOp
 
     public static TfxData ReadTfxBytecodeOp(BinaryReader reader)
     {
-        var _strat = Strategy.CurrentStrategy;
+        TigerStrategy _strat = Strategy.CurrentStrategy;
         TfxData tfxData = new()
         {
             op = (TfxBytecode)reader.ReadByte(),
@@ -317,11 +317,11 @@ public static class TfxBytecodeOp
                 break;
             case Spline4ConstData:
                 index = ((Spline4ConstData)tfxData.data).constant_index;
-                var C3 = $"{constants[index].Vec}";
-                var C2 = $"{constants[index + 1].Vec}";
-                var C1 = $"{constants[index + 2].Vec}";
-                var C0 = $"{constants[index + 3].Vec}";
-                var threshold = $"{constants[index + 4].Vec}";
+                string C3 = $"{constants[index].Vec}";
+                string C2 = $"{constants[index + 1].Vec}";
+                string C1 = $"{constants[index + 2].Vec}";
+                string C0 = $"{constants[index + 3].Vec}";
+                string threshold = $"{constants[index + 4].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tC3: {C3}" +
@@ -333,16 +333,16 @@ public static class TfxBytecodeOp
 
             case Spline8ConstData:
                 index = ((Spline8ConstData)tfxData.data).constant_index;
-                var s8_C3 = $"{constants[index].Vec}";
-                var s8_C2 = $"{constants[index + 1].Vec}";
-                var s8_C1 = $"{constants[index + 2].Vec}";
-                var s8_C0 = $"{constants[index + 3].Vec}";
-                var s8_D3 = $"{constants[index + 4].Vec}";
-                var s8_D2 = $"{constants[index + 5].Vec}";
-                var s8_D1 = $"{constants[index + 6].Vec}";
-                var s8_D0 = $"{constants[index + 7].Vec}";
-                var C_thresholds = $"{constants[index + 8].Vec}";
-                var D_thresholds = $"{constants[index + 9].Vec}";
+                string s8_C3 = $"{constants[index].Vec}";
+                string s8_C2 = $"{constants[index + 1].Vec}";
+                string s8_C1 = $"{constants[index + 2].Vec}";
+                string s8_C0 = $"{constants[index + 3].Vec}";
+                string s8_D3 = $"{constants[index + 4].Vec}";
+                string s8_D2 = $"{constants[index + 5].Vec}";
+                string s8_D1 = $"{constants[index + 6].Vec}";
+                string s8_D0 = $"{constants[index + 7].Vec}";
+                string C_thresholds = $"{constants[index + 8].Vec}";
+                string D_thresholds = $"{constants[index + 9].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tC3: {s8_C3}" +
@@ -362,12 +362,12 @@ public static class TfxBytecodeOp
                 break;
             case Gradient4ConstData: // Gradient4Const
                 index = ((Gradient4ConstData)tfxData.data).constant_index;
-                var BaseColor = $"{constants[index].Vec}";
-                var Cred = $"{constants[index + 1].Vec}";
-                var Cgreen = $"{constants[index + 2].Vec}";
-                var Cblue = $"{constants[index + 3].Vec}";
-                var Calpha = $"{constants[index + 4].Vec}";
-                var Cthresholds = $"{constants[index + 5].Vec}";
+                string BaseColor = $"{constants[index].Vec}";
+                string Cred = $"{constants[index + 1].Vec}";
+                string Cgreen = $"{constants[index + 2].Vec}";
+                string Cblue = $"{constants[index + 3].Vec}";
+                string Calpha = $"{constants[index + 4].Vec}";
+                string Cthresholds = $"{constants[index + 5].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tBaseColor: {BaseColor}" +
@@ -385,12 +385,12 @@ public static class TfxBytecodeOp
                 Cgreen = $"{constants[index + 2].Vec}";
                 Cblue = $"{constants[index + 3].Vec}";
                 Calpha = $"{constants[index + 4].Vec}";
-                var Dred = $"{constants[index + 5].Vec}";
-                var Dgreen = $"{constants[index + 6].Vec}";
-                var Dblue = $"{constants[index + 7].Vec}";
-                var Dalpha = $"{constants[index + 8].Vec}";
+                string Dred = $"{constants[index + 5].Vec}";
+                string Dgreen = $"{constants[index + 6].Vec}";
+                string Dblue = $"{constants[index + 7].Vec}";
+                string Dalpha = $"{constants[index + 8].Vec}";
                 Cthresholds = $"{constants[index + 9].Vec}";
-                var Dthresholds = $"{constants[index + 10].Vec}";
+                string Dthresholds = $"{constants[index + 10].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tBaseColor: {BaseColor}" +
@@ -407,27 +407,27 @@ public static class TfxBytecodeOp
                 break;
 
             case PushExternInputFloatData:
-                var pFloat = ((PushExternInputFloatData)tfxData.data).element;
+                byte pFloat = ((PushExternInputFloatData)tfxData.data).element;
                 output = $"extern {((PushExternInputFloatData)tfxData.data).extern_}, element {pFloat} (0x{(pFloat * 4):X})";
                 break;
             case PushExternInputVec4Data:
-                var pVec = ((PushExternInputVec4Data)tfxData.data).element;
+                byte pVec = ((PushExternInputVec4Data)tfxData.data).element;
                 output = $"extern {((PushExternInputVec4Data)tfxData.data).extern_}, element {pVec} (0x{(pVec * 16):X})";
                 break;
             case PushExternInputMat4Data:
-                var pMat = ((PushExternInputMat4Data)tfxData.data).element;
+                byte pMat = ((PushExternInputMat4Data)tfxData.data).element;
                 output = $"extern {((PushExternInputMat4Data)tfxData.data).extern_}, element {pMat} (0x{(pMat * 16):X})";
                 break;
             case PushExternInputTextureViewData:
-                var pTex = ((PushExternInputTextureViewData)tfxData.data).element;
+                byte pTex = ((PushExternInputTextureViewData)tfxData.data).element;
                 output = $"extern {((PushExternInputTextureViewData)tfxData.data).extern_}, element {pTex} (0x{(pTex * 8):X})";
                 break;
             case PushExternInputU32Data:
-                var pU32 = ((PushExternInputU32Data)tfxData.data).element;
+                byte pU32 = ((PushExternInputU32Data)tfxData.data).element;
                 output = $"extern {((PushExternInputU32Data)tfxData.data).extern_}, element {pU32} (0x{(pU32 * 4):X})";
                 break;
             case PushExternInputUavData:
-                var pUav = ((PushExternInputUavData)tfxData.data).element;
+                byte pUav = ((PushExternInputUavData)tfxData.data).element;
                 output = $"extern {((PushExternInputUavData)tfxData.data).extern_}, element {pUav} (0x{(pUav * 8):X})";
                 break;
 
@@ -450,14 +450,14 @@ public static class TfxBytecodeOp
                 output = $"unk1 {((Unk47Data)tfxData.data).unk1}";
                 break;
             case SetShaderTextureData:
-                var texSlot = ((SetShaderTextureData)tfxData.data).value;
+                byte texSlot = ((SetShaderTextureData)tfxData.data).value;
                 output = $"Texture Slot {texSlot & 0x1F}";
                 break;
             case Unk49Data:
                 output = $"unk1 {((Unk49Data)tfxData.data).unk1}";
                 break;
             case SetShaderSamplerData:
-                var sampSlot = ((SetShaderSamplerData)tfxData.data).value;
+                byte sampSlot = ((SetShaderSamplerData)tfxData.data).value;
                 output = $"Sampler Slot {sampSlot & 0x1F}";
                 break;
             case SetShaderUavData:

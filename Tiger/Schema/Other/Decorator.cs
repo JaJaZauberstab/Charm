@@ -14,7 +14,7 @@ public class Decorator : Tag<SDecorator>
 
     public void LoadIntoExporter(ExporterScene scene, string saveDirectory)
     {
-        var models = _tag.DecoratorModels;
+        DynamicArray<D2Class_B16C8080> models = _tag.DecoratorModels;
         // Model transform offsets
         List<Vector4> SpeedtreePlacements = new() { Vector4.Zero, Vector4.Zero.WithW(1) };
 
@@ -28,17 +28,17 @@ public class Decorator : Tag<SDecorator>
         using TigerReader reader = _tag.BufferData.TagData.InstanceBuffer.GetReferenceReader();
         for (int i = 0; i < _tag.InstanceRanges.Count - 1; i++)
         {
-            var start = _tag.InstanceRanges[i].Unk00;
-            var end = _tag.InstanceRanges[i + 1].Unk00;
-            var count = end - start;
+            uint start = _tag.InstanceRanges[i].Unk00;
+            uint end = _tag.InstanceRanges[i + 1].Unk00;
+            uint count = end - start;
 
-            var dynID = models.Count == 1 ? i : 0;
-            var model = models[models.Count == 1 ? 0 : i].DecoratorModel;
+            int dynID = models.Count == 1 ? i : 0;
+            Tag<D2Class_B26C8080> model = models[models.Count == 1 ? 0 : i].DecoratorModel;
 
             if (model.TagData.SpeedTreeData != null)
                 continue; // TODO: Trees, skip for now
 
-            var parts = GenerateParts(model.TagData.Model); //.Load(ExportDetailLevel.MostDetailed, null);
+            List<DynamicMeshPart> parts = GenerateParts(model.TagData.Model); //.Load(ExportDetailLevel.MostDetailed, null);
             foreach (DynamicMeshPart part in parts)
             {
                 if (part.Material == null) continue;
@@ -51,7 +51,7 @@ public class Decorator : Tag<SDecorator>
                 var pos = new Vector4(reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16());
                 var rot = new Vector4(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
 
-                Transform transform = new Transform
+                Transform transform = new()
                 {
                     Position = (SpeedtreePlacements[2] * pos + SpeedtreePlacements[3]).ToVec3(),
                     Quaternion = (SpeedtreePlacements[4] * rot + SpeedtreePlacements[5]),
@@ -98,12 +98,12 @@ public class Decorator : Tag<SDecorator>
     // Should just use EntityModel.Load but we need to get just the first mesh entry in Meshes since the rest are LODs
     private List<DynamicMeshPart> GenerateParts(EntityModel model)
     {
-        var dynamicParts = GetPartsOfDetailLevel(model);
+        Dictionary<int, Dictionary<int, D2Class_CB6E8080>> dynamicParts = GetPartsOfDetailLevel(model);
         List<DynamicMeshPart> parts = new();
         List<int> exportPartRange = new();
         if (model.TagData.Meshes.Count == 0) return parts;
 
-        var mesh = model.TagData.Meshes[model.GetReader(), 0];
+        SEntityModelMesh mesh = model.TagData.Meshes[model.GetReader(), 0];
         exportPartRange = EntityModel.GetExportRanges(mesh);
 
         foreach ((int i, D2Class_CB6E8080 part) in dynamicParts[0])
@@ -139,7 +139,7 @@ public class Decorator : Tag<SDecorator>
 
         int meshIndex = 0;
         int partIndex = 0;
-        var mesh = model.TagData.Meshes[reader, 0];
+        SEntityModelMesh mesh = model.TagData.Meshes[reader, 0];
 
         parts.Add(meshIndex, new Dictionary<int, D2Class_CB6E8080>());
         for (int i = 0; i < mesh.Parts.Count; i++)

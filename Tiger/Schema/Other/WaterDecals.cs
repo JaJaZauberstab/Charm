@@ -15,7 +15,7 @@ public class WaterDecals
 
     public void LoadIntoExporter(ExporterScene scene)
     {
-        Transform transform = new Transform
+        Transform transform = new()
         {
             Position = Transform.Translation.ToVec3(),
             Quaternion = Transform.Rotation,
@@ -23,7 +23,7 @@ public class WaterDecals
             Scale = new(Transform.Translation.W)
         };
 
-        var parts = Water.Model.Load(ExportDetailLevel.MostDetailed, null);
+        List<DynamicMeshPart> parts = Water.Model.Load(ExportDetailLevel.MostDetailed, null);
 
         scene.AddMapModelParts($"{Water.Model.Hash}", parts.Where(x => x.RenderStage != TfxRenderStage.WaterReflection).ToList(), transform);
         scene.AddMapModelParts($"{Water.Model.Hash}_Reflection", parts.Where(x => x.RenderStage == TfxRenderStage.WaterReflection).ToList(), transform);

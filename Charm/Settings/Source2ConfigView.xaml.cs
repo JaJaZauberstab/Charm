@@ -9,7 +9,7 @@ public partial class Source2ConfigView : UserControl
     public Source2ConfigView()
     {
         InitializeComponent();
-        _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        _config = TigerInstance.GetSubsystem<ConfigSubsystem>();
     }
 
     public void OnControlLoaded(object sender, RoutedEventArgs e)
@@ -34,15 +34,15 @@ public partial class Source2ConfigView : UserControl
         //S2ConfigPanel.Children.Add(lbl);
 
         // Packages path
-        ConfigSettingControl cpp = new ConfigSettingControl();
+        ConfigSettingControl cpp = new();
         cpp.SettingName = "Source 2 Tools Path";
-        var val = _config.GetSource2Path();
+        string val = _config.GetSource2Path();
         cpp.SettingValue = val == "" ? "Not set" : val;
         cpp.ChangeButton.Click += Source2Path_OnClick;
         S2ConfigPanel.Children.Add(cpp);
 
         // Enable source 2 shader generation
-        ConfigSettingToggleControl cbe = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl cbe = new();
         cbe.SettingName = "Generate Shaders";
         bool bval2 = _config.GetS2ShaderExportEnabled();
         cbe.SettingValue = bval2.ToString();
@@ -50,7 +50,7 @@ public partial class Source2ConfigView : UserControl
         S2ConfigPanel.Children.Add(cbe);
 
         // Enable vmdl model generation
-        ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl cfe = new();
         cfe.SettingName = "Generate Models";
         bool bval = _config.GetS2VMDLExportEnabled();
         cfe.SettingValue = bval.ToString();
@@ -58,7 +58,7 @@ public partial class Source2ConfigView : UserControl
         S2ConfigPanel.Children.Add(cfe);
 
         // Resize textures to nearest power of 2
-        ConfigSettingToggleControl pw2 = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl pw2 = new();
         pw2.SettingName = "Resize Textures to Nearest Power of 2";
         bool bval3 = _config.GetS2TexPow2Enabled();
         pw2.SettingValue = bval3.ToString();

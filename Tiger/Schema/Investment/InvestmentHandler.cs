@@ -71,7 +71,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     protected override void Initialise()
     {
-        if (_strategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 || _strategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (_strategy is >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 or TigerStrategy.DESTINY1_RISE_OF_IRON)
         {
             GetAllInvestmentTags();
         }
@@ -112,7 +112,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
                         _localizedStringsIndexTag = FileResourcer.Get().GetSchemaTag<D2Class_095A8080>(val);
                         break;
                     case 0x80804ea4: // points to parent of the sandbox pattern ref list thing + entity assignment map
-                        var parent = FileResourcer.Get().GetSchemaTag<D2Class_A44E8080>(val);
+                        Tag<D2Class_A44E8080> parent = FileResourcer.Get().GetSchemaTag<D2Class_A44E8080>(val);
                         _sandboxPatternAssignmentsTag = parent.TagData.SandboxPatternAssignmentsTag; // also art dye refs
                         _entityAssignmentsMap = parent.TagData.EntityAssignmentsMap;
                         break;
@@ -240,13 +240,13 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public string GetItemName(TigerHash hash)
     {
-        var entry = GetItemStrings(GetItemIndex(hash));
+        Tag<D2Class_9F548080>? entry = GetItemStrings(GetItemIndex(hash));
         return entry.TagData.ItemName.Value.ToString();
     }
 
     public D2Class_D3508080? GetItemLore(TigerHash hash)
     {
-        var item = GetInventoryItem(hash);
+        InventoryItem item = GetInventoryItem(hash);
         if (item.TagData.Unk30.GetValue(item.GetReader()) is D2Class_B6738080)
             return InventoryItemLoreStrings[((D2Class_B6738080)item.TagData.Unk30.GetValue(item.GetReader())).LoreEntryIndex];
         else
@@ -255,13 +255,13 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public Tag<D2Class_9F548080>? GetItemStrings(TigerHash hash)
     {
-        var entry = InventoryItemStringThings[GetItemIndex(hash)];
+        Tag<D2Class_9F548080> entry = InventoryItemStringThings[GetItemIndex(hash)];
         return entry;
     }
 
     public Tag<D2Class_9F548080>? GetItemStrings(int index)
     {
-        var entry = InventoryItemStringThings[index];
+        Tag<D2Class_9F548080> entry = InventoryItemStringThings[index];
         return entry;
     }
 
@@ -326,7 +326,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private int GetStatGroupIndex(InventoryItem item)
     {
-        var stringThing = GetItemStrings(item.TagData.InventoryItemHash);
+        Tag<D2Class_9F548080>? stringThing = GetItemStrings(item.TagData.InventoryItemHash);
         if (Strategy.IsLatest()) // Don't like this but oh well
         {
             if (stringThing.TagData.Unk78.GetValue(stringThing.GetReader()) is D2Class_CA548080 details)
@@ -342,7 +342,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public D2Class_C4548080? GetStatGroup(InventoryItem item)
     {
-        var index = GetStatGroupIndex(item);
+        int index = GetStatGroupIndex(item);
         if (index == -1 || index > _statGroupDefinitionMap.TagData.StatGroupDefinitions.Count)
             return null;
 
@@ -354,8 +354,8 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         if (index == -1 || index > _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.Count)
             return null;
 
-        var reader = _collectableDefinitionMap.GetReader();
-        var entry = _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.ElementAt(reader, index);
+        TigerReader reader = _collectableDefinitionMap.GetReader();
+        D2Class_2C788080 entry = _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.ElementAt(reader, index);
 
         return entry;
     }
@@ -371,10 +371,10 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     public D2Class_C3598080? GetCollectibleStringsFromItemIndex(int index)
     {
         int stringIndex = -1;
-        var reader = _collectableDefinitionMap.GetReader();
+        TigerReader reader = _collectableDefinitionMap.GetReader();
         for (int i = 0; i < _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.Count; i++)
         {
-            var entry = _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.ElementAt(reader, i);
+            D2Class_2C788080 entry = _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.ElementAt(reader, i);
             if (entry.InventoryItemIndex == index)
             {
                 stringIndex = i;
@@ -393,7 +393,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         if (index == -1 || index > _objectiveDefinitionMap.TagData.ObjectiveDefinitionEntries.Count)
             return 0;
 
-        var reader = _objectiveDefinitionMap.GetReader();
+        TigerReader reader = _objectiveDefinitionMap.GetReader();
         return _objectiveDefinitionMap.TagData.ObjectiveDefinitionEntries.ElementAt(reader, index).CompletionValue;
     }
 
@@ -531,7 +531,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     private void GetEntityAssignmentDict()
     {
         _sortedArrangementHashmap = new Dictionary<uint, Tag<D2Class_A36F8080>>(_entityAssignmentsMap.TagData.EntityArrangementMap.Count);
-        foreach (var e in _entityAssignmentsMap.TagData.EntityArrangementMap.Enumerate(_entityAssignmentsMap.GetReader()))
+        foreach (D2Class_454F8080 e in _entityAssignmentsMap.TagData.EntityArrangementMap.Enumerate(_entityAssignmentsMap.GetReader()))
         {
             _sortedArrangementHashmap.Add(e.AssignmentHash, e.EntityParent);
         }
@@ -555,12 +555,12 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public Entity.Entity? GetPatternEntityFromHash(TigerHash hash)
     {
-        var item = GetInventoryItem(hash);
+        InventoryItem item = GetInventoryItem(hash);
         if (item.GetWeaponPatternIndex() == -1)
             return null;
 
-        var patternGlobalId = GetPatternGlobalTagId(item);
-        var patternData = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), patternGlobalId);
+        TigerHash patternGlobalId = GetPatternGlobalTagId(item);
+        Optional<D2Class_0F878080> patternData = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), patternGlobalId);
         if (patternData.HasValue && patternData.Value.EntityRelationHash.IsValid()
             && patternData.Value.EntityRelationHash.GetReferenceHash() == (_strategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 ? 0x80809ad8 : 0x80800734))
         {
@@ -586,9 +586,9 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public Dye? GetDyeFromIndex(short index)
     {
-        var artEntry = _artDyeReferenceTag.TagData.ArtDyeReferences.ElementAt(_artDyeReferenceTag.GetReader(), index);
+        D2Class_C6558080 artEntry = _artDyeReferenceTag.TagData.ArtDyeReferences.ElementAt(_artDyeReferenceTag.GetReader(), index);
 
-        var dyeEntry = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), artEntry.DyeManifestHash);
+        Optional<D2Class_0F878080> dyeEntry = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), artEntry.DyeManifestHash);
         if (dyeEntry.HasValue && dyeEntry.Value.EntityRelationHash.GetReferenceHash() == 0x80806fa3)
         {
             return FileResourcer.Get().GetSchemaTag<D2Class_E36C8080>(FileResourcer.Get().GetSchemaTag<D2Class_A36F8080>(dyeEntry.Value.EntityRelationHash).TagData.EntityData).TagData.Dye;
@@ -598,8 +598,8 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public DyeD1 GetD1DyeFromIndex(short index)
     {
-        var artEntry = _artDyeReferenceTag.TagData.ArtDyeReferences.ElementAt(_artDyeReferenceTag.GetReader(), index);
-        var dyeEntry = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), artEntry.DyeManifestHash);
+        D2Class_C6558080 artEntry = _artDyeReferenceTag.TagData.ArtDyeReferences.ElementAt(_artDyeReferenceTag.GetReader(), index);
+        Optional<D2Class_0F878080> dyeEntry = _sandboxPatternAssignmentsTag.TagData.AssignmentBSL.BinarySearch(_sandboxPatternAssignmentsTag.GetReader(), artEntry.DyeManifestHash);
 
         if (dyeEntry.HasValue && dyeEntry.Value.EntityRelationHash.GetReferenceFromManifest() == "63348080")
         {
@@ -623,7 +623,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public InventoryItem GetInventoryItem(int index)
     {
-        var item = _inventoryItemMap.TagData.InventoryItemDefinitionEntries.ElementAt(_inventoryItemMap.GetReader(), index).InventoryItem;
+        InventoryItem item = _inventoryItemMap.TagData.InventoryItemDefinitionEntries.ElementAt(_inventoryItemMap.GetReader(), index).InventoryItem;
         if (!item.IsLoaded())
             item.Load();
 
@@ -664,7 +664,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         for (int i = 0; i < _collectableDefinitionMap.TagData.CollectibleDefinitionEntries.Count; i++)
         {
             short itemIndex = _collectableDefinitionMap.TagData.CollectibleDefinitionEntries[reader, i].InventoryItemIndex;
-            var itemEntry = _inventoryItemMap.TagData.InventoryItemDefinitionEntries.ElementAt(_inventoryItemMap.GetReader(), itemIndex);
+            D2Class_9B798080 itemEntry = _inventoryItemMap.TagData.InventoryItemDefinitionEntries.ElementAt(_inventoryItemMap.GetReader(), itemIndex);
 
             _collectableItems.TryAdd(itemEntry.InventoryItemHash, itemEntry.InventoryItem);
         }
@@ -688,8 +688,8 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public List<Entity.Entity> GetEntitiesFromHash(TigerHash hash)
     {
-        var item = GetInventoryItem(hash);
-        var index = item.GetArtArrangementIndex();
+        InventoryItem item = GetInventoryItem(hash);
+        int index = item.GetArtArrangementIndex();
         List<Entity.Entity> entities = GetEntitiesFromArrangementIndex(index);
         return entities;
     }
@@ -697,31 +697,31 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     private List<Entity.Entity> GetEntitiesFromArrangementIndex(int index)
     {
         List<Entity.Entity> entities = new();
-        var entry = _entityAssignmentTag.TagData.ArtArrangementEntityAssignments.ElementAt(_entityAssignmentTag.GetReader(), index);
+        D2Class_D4558080 entry = _entityAssignmentTag.TagData.ArtArrangementEntityAssignments.ElementAt(_entityAssignmentTag.GetReader(), index);
         if (entry.MultipleEntityAssignments.Count == 0)  // single
         {
             if (entry.FeminineSingleEntityAssignment.IsValid())
             {
-                var entity = GetEntityFromAssignmentHash(entry.FeminineSingleEntityAssignment);
+                Entity.Entity entity = GetEntityFromAssignmentHash(entry.FeminineSingleEntityAssignment);
                 entity.Gender = DestinyGenderDefinition.Feminine;
                 entities.Add(entity);
             }
             if (entry.MasculineSingleEntityAssignment.IsValid())
             {
-                var entity = GetEntityFromAssignmentHash(entry.MasculineSingleEntityAssignment);
+                Entity.Entity entity = GetEntityFromAssignmentHash(entry.MasculineSingleEntityAssignment);
                 entity.Gender = DestinyGenderDefinition.Masculine;
                 entities.Add(entity);
             }
         }
         else
         {
-            foreach (var entryMultipleEntityAssignment in entry.MultipleEntityAssignments)
+            foreach (D2Class_D7558080 entryMultipleEntityAssignment in entry.MultipleEntityAssignments)
             {
-                foreach (var assignment in entryMultipleEntityAssignment.EntityAssignmentResource.Value.Value.EntityAssignments)
+                foreach (D2Class_DA558080 assignment in entryMultipleEntityAssignment.EntityAssignmentResource.Value.Value.EntityAssignments)
                 {
                     if (assignment.EntityAssignmentHash.IsValid())
                     {
-                        var assignmentEntity = GetEntityFromAssignmentHash(assignment.EntityAssignmentHash);
+                        Entity.Entity assignmentEntity = GetEntityFromAssignmentHash(assignment.EntityAssignmentHash);
                         if (assignmentEntity != null)
                             entities.Add(assignmentEntity);
                     }
@@ -758,17 +758,17 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     public void DebugAllInvestmentEntities()
     {
         Dictionary<string, Dictionary<dynamic, TigerHash>> data = new();
-        for (int i = (int)_entityAssignmentTag.TagData.ArtArrangementEntityAssignments.Count - 1; i >= 0; i--)
+        for (int i = _entityAssignmentTag.TagData.ArtArrangementEntityAssignments.Count - 1; i >= 0; i--)
         {
             List<Entity.Entity> entities = GetEntitiesFromArrangementIndex(i);
-            foreach (var entity in entities)
+            foreach (Entity.Entity? entity in entities)
             {
                 bool bAllValid = true;
                 if (entity is null || entity.Model is null)
                     continue;
-                foreach (var entry in entity.Model.TagData.Meshes[entity.Model.GetReader(), 0].Parts)
+                foreach (D2Class_CB6E8080 entry in entity.Model.TagData.Meshes[entity.Model.GetReader(), 0].Parts)
                 {
-                    foreach (var field in typeof(D2Class_CB6E8080).GetFields())
+                    foreach (System.Reflection.FieldInfo field in typeof(D2Class_CB6E8080).GetFields())
                     {
                         if (!data.ContainsKey(field.Name))
                         {
@@ -785,13 +785,12 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
                 }
                 if (bAllValid)
                 {
-                    var a = 0;
                 }
             }
         }
     }
 
-    private static Random rng = new Random();
+    private static Random rng = new();
 
     public void DebugAPIRequestAllInfo()
     {
@@ -800,7 +799,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         // var itemHash = 138282166;
         var l = _inventoryItemIndexmap.Keys.ToList();
         var shuffled = l.OrderBy(a => rng.Next()).ToList();
-        foreach (var itemHash in shuffled)
+        foreach (uint itemHash in shuffled)
         {
             if (itemHash != 731561450)
                 continue;
@@ -815,7 +814,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
                 tgxm = MakeGetRequest(
                     $"https://www.bungie.net/common/destiny2_content/geometry/platform/mobile/geometry/{itemDef.gearAsset.content[0].geometry[0]}");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 continue;
             }
@@ -824,21 +823,21 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
             // File.WriteAllBytes("C:/T/geometry.tgxm", tgxm);
             var br = new BinaryReader(new MemoryStream(tgxm));
             // br.BaseStream.Seek(8, SeekOrigin.Begin);
-            var magic = br.ReadBytes(4);
+            byte[] magic = br.ReadBytes(4);
             if (magic.Equals(new byte[] { 0x54, 0x47, 0x58, 0x4d }))
             {
                 continue;
             }
-            var version = br.ReadUInt32();
-            var fileOffset = br.ReadInt32();
-            var fileCount = br.ReadInt32();
+            uint version = br.ReadUInt32();
+            int fileOffset = br.ReadInt32();
+            int fileCount = br.ReadInt32();
             for (int i = 0; i < fileCount; i++)
             {
                 br.BaseStream.Seek(fileOffset + 0x110 * i, SeekOrigin.Begin);
-                var fileName = Encoding.ASCII.GetString(br.ReadBytes(0x100)).TrimEnd('\0');
-                var offset = br.ReadInt32();
-                var type = br.ReadInt32();
-                var size = br.ReadInt32();
+                string fileName = Encoding.ASCII.GetString(br.ReadBytes(0x100)).TrimEnd('\0');
+                int offset = br.ReadInt32();
+                int type = br.ReadInt32();
+                int size = br.ReadInt32();
                 if (fileName.Contains(".js"))
                 {
                     byte[] fileData;
@@ -852,12 +851,11 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     public void DebugAPIRenderMetadata()
     {
 
-        var files = Directory.GetFiles("C:/T/geom");
-        foreach (var file in files)
+        string[] files = Directory.GetFiles("C:/T/geom");
+        foreach (string file in files)
         {
             dynamic json = JsonConvert.DeserializeObject(File.ReadAllText(file));
-            var data = json["render_model"]["render_meshes"];
-            var a = 0;
+            dynamic data = json["render_model"]["render_meshes"];
         }
     }
 
@@ -866,8 +864,8 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         using (var client = new HttpClient())
         {
             client.Timeout = TimeSpan.FromSeconds(2);
-            var response = client.GetAsync(url).Result;
-            var content = response.Content.ReadAsStringAsync().Result;
+            HttpResponseMessage response = client.GetAsync(url).Result;
+            string content = response.Content.ReadAsStringAsync().Result;
             if (content.Contains("\"gearAsset\": false"))
             {
                 return null;
@@ -882,8 +880,8 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         using (var client = new HttpClient())
         {
             client.Timeout = TimeSpan.FromSeconds(2);
-            var response = client.GetAsync(url).Result;
-            var content = response.Content.ReadAsByteArrayAsync().Result;
+            HttpResponseMessage response = client.GetAsync(url).Result;
+            byte[] content = response.Content.ReadAsByteArrayAsync().Result;
             return content;
         }
     }
@@ -926,7 +924,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
             Dictionary<string, DyeD1> dyes = new();
             if (item.TagData.Unk90.GetValue(item.GetReader()) is D2Class_77738080 translationBlock)
             {
-                foreach (var dyeEntry in translationBlock.CustomDyes)
+                foreach (D2Class_7B738080 dyeEntry in translationBlock.CustomDyes)
                 {
                     DyeD1 dye = GetD1DyeFromIndex(dyeEntry.DyeIndex);
                     dye.ExportTextures(savePath + "/Textures", outputTextureFormat);
@@ -942,7 +940,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
             // export all the customDyes
             if (item.TagData.Unk90.GetValue(item.GetReader()) is D2Class_77738080 translationBlock)
             {
-                foreach (var dyeEntry in translationBlock.CustomDyes)
+                foreach (D2Class_7B738080 dyeEntry in translationBlock.CustomDyes)
                 {
                     Dye dye = GetDyeFromIndex(dyeEntry.DyeIndex);
                     dye.ExportTextures(savePath + "/Textures", outputTextureFormat);
@@ -963,7 +961,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
             // weapon
             AutomatedExporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye> { dyes["Weapon1"], dyes["Weapon2"], dyes["Weapon3"] }, "_weapon");
 
-            var iridesceneLookup = Globals.Get().RenderGlobals.TagData.Textures.TagData.IridescenceLookup;
+            Texture iridesceneLookup = Globals.Get().RenderGlobals.TagData.Textures.TagData.IridescenceLookup;
             TextureExtractor.SaveTextureToFile($"{savePath}/Textures/Iridescence_Lookup", iridesceneLookup.GetScratchImage());
         }
     }
@@ -1002,7 +1000,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
     {
         if (_tag.Unk78.GetValue(GetReader()) is D2Class_81738080 perks)
         {
-            foreach (var perk in perks.Perks)
+            foreach (D2Class_87738080 perk in perks.Perks)
             {
                 if (Investment.Get().SandboxPerkMap2[perk.PerkIndex].UnkIndex != -1)
                     return Investment.Get().SandboxPerkMap2[perk.PerkIndex].UnkIndex;
@@ -1037,14 +1035,14 @@ public class InventoryItem : Tag<D2Class_9D798080>
         List<InventoryItem> ornaments = new();
         if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 && _tag.Unk70.GetValue(GetReader()) is D2Class_C0778080 sockets)
         {
-            foreach (var socket in sockets.SocketEntries)
+            foreach (D2Class_C3778080 socket in sockets.SocketEntries)
             {
                 if (socket.SocketTypeIndex == -1 || Investment.Get().SocketCategoryStringThings[Investment.Get().GetSocketCategoryIndex(socket.SocketTypeIndex)].SocketName.Value != "WEAPON COSMETICS")
                     continue;
 
                 if (socket.PlugItems.Count == 0 && socket.ReusablePlugSetIndex1 != -1) // huh?
                 {
-                    foreach (var randomPlugs in Investment.Get().GetRandomizedPlugSet(socket.ReusablePlugSetIndex1))
+                    foreach (D2Class_D5778080 randomPlugs in Investment.Get().GetRandomizedPlugSet(socket.ReusablePlugSetIndex1))
                     {
                         if (randomPlugs.PlugInventoryItemIndex == -1)
                             continue;
@@ -1053,7 +1051,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
                     }
                 }
 
-                foreach (var plug in socket.PlugItems)
+                foreach (D2Class_D5778080 plug in socket.PlugItems)
                 {
                     if (plug.PlugInventoryItemIndex == -1)
                         continue;
@@ -1064,12 +1062,12 @@ public class InventoryItem : Tag<D2Class_9D798080>
         }
         else if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && _tag.Unk78.GetValue(GetReader()) is SBD178080 a)
         {
-            var talentGrid = Investment.Get().GetTalentGrid(a.TalenGridIndex);
-            foreach (var node in talentGrid.TagData.Nodes)
+            Tag<S63198080> talentGrid = Investment.Get().GetTalentGrid(a.TalenGridIndex);
+            foreach (S28178080 node in talentGrid.TagData.Nodes)
             {
-                foreach (var entry in node.Unk18)
+                foreach (S58178080 entry in node.Unk18)
                 {
-                    foreach (var entry2 in entry.Unk70)
+                    foreach (S940F8080 entry2 in entry.Unk70)
                     {
                         if (entry2.PlugItemIndex == -1)
                             continue;
@@ -1107,7 +1105,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(this);
         if (iconContainer == null || iconContainer.TagData.IconBackgroundContainer == null)
             return null;
-        var backgroundIcon = GetTexture(iconContainer.TagData.IconBackgroundContainer);
+        Texture? backgroundIcon = GetTexture(iconContainer.TagData.IconBackgroundContainer);
         return backgroundIcon.GetTexture();
     }
 
@@ -1116,7 +1114,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(this);
         if (iconContainer == null || iconContainer.TagData.IconBGOverlayContainer == null)
             return null;
-        var backgroundIcon = GetTexture(iconContainer.TagData.IconBGOverlayContainer);
+        Texture? backgroundIcon = GetTexture(iconContainer.TagData.IconBGOverlayContainer);
         return backgroundIcon.GetTexture();
     }
 
@@ -1125,7 +1123,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(this);
         if (iconContainer == null || iconContainer.TagData.IconPrimaryContainer == null)
             return null;
-        var primaryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
+        Texture? primaryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
         return primaryIcon.GetTexture();
     }
 
@@ -1134,7 +1132,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(index);
         if (iconContainer == null || iconContainer.TagData.IconPrimaryContainer == null)
             return null;
-        var primaryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
+        Texture? primaryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
         return primaryIcon.GetTexture();
     }
 
@@ -1143,7 +1141,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(this);
         if (iconContainer == null || iconContainer.TagData.IconPrimaryContainer == null)
             return null;
-        var primaryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
+        Texture? primaryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
         return primaryIcon;
     }
 
@@ -1152,7 +1150,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(this);
         if (iconContainer == null || iconContainer.TagData.IconOverlayContainer == null)
             return null;
-        var overlayIcon = GetTexture(iconContainer.TagData.IconOverlayContainer, index);
+        Texture? overlayIcon = GetTexture(iconContainer.TagData.IconOverlayContainer, index);
         if (overlayIcon is null)
             return null;
         return overlayIcon.GetTexture();
@@ -1163,7 +1161,7 @@ public class InventoryItem : Tag<D2Class_9D798080>
         Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetFoundryItemIconContainer(this);
         if (iconContainer == null || iconContainer.TagData.IconPrimaryContainer == null)
             return null;
-        var foundryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
+        Texture? foundryIcon = GetTexture(iconContainer.TagData.IconPrimaryContainer);
         return foundryIcon.GetTexture();
     }
 

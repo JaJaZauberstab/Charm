@@ -35,9 +35,9 @@ public partial class DirectiveView : UserControl
 
         if (Strategy.IsPreBL())
         {
-            foreach (var directives in directiveTag.TagData.DirectiveTableSK)
+            foreach (S744F8080 directives in directiveTag.TagData.DirectiveTableSK)
             {
-                foreach (var directive in directives.Directives)
+                foreach (D2Class_C98E8080 directive in directives.Directives)
                 {
                     items.Add(new DirectiveItem
                     {
@@ -52,7 +52,7 @@ public partial class DirectiveView : UserControl
         }
         else
         {
-            foreach (var directive in directiveTag.TagData.DirectiveTable)
+            foreach (D2Class_C98E8080 directive in directiveTag.TagData.DirectiveTable)
             {
                 // TODO: this looks ugly, but eh?
                 string nameString = Strategy.IsBL() ? directive.NameStringBL.Value.ToString() : directive.NameString.Value.ToString();
@@ -78,27 +78,27 @@ public partial class DirectiveView : UserControl
         var items = new List<DirectiveItem>();
         Tag<SUnkActivity_ROI> Activity = FileResourcer.Get().GetSchemaTag<SUnkActivity_ROI>(hash);
 
-        foreach (var a in Activity.TagData.Unk48)
+        foreach (S0C068080 a in Activity.TagData.Unk48)
         {
-            foreach (var b in a.Unk08)
+            foreach (SA8068080 b in a.Unk08)
             {
                 if (b.Unk34.Hash.IsInvalid())
                     continue;
 
-                var c = FileResourcer.Get().GetSchemaTag<SF0088080>(b.Unk34.Hash);
-                var c1 = FileResourcer.Get().GetSchemaTag<SF0088080_Child>(c.TagData.Unk1C);
+                Tag<SF0088080> c = FileResourcer.Get().GetSchemaTag<SF0088080>(b.Unk34.Hash);
+                Tag<SF0088080_Child> c1 = FileResourcer.Get().GetSchemaTag<SF0088080_Child>(c.TagData.Unk1C);
                 List<SD3408080> c2 = c1.TagData.Unk08;
                 c2.AddRange(c1.TagData.Unk18);
                 c2.AddRange(c1.TagData.Unk28);
-                foreach (var d in c2)
+                foreach (SD3408080 d in c2)
                 {
-                    var d1 = FileResourcer.Get().GetSchemaTag<S6E078080>(d.Unk00);
+                    Tag<S6E078080> d1 = FileResourcer.Get().GetSchemaTag<S6E078080>(d.Unk00);
                     if (d1.TagData.Strings is not null)
                         GlobalStrings.Get().AddStrings(d1.TagData.Strings);
 
-                    foreach (var e in d1.TagData.Unk30)
+                    foreach (SE9058080 e in d1.TagData.Unk30)
                     {
-                        foreach (var f in e.Unk18)
+                        foreach (S22428080 f in e.Unk18)
                         {
                             if (f.Unk00.TagData.EntityResource is null)
                                 continue;
@@ -106,7 +106,7 @@ public partial class DirectiveView : UserControl
                             if (f.Unk00.TagData.EntityResource.TagData.Unk10.GetValue(f.Unk00.TagData.EntityResource.GetReader()) is S90258080)
                             {
                                 var g = ((S93298080)f.Unk00.TagData.EntityResource.TagData.Unk18.GetValue(f.Unk00.TagData.EntityResource.GetReader()));
-                                foreach (var directive in g.Directives)
+                                foreach (SD7318080 directive in g.Directives)
                                 {
                                     // Need to filter out duplicates
                                     if (!items.Any(item => item.Hash == f.Unk00.TagData.EntityResource.Hash))

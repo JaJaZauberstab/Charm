@@ -7,7 +7,7 @@ namespace Tiger.Exporters;
 
 public class AutomatedExporter
 {
-    public static object _lock = new object();
+    public static object _lock = new();
     public enum ImportType
     {
         Static,
@@ -58,14 +58,14 @@ public class AutomatedExporter
                 string[] components = { "X", "Y", "Z", "W" };
 
                 int dyeIndex = 1;
-                foreach (var dye in dyes)
+                foreach (Dye? dye in dyes)
                 {
                     if (dye is null)
                         continue;
 
                     dye.ExportTextures($"{saveDirectory}/Textures", outputTextureFormat);
-                    var dyeInfo = dye.GetDyeInfo();
-                    foreach (var fieldInfo in dyeInfo.GetType().GetFields())
+                    DyeInfo dyeInfo = dye.GetDyeInfo();
+                    foreach (System.Reflection.FieldInfo fieldInfo in dyeInfo.GetType().GetFields())
                     {
                         Vector4 value = (Vector4)fieldInfo.GetValue(dyeInfo);
                         if (!fieldInfo.CustomAttributes.Any())
@@ -83,9 +83,9 @@ public class AutomatedExporter
                             }
                         }
                     }
-                    var diff = dye.TagData.Textures[0];
+                    STextureTag diff = dye.TagData.Textures[0];
                     text = text.Replace($"DiffMap{dyeIndex}", $"{diff.Texture.Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
-                    var norm = dye.TagData.Textures[1];
+                    STextureTag norm = dye.TagData.Textures[1];
                     text = text.Replace($"NormMap{dyeIndex}", $"{norm.Texture.Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
                     dyeIndex++;
                 }
@@ -105,9 +105,9 @@ public class AutomatedExporter
     {
         ConcurrentDictionary<DyeSlot, ConcurrentBag<D1DyeJSON>> shader = new();
 
-        foreach (var dye in dyes)
+        foreach (DyeD1 dye in dyes)
         {
-            var info = dye.TagData;
+            SDye_D1 info = dye.TagData;
             if (!shader.ContainsKey((DyeSlot)info.SlotTypeIndex))
                 shader[(DyeSlot)info.SlotTypeIndex] = new();
 

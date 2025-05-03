@@ -1,13 +1,12 @@
-﻿namespace Tiger.Schema.Audio.ThirdParty;
+﻿using DataTool.ConvertLogic;
+using RevorbStd;
+using static DataTool.ConvertLogic.OWSound;
 
 // DataTool.ConvertLogic.Sound class: https://github.com/overtools/OWLib/blob/develop/DataTool/ConvertLogic/OWSound.cs
 // Modified RevorbStd: https://github.com/xyx0826/revorbstd/tree/big-enough
 // Modified librevorb.dll (RevorbStd dependency): https://github.com/xyx0826/librevorb/releases/tag/v0.5
 
-using System.IO;
-using DataTool.ConvertLogic;
-using RevorbStd;
-using static DataTool.ConvertLogic.OWSound;
+namespace Tiger.Schema.Audio.ThirdParty;
 
 /// <summary>
 /// <para>Converts a Wwise Encoded Media (.wem) to an Ogg Vorbis file.</para>
@@ -27,7 +26,7 @@ static class WemConverter
             CheckCodebookFile();
         }
 
-        OWSound.WwiseRIFFVorbis vorbis = new OWSound.WwiseRIFFVorbis(stream, CodebookPath);
+        OWSound.WwiseRIFFVorbis vorbis = new(stream, CodebookPath);
         return vorbis;
     }
 
@@ -38,7 +37,7 @@ static class WemConverter
             CheckCodebookFile();
         }
 
-        using OWSound.WwiseRIFFVorbis vorbis = new OWSound.WwiseRIFFVorbis(stream, CodebookPath);
+        using OWSound.WwiseRIFFVorbis vorbis = new(stream, CodebookPath);
         var vorbisStream = new MemoryStream();
         vorbis.ConvertToOgg(vorbisStream);
         vorbisStream.Position = 0;

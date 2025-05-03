@@ -30,18 +30,18 @@ public class StaticMapData_D1 : Tag<SStaticMapData_D1>
     public Dictionary<FileHash, List<MeshInfo>> GetStatics()
     {
         Dictionary<FileHash, List<MeshInfo>> statics = new();
-        var staticEntries = CollapseStaticTables();
+        List<D1Class_A6488080> staticEntries = CollapseStaticTables();
         for (int i = 0; i < staticEntries.Count; i++)
         {
-            var entry = staticEntries[i].Entry;
+            Tag<D1Class_901A8080> entry = staticEntries[i].Entry;
 
             for (int j = 0; j < entry.TagData.StaticInfoTable.Count; j++)
             {
-                var infoEntry = entry.TagData.StaticInfoTable[j];
-                var staticEntry = entry.TagData.StaticMesh[infoEntry.StaticIndex];
-                if (staticEntry.DetailLevel == 0 || staticEntry.DetailLevel == 1 || staticEntry.DetailLevel == 2 || staticEntry.DetailLevel == 3 || staticEntry.DetailLevel == 10)
+                D1Class_861B8080 infoEntry = entry.TagData.StaticInfoTable[j];
+                SStaticMeshData_D1 staticEntry = entry.TagData.StaticMesh[infoEntry.StaticIndex];
+                if (staticEntry.DetailLevel is 0 or 1 or 2 or 3 or 10)
                 {
-                    var materialEntry = entry.TagData.MaterialTable[infoEntry.MaterialIndex];
+                    D1Class_AF1A8080 materialEntry = entry.TagData.MaterialTable[infoEntry.MaterialIndex];
                     // Material is (probably) used for depth pass, so ignore this mesh
                     if (materialEntry.Material.TagData.Unk08 != 1)
                         continue;
@@ -69,14 +69,14 @@ public class StaticMapData_D1 : Tag<SStaticMapData_D1>
 
     public void LoadIntoExporterScene(ExporterScene scene)
     {
-        var instances = ParseTransforms();
-        var statics = GetStatics();
+        List<InstanceTransform> instances = ParseTransforms();
+        Dictionary<FileHash, List<MeshInfo>> statics = GetStatics();
 
         Parallel.ForEach(statics, mesh =>
         {
-            var parts = Load(mesh.Value, instances);
+            List<StaticPart> parts = Load(mesh.Value, instances);
             scene.AddStatic(mesh.Key, parts);
-            foreach (var part in parts)
+            foreach (StaticPart part in parts)
             {
                 if (part.Material == null)
                     continue;
@@ -86,9 +86,9 @@ public class StaticMapData_D1 : Tag<SStaticMapData_D1>
         });
 
         // I think this is working the way it should, but i feel like this isnt the right way..
-        foreach (var (mesh, info) in statics.DistinctBy(x => x.Key))
+        foreach ((FileHash mesh, List<MeshInfo> info) in statics.DistinctBy(x => x.Key))
         {
-            foreach (var instance in info.DistinctBy(x => x.TransformIndex))
+            foreach (MeshInfo instance in info.DistinctBy(x => x.TransformIndex))
             {
                 scene.AddStaticInstancesToMesh(mesh, instances.Skip(instance.TransformIndex).Take(instance.InstanceCount).ToList());
             }
@@ -99,15 +99,15 @@ public class StaticMapData_D1 : Tag<SStaticMapData_D1>
     public List<StaticPart> Load(List<MeshInfo> meshInfo, List<InstanceTransform> instances)
     {
         List<StaticPart> parts = new();
-        foreach (var mesh in meshInfo.DistinctBy(x => x.Data))
+        foreach (MeshInfo mesh in meshInfo.DistinctBy(x => x.Data))
         {
-            StaticPart part = new StaticPart(mesh.Data);
+            StaticPart part = new(mesh.Data);
             part.VertexLayoutIndex = mesh.VertexLayoutIndex;
             part.Material = mesh.Material;
             part.GetAllData(mesh.Data);
 
             // Why in the world Bungie would store UV transforms in here is beyond me
-            var texcoordTransform = instances[mesh.TransformIndex].UVTransform;
+            Vector4 texcoordTransform = instances[mesh.TransformIndex].UVTransform;
             for (int i = 0; i < part.VertexTexcoords0.Count; i++)
             {
                 part.VertexTexcoords0[i] = new Vector2(
@@ -136,18 +136,18 @@ public class StaticMapData_D1 : Tag<SStaticMapData_D1>
     // https://github.com/MontagueM/MontevenDynamicExtractor/blob/d1/d1map.cpp#L273
     public List<InstanceTransform> ParseTransforms()
     {
-        var a = ParseInstances();
+        List<Matrix4x4> a = ParseInstances();
         List<InstanceTransform> transforms = new();
         for (int i = 0; i < a.Count; i++)
         {
             InstanceTransform transform = new();
-            var b = a[i];
+            Matrix4x4 b = a[i];
 
             System.Numerics.Matrix4x4 matrix = b.ToSys();
 
             matrix = System.Numerics.Matrix4x4.Transpose(matrix);
             System.Numerics.Vector3 translation = new();
-            Quaternion rotation = new Quaternion();
+            Quaternion rotation = new();
             System.Numerics.Vector3 scale = new();
             System.Numerics.Matrix4x4.Decompose(matrix, out scale, out rotation, out translation);
 
@@ -170,7 +170,7 @@ public class StaticMapData_D1 : Tag<SStaticMapData_D1>
         List<Matrix4x4> instanceTransforms = new();
         int blockSize = Marshal.SizeOf<Matrix4x4>();
 
-        var reader = new TigerFile(_tag.InstanceTransforms).GetReader();
+        TigerReader reader = new TigerFile(_tag.InstanceTransforms).GetReader();
         for (int i = 0; i < _tag.InstanceCounts; i++)
         {
             Matrix4x4 instance = reader.ReadBytes(blockSize).ToType<Matrix4x4>();
@@ -218,12 +218,12 @@ public class StaticMapData : Tag<SStaticMapData>
 
     public void LoadDecalsIntoExporterScene(ExporterScene scene)
     {
-        foreach (var decal in _tag.Decals)
+        foreach (D1Class_BA048080 decal in _tag.Decals)
         {
             Debug.Assert(decal.Transforms.Count == 1 && decal.Models.Count == 1);
 
-            var transform = decal.Transforms[0].Transform;
-            var model = decal.Models[0];
+            Matrix4x4 transform = decal.Transforms[0].Transform;
+            D1Class_A5438080 model = decal.Models[0];
 
             //System.Numerics.Matrix4x4 matrix = transform.ToSys();
 
@@ -274,14 +274,14 @@ public class StaticMapData : Tag<SStaticMapData>
             // todo this loads statics twice
             Parallel.ForEach(extractedStatics, s =>
             {
-                var parts = s.Static.Load(ExportDetailLevel.MostDetailed);
+                List<StaticPart> parts = s.Static.Load(ExportDetailLevel.MostDetailed);
                 scene.AddStatic(s.Static.Hash, parts);
                 s.Static.SaveMaterialsFromParts(scene, parts);
             });
 
-            foreach (var c in _tag.InstanceCounts)
+            foreach (SStaticMeshInstanceMap c in _tag.InstanceCounts)
             {
-                var model = _tag.Statics[c.StaticIndex].Static;
+                StaticMesh model = _tag.Statics[c.StaticIndex].Static;
                 scene.AddStaticInstancesToMesh(model.Hash, _tag.Instances.Skip(c.InstanceOffset).Take(c.InstanceCount).ToList());
             }
         }

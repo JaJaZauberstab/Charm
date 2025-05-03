@@ -92,7 +92,7 @@ public abstract class Package : IPackage
 
     public HashSet<int> GetRequiredPatches()
     {
-        HashSet<int> requiredPatches = new HashSet<int>();
+        HashSet<int> requiredPatches = new();
         foreach (D2FileEntry fileEntry in FileEntries)
         {
             int blockCount = GetBlockCount(fileEntry);
@@ -357,7 +357,7 @@ public abstract class Package : IPackage
         });
 
         // remove empty patch files
-        foreach (var pair in patchBlockEntryMap)
+        foreach (KeyValuePair<ushort, ConcurrentHashSet<(int, D2BlockEntry)>> pair in patchBlockEntryMap)
         {
             if (pair.Value.Count == 0)
             {
@@ -371,7 +371,7 @@ public abstract class Package : IPackage
         {
             using TigerReader packageHandle = GetPackageHandle(pair.Key);
             List<(int, D2BlockEntry)> sortedBlockIndices = pair.Value.OrderBy(x => x.Item2.Offset).ToList();
-            foreach (var block in sortedBlockIndices)
+            foreach ((int, D2BlockEntry) block in sortedBlockIndices)
             {
                 packageHandle.Seek(block.Item2.Offset, SeekOrigin.Begin);
                 blockMap.TryAdd(block.Item1, packageHandle.ReadBytes((int)block.Item2.Size));
@@ -563,7 +563,7 @@ public abstract class Package : IPackage
 
     public PackageMetadata GetPackageMetadata()
     {
-        PackageMetadata packageMetadata = new PackageMetadata();
+        PackageMetadata packageMetadata = new();
         packageMetadata.Path = PackagePath;
         packageMetadata.Name = PackagePath.Split('/').Last();
         packageMetadata.Id = Header.GetPackageId();
@@ -669,7 +669,7 @@ public abstract class Package : IPackage
 
         if (redacted) // (block.BitFlag & 0x4) == 0 
         {
-            var kvp = PackageResourcer.Get().Keys;
+            Dictionary<ulong, Dictionary<byte[], byte[]>> kvp = PackageResourcer.Get().Keys;
             if (kvp.ContainsKey(GetPackageMetadata().PackageGroup))
             {
                 key = kvp[GetPackageMetadata().PackageGroup].First().Key;
@@ -705,7 +705,7 @@ public abstract class Package : IPackage
 
     public List<FileMetadata> GetAllFileMetadata()
     {
-        List<FileMetadata> fileMetadataList = new List<FileMetadata>();
+        List<FileMetadata> fileMetadataList = new();
         for (ushort fileIndex = 0; fileIndex < FileEntries.Count; fileIndex++)
         {
             fileMetadataList.Add(GetFileMetadata(fileIndex));

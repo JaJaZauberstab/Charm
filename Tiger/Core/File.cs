@@ -127,7 +127,7 @@ public class TigerReferenceFile<THeader> : Tag<THeader> where THeader : struct
     {
         byte[] data = GetReferenceData();
         GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-        Blob blob = new Blob
+        Blob blob = new()
         {
             Data = handle.AddrOfPinnedObject(),
             Size = data.Length

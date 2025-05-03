@@ -167,7 +167,7 @@ public struct Vector3
     {
         get
         {
-            Vector3 vec3 = new Vector3();
+            Vector3 vec3 = new();
             vec3.X = 0;
             vec3.Y = 0;
             vec3.Z = 0;
@@ -179,7 +179,7 @@ public struct Vector3
     {
         get
         {
-            Vector3 vec3 = new Vector3();
+            Vector3 vec3 = new();
             vec3.X = 1;
             vec3.Y = 1;
             vec3.Z = 1;
@@ -396,7 +396,7 @@ public struct Vector4
     {
         get
         {
-            Vector4 vec4 = new Vector4();
+            Vector4 vec4 = new();
             vec4.X = 0;
             vec4.Y = 0;
             vec4.Z = 0;
@@ -409,7 +409,7 @@ public struct Vector4
     {
         get
         {
-            Vector4 vec4 = new Vector4();
+            Vector4 vec4 = new();
             vec4.X = 1.0f;
             vec4.Y = 1.0f;
             vec4.Z = 1.0f;
@@ -432,7 +432,7 @@ public struct Vector4
     {
         get
         {
-            Vector4 vec4 = new Vector4();
+            Vector4 vec4 = new();
             vec4.X = 0;
             vec4.Y = 0;
             vec4.Z = 0;
@@ -463,19 +463,14 @@ public struct Vector4
     {
         get
         {
-            switch (index)
+            return index switch
             {
-                case 0:
-                    return X;
-                case 1:
-                    return Y;
-                case 2:
-                    return Z;
-                case 3:
-                    return W;
-            }
-
-            throw new IndexOutOfRangeException();
+                0 => X,
+                1 => Y,
+                2 => Z,
+                3 => W,
+                _ => throw new IndexOutOfRangeException(),
+            };
         }
         set
         {
@@ -642,7 +637,7 @@ public struct Vector4
         {
             return new Vector3(v4N.X, v4N.Y, v4N.Z);
         }
-        Vector3 res = new Vector3();
+        Vector3 res = new();
         if (Math.Abs(v4N.Magnitude - 1) < 0.01)  // Quaternion
         {
             var quat = new SharpDX.Quaternion(v4N.X, v4N.Y, v4N.Z, v4N.W);
@@ -697,19 +692,14 @@ public struct IntVector4
     {
         get
         {
-            switch (index)
+            return index switch
             {
-                case 0:
-                    return X;
-                case 1:
-                    return Y;
-                case 2:
-                    return Z;
-                case 3:
-                    return W;
-            }
-
-            throw new IndexOutOfRangeException();
+                0 => X,
+                1 => Y,
+                2 => Z,
+                3 => W,
+                _ => throw new IndexOutOfRangeException(),
+            };
         }
         set
         {

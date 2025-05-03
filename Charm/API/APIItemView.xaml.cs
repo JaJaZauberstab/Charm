@@ -38,14 +38,13 @@ public partial class APIItemView : UserControl
         InitializeComponent();
         string name = Investment.Get().GetItemName(item);
         string? type = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash)).TagData.ItemType.Value;
-        if (type == null)
-            type = "";
+        type ??= "";
 
-        var source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
-        var sourceString = source.Value.SourceName.Value ?? "";
+        D2Class_C3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+        string sourceString = source.Value.SourceName.Value ?? "";
 
         ImageSource foundryBanner = type != "EMBLEM" ? ApiImageUtils.MakeFoundryBanner(item) : null;
-        var image = ApiImageUtils.MakeIcon(item);
+        Dictionary<DrawingImage, ImageBrush> image = ApiImageUtils.MakeIcon(item);
         ApiItem = new ApiItemView
         {
             Item = item,
@@ -66,10 +65,10 @@ public partial class APIItemView : UserControl
     {
         InitializeComponent();
 
-        var source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(apiItem.Item.TagData.InventoryItemHash));
-        var sourceString = source != null ? source.Value.SourceName.Value.ToString() : "";
+        D2Class_C3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(apiItem.Item.TagData.InventoryItemHash));
+        string? sourceString = source != null ? source.Value.SourceName.Value.ToString() : "";
 
-        var hash = apiItem.Item.TagData.InventoryItemHash;
+        TigerHash hash = apiItem.Item.TagData.InventoryItemHash;
         ImageSource foundryBanner = apiItem.ItemType?.ToUpper() != "EMBLEM" ? ApiImageUtils.MakeFoundryBanner(apiItem.Item) : null;
         ApiItem = new ApiItemView
         {
@@ -106,7 +105,7 @@ public partial class APIItemView : UserControl
 
         try
         {
-            ImageBrush imageBrush = new ImageBrush();
+            ImageBrush imageBrush = new();
             imageBrush.ImageSource = new BitmapImage(new Uri($"https://www.bungie.net/common/destiny2_content/screenshots/{ApiItem.Item.TagData.InventoryItemHash.Hash32}.jpg"));
             ItemBackground.Background = imageBrush;
         }
@@ -131,7 +130,7 @@ public partial class APIItemView : UserControl
 
         if (ApiItem.ItemType == "EMBLEM")
         {
-            var index = ApiItem.Item.GetItemStrings().TagData.EmblemContainerIndex;
+            short index = ApiItem.Item.GetItemStrings().TagData.EmblemContainerIndex;
             EmblemItem emblem = new()
             {
                 EmblemLarge = ApiImageUtils.MakeFullIcon(index, 5),
@@ -148,8 +147,8 @@ public partial class APIItemView : UserControl
                 {
                     if (entry.SocketTypeIndex == -1)
                         return;
-                    var socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
-                    foreach (var a in socket.PlugWhitelists)
+                    D2Class_BA768080 socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
+                    foreach (D2Class_C5768080 a in socket.PlugWhitelists)
                     {
                         if (a.PlugCategoryHash.Hash32 == 1466776700) // 'v300.weapon.damage_type.energy', Y1 weapon that uses a damage type mod from ye olden days
                         {
@@ -159,9 +158,9 @@ public partial class APIItemView : UserControl
                                 continue;
                             }
 
-                            var item = Investment.Get().GetInventoryItem(entry.SingleInitialItemIndex);
+                            InventoryItem item = Investment.Get().GetInventoryItem(entry.SingleInitialItemIndex);
                             item.Load(true); // idk why the item sometimes isnt fully loaded
-                            var index = item.GetItemDamageTypeIndex();
+                            int index = item.GetItemDamageTypeIndex();
                             ApiItem.ItemDamageType = DestinyDamageType.GetDamageType(index).GetEnumDescription();
                         }
                     }
@@ -178,15 +177,15 @@ public partial class APIItemView : UserControl
         if (plugIndex == -1)
             return null;
 
-        var item = Investment.Get().GetInventoryItem(plugIndex);
-        var strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
-        var type = strings.TagData.ItemType.Value.ToString();
-        if (type == "Shader" || type == "Ghost Projection" || type == "Transmat Effect") // Too slow atm, not really important either
+        InventoryItem item = Investment.Get().GetInventoryItem(plugIndex);
+        Tag<D2Class_9F548080>? strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+        string? type = strings.TagData.ItemType.Value.ToString();
+        if (type is "Shader" or "Ghost Projection" or "Transmat Effect") // Too slow atm, not really important either
             return null;
 
-        var icon = ApiImageUtils.MakeIcon(item);
-        var name = Investment.Get().GetItemName(item).ToUpper();
-        var description = strings.TagData.ItemDisplaySource.Value.ToString();
+        Dictionary<DrawingImage, ImageBrush> icon = ApiImageUtils.MakeIcon(item);
+        string name = Investment.Get().GetItemName(item).ToUpper();
+        string? description = strings.TagData.ItemDisplaySource.Value.ToString();
         //var socketName = Investment.Get().SocketCategoryStringThings[socketIndex].SocketName.Value.ToString();
         if (name == "" && type == "" && description == "")
             return null;
@@ -195,7 +194,7 @@ public partial class APIItemView : UserControl
         if (item.TagData.Unk48.GetValue(item.GetReader()) is D2Class_A1738080 plug)
             plugCategoryHash = plug.PlugCategoryHash;
 
-        PlugItem PlugItem = new PlugItem
+        PlugItem PlugItem = new()
         {
             Item = item,
             Hash = item.TagData.InventoryItemHash,
@@ -222,16 +221,16 @@ public partial class APIItemView : UserControl
             List<SocketCategoryItem> socketCategories = new();
             List<SocketEntryItem> socketEntries = new();
 
-            foreach (var socket in sockets.IntrinsicSockets)
+            foreach (D2Class_C8778080 socket in sockets.IntrinsicSockets)
             {
                 if (socket.PlugItemIndex == -1)
                     continue;
 
                 List<PlugItem> plugItems = new();
 
-                var type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
-                var category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
-                SocketCategoryItem socketCategory = new SocketCategoryItem
+                D2Class_BA768080 type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
+                D2Class_5D4F8080 category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
+                SocketCategoryItem socketCategory = new()
                 {
                     Hash = category.SocketCategoryHash,
                     Name = category.SocketName.Value.ToString().ToUpper(),
@@ -242,21 +241,21 @@ public partial class APIItemView : UserControl
                 if (!socketCategories.Any(x => x.Hash == category.SocketCategoryHash))
                     socketCategories.Add(socketCategory);
 
-                SocketTypeItem socketType = new SocketTypeItem
+                SocketTypeItem socketType = new()
                 {
                     Hash = type.SocketTypeHash,
                     SocketCategory = socketCategory,
                     PlugCategoryWhitelist = type.PlugWhitelists.Select(x => x.PlugCategoryHash).ToList()
                 };
 
-                var plugItem = CreatePlugItem(socket.PlugItemIndex);
+                PlugItem? plugItem = CreatePlugItem(socket.PlugItemIndex);
                 if (plugItem is not null)
                 {
                     plugItem.PlugStyle = socketCategory.UICategoryStyle;
                     plugItems.Add(plugItem);
                 }
 
-                SocketEntryItem socketEntry = new SocketEntryItem
+                SocketEntryItem socketEntry = new()
                 {
                     SocketType = socketType,
                     //SingleInitialItem = CreatePlugItem(socket.SingleInitialItemIndex),
@@ -267,17 +266,17 @@ public partial class APIItemView : UserControl
 
             for (int i = 0; i < sockets.SocketEntries.Count; i++)
             {
-                var socket = sockets.SocketEntries[i];
+                D2Class_C3778080 socket = sockets.SocketEntries[i];
                 if (socket.SocketTypeIndex == -1)
                     continue;
 
                 List<PlugItem> plugItems = new();
-                var type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
+                D2Class_BA768080 type = Investment.Get().GetSocketType(socket.SocketTypeIndex);
                 if (type.SocketVisiblity == 1) // Hidden
                     continue;
 
-                var category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
-                SocketCategoryItem socketCategory = new SocketCategoryItem
+                D2Class_5D4F8080 category = Investment.Get().SocketCategoryStringThings[type.SocketCategoryIndex];
+                SocketCategoryItem socketCategory = new()
                 {
                     Hash = category.SocketCategoryHash,
                     Name = category.SocketName.Value.ToString().ToUpper(),
@@ -288,23 +287,23 @@ public partial class APIItemView : UserControl
                 if (!socketCategories.Any(x => x.Hash == category.SocketCategoryHash))
                     socketCategories.Add(socketCategory);
 
-                SocketTypeItem socketType = new SocketTypeItem
+                SocketTypeItem socketType = new()
                 {
                     Hash = type.SocketTypeHash,
                     SocketCategory = socketCategory,
                     PlugCategoryWhitelist = type.PlugWhitelists.Select(x => x.PlugCategoryHash).ToList()
                 };
 
-                foreach (var index in new short[] { socket.ReusablePlugSetIndex1, socket.ReusablePlugSetIndex2 })
+                foreach (short index in new short[] { socket.ReusablePlugSetIndex1, socket.ReusablePlugSetIndex2 })
                 {
                     if (index != -1)
                     {
-                        foreach (var randomPlugs in Investment.Get().GetRandomizedPlugSet(index))
+                        foreach (D2Class_D5778080 randomPlugs in Investment.Get().GetRandomizedPlugSet(index))
                         {
                             if (randomPlugs.PlugInventoryItemIndex == -1)
                                 continue;
 
-                            var plugItem = CreatePlugItem(randomPlugs.PlugInventoryItemIndex);
+                            PlugItem? plugItem = CreatePlugItem(randomPlugs.PlugInventoryItemIndex);
                             if (plugItem is not null)
                             {
                                 plugItem.PlugOrderIndex = i;
@@ -315,12 +314,12 @@ public partial class APIItemView : UserControl
                     }
                 }
 
-                foreach (var plug in socket.PlugItems)
+                foreach (D2Class_D5778080 plug in socket.PlugItems)
                 {
                     if (plug.PlugInventoryItemIndex == -1)
                         continue;
 
-                    var plugItem = CreatePlugItem(plug.PlugInventoryItemIndex);
+                    PlugItem? plugItem = CreatePlugItem(plug.PlugInventoryItemIndex);
                     if (plugItem is not null)
                     {
                         plugItem.PlugOrderIndex = i;
@@ -331,7 +330,7 @@ public partial class APIItemView : UserControl
 
                 if (socket.SingleInitialItemIndex != -1)
                 {
-                    var plugItem = CreatePlugItem(socket.SingleInitialItemIndex);
+                    PlugItem? plugItem = CreatePlugItem(socket.SingleInitialItemIndex);
                     if (plugItem != null)
                     {
                         plugItem.PlugOrderIndex = i;
@@ -339,13 +338,13 @@ public partial class APIItemView : UserControl
                         // Things like default shader/ornament, empty sockets, etc are single intial items and will always be first
                         plugItems.Insert(0, plugItem);
                         // Remove the last occurence (if needed) of said item since its gonna be first anyways
-                        var lastOccurrenceIndex = plugItems.LastIndexOf(plugItem);
+                        int lastOccurrenceIndex = plugItems.LastIndexOf(plugItem);
                         if (lastOccurrenceIndex != 0)
                             plugItems.RemoveAt(lastOccurrenceIndex);
                     }
                 }
 
-                SocketEntryItem socketEntry = new SocketEntryItem
+                SocketEntryItem socketEntry = new()
                 {
                     SocketType = socketType,
                     //SingleInitialItem = CreatePlugItem(socket.SingleInitialItemIndex),
@@ -354,7 +353,7 @@ public partial class APIItemView : UserControl
                 socketEntries.Add(socketEntry);
             }
 
-            foreach (var socketCategory in socketCategories.OrderBy(x => x.SocketCategoryIndex))
+            foreach (SocketCategoryItem? socketCategory in socketCategories.OrderBy(x => x.SocketCategoryIndex))
             {
                 if (socketCategory.Name == string.Empty && socketCategory.Description == string.Empty)
                     continue;
@@ -382,12 +381,12 @@ public partial class APIItemView : UserControl
                 var contentStackPanel = content.FindName($"{style}Panel") as StackPanel;
                 content.DataContext = socketCategory;
 
-                foreach (var socketEntry in socketEntries.Where(x => x.SocketType.SocketCategory.Hash == socketCategory.Hash))
+                foreach (SocketEntryItem? socketEntry in socketEntries.Where(x => x.SocketType.SocketCategory.Hash == socketCategory.Hash))
                 {
                     if (socketEntry.PlugItems.Count == 0 || socketCategory.UICategoryStyle == DestinySocketCategoryStyle.EnergyMeter)
                         continue;
 
-                    ListBox listBox = new ListBox();
+                    ListBox listBox = new();
                     var template = (DataTemplate)FindResource($"{style}ItemTemplate");
                     listBox.ItemTemplate = template;
                     listBox.ItemsSource = socketEntry.PlugItems; //socketEntry.PlugItems.Where(x => socketEntry.SocketType.PlugCategoryWhitelist.Contains(x.PlugCategoryHash)); not needed? idk
@@ -404,13 +403,13 @@ public partial class APIItemView : UserControl
     {
         if (ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader()) is D2Class_81738080 stats)
         {
-            var statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
+            D2Class_C4548080? statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
 
             if (statGroup is not null)
             {
-                foreach (var scaledStat in statGroup.Value.ScaledStats)
+                foreach (D2Class_C8548080 scaledStat in statGroup.Value.ScaledStats)
                 {
-                    var statItem = Investment.Get().StatStrings[scaledStat.StatIndex];
+                    D2Class_6F588080 statItem = Investment.Get().StatStrings[scaledStat.StatIndex];
 
                     int statValue = stats.InvestmentStats.Where(x => x.StatTypeIndex == scaledStat.StatIndex).FirstOrDefault().Value;
                     int displayValue = MakeDisplayValue(scaledStat.StatIndex, statValue);
@@ -444,11 +443,11 @@ public partial class APIItemView : UserControl
     {
         if (ApiItem.Item.TagData.Unk78.GetValue(ApiItem.Item.GetReader()) is D2Class_81738080 investmentStats)
         {
-            var statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
+            D2Class_C4548080? statGroup = Investment.Get().GetStatGroup(ApiItem.Item);
             if (!statGroup.HasValue || statGroup is null)
                 return statValue;
 
-            var stat = statGroup.Value.ScaledStats.FirstOrDefault(x => x.StatIndex == statIndex);
+            D2Class_C8548080 stat = statGroup.Value.ScaledStats.FirstOrDefault(x => x.StatIndex == statIndex);
             if (statValue < 0 || stat.DisplayInterpolation is null)
                 return statValue;
 
@@ -466,7 +465,7 @@ public partial class APIItemView : UserControl
                 int? upperKey = null;
 
                 // Get all keys
-                var keys = stat.DisplayInterpolation;
+                DynamicArray<D2Class_257A8080> keys = stat.DisplayInterpolation;
 
                 // Find the keys that are just below and above the targetKey
                 for (int i = 0; i < keys.Count - 1; i++)
@@ -481,11 +480,11 @@ public partial class APIItemView : UserControl
 
                 if (lowerKey != null && upperKey != null)
                 {
-                    var lowerValue = keys.First(x => x.Value == lowerKey).Weight;
-                    var upperValue = keys.First(x => x.Value == upperKey).Weight;
+                    int lowerValue = keys.First(x => x.Value == lowerKey).Weight;
+                    int upperValue = keys.First(x => x.Value == upperKey).Weight;
 
                     // Interpolate median value between lower and upper values
-                    var interpolatedMedian = Interpolate(lowerKey.Value, lowerValue, upperKey.Value, upperValue, statValue);
+                    float interpolatedMedian = Interpolate(lowerKey.Value, lowerValue, upperKey.Value, upperValue, statValue);
                     return (int)Math.Round(interpolatedMedian);
                 }
             }
@@ -506,14 +505,14 @@ public partial class APIItemView : UserControl
 
         if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
         {
-            foreach (var stat in stats.InvestmentStats)
+            foreach (D2Class_86738080 stat in stats.InvestmentStats)
             {
-                var statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
-                var adjustValue = MakeDisplayValue(stat.StatTypeIndex, stat.Value);
+                D2Class_6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
+                int adjustValue = MakeDisplayValue(stat.StatTypeIndex, stat.Value);
 
                 if (statItem.StatName.Value is not null)
                 {
-                    var _stat = _statItems.FirstOrDefault(x => x.Hash == statItem.StatHash);
+                    StatItem? _stat = _statItems.FirstOrDefault(x => x.Hash == statItem.StatHash);
                     if (_stat is null)
                         continue;
                     _stat.StatAdjustValue = adjustValue;
@@ -532,13 +531,13 @@ public partial class APIItemView : UserControl
         PlugItem item = (PlugItem)(sender as Button).DataContext;
         if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
         {
-            foreach (var stat in stats.InvestmentStats)
+            foreach (D2Class_86738080 stat in stats.InvestmentStats)
             {
-                var statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
+                D2Class_6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
 
                 if (statItem.StatName.Value is not null)
                 {
-                    var _stat = _statItems.FirstOrDefault(x => x.Hash == statItem.StatHash);
+                    StatItem? _stat = _statItems.FirstOrDefault(x => x.Hash == statItem.StatHash);
                     if (_stat is null)
                         continue;
                     _stat.StatAdjustValue = 0;
@@ -586,13 +585,13 @@ public partial class APIItemView : UserControl
 
         if (item.Type.ToLower().Contains("ornament") || item.Name.ToLower() == "default ornament")
         {
-            var hash = item.Item.TagData.InventoryItemHash.Hash32;
+            uint hash = item.Item.TagData.InventoryItemHash.Hash32;
             if (item.Name.ToLower().Contains("default"))
                 hash = ApiItem.Item.TagData.InventoryItemHash.Hash32;
 
             try
             {
-                ImageBrush imageBrush = new ImageBrush();
+                ImageBrush imageBrush = new();
                 imageBrush.ImageSource = new BitmapImage(new Uri($"https://www.bungie.net/common/destiny2_content/screenshots/{hash}.jpg"));
                 ItemBackground.Background = imageBrush;
             }
@@ -612,7 +611,7 @@ public partial class APIItemView : UserControl
         ToolTip.ActiveItem = ActiveStatItemGrid;
 
         var stat = (StatItem)ActiveStatItemGrid.DataContext;
-        PlugItem statItem = new PlugItem
+        PlugItem statItem = new()
         {
             Hash = stat.Hash,
             Name = stat.Name.ToUpper(),
@@ -650,20 +649,20 @@ public partial class APIItemView : UserControl
             {
                 // Fade in LoreEntry
                 LoreEntry.Visibility = Visibility.Visible;
-                DoubleAnimation fadeInAnimation = new DoubleAnimation();
+                DoubleAnimation fadeInAnimation = new();
                 fadeInAnimation.From = 0;
                 fadeInAnimation.To = 1;
                 fadeInAnimation.Duration = TimeSpan.FromSeconds(0.1);
                 LoreEntry.BeginAnimation(OpacityProperty, fadeInAnimation);
 
                 // Apply blur effect and fade it in
-                if (MainContainer.Effect == null || !(MainContainer.Effect is BlurEffect))
+                if (MainContainer.Effect is null or not BlurEffect)
                 {
                     MainContainer.Effect = new BlurEffect { Radius = 0 };
                     BackgroundContainer.Effect = new BlurEffect { Radius = 0 };
                 }
 
-                DoubleAnimation blurAnimation = new DoubleAnimation();
+                DoubleAnimation blurAnimation = new();
                 blurAnimation.From = 0;
                 blurAnimation.To = 20;
                 blurAnimation.Duration = TimeSpan.FromSeconds(0.1);
@@ -673,7 +672,7 @@ public partial class APIItemView : UserControl
             else
             {
                 // Fade out LoreEntry
-                DoubleAnimation fadeOutAnimation = new DoubleAnimation();
+                DoubleAnimation fadeOutAnimation = new();
                 fadeOutAnimation.From = 1;
                 fadeOutAnimation.To = 0;
                 fadeOutAnimation.Duration = TimeSpan.FromSeconds(0.1);
@@ -681,9 +680,9 @@ public partial class APIItemView : UserControl
                 LoreEntry.BeginAnimation(OpacityProperty, fadeOutAnimation);
 
                 // Fade out blur effect
-                if (MainContainer.Effect != null && MainContainer.Effect is BlurEffect)
+                if (MainContainer.Effect is not null and BlurEffect)
                 {
-                    DoubleAnimation blurAnimation = new DoubleAnimation();
+                    DoubleAnimation blurAnimation = new();
                     blurAnimation.From = 20;
                     blurAnimation.To = 0;
                     blurAnimation.Duration = TimeSpan.FromSeconds(0.1);
@@ -699,7 +698,7 @@ public partial class APIItemView : UserControl
             }
         }
 
-        if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+        if (e.Key is Key.LeftCtrl or Key.RightCtrl)
         {
             HideMenuHint.Text = MainContainer.IsVisible ? " Show Menu" : " Hide Menu";
             if (MainContainer.Visibility != Visibility.Visible)
@@ -707,7 +706,7 @@ public partial class APIItemView : UserControl
                 // Fade in
                 MainContainer.Visibility = Visibility.Visible;
                 ItemRarityBanner.Visibility = Visibility.Visible;
-                DoubleAnimation fadeInAnimation = new DoubleAnimation();
+                DoubleAnimation fadeInAnimation = new();
                 fadeInAnimation.From = MainContainer.Opacity;
                 fadeInAnimation.To = 1;
                 fadeInAnimation.Duration = TimeSpan.FromSeconds(0.1);
@@ -717,7 +716,7 @@ public partial class APIItemView : UserControl
             else
             {
                 // Fade out
-                DoubleAnimation fadeOutAnimation = new DoubleAnimation();
+                DoubleAnimation fadeOutAnimation = new();
                 fadeOutAnimation.From = MainContainer.Opacity;
                 fadeOutAnimation.To = 0;
                 fadeOutAnimation.Duration = TimeSpan.FromSeconds(0.1);
@@ -884,7 +883,7 @@ public static class ApiImageUtils
 {
     public static BitmapImage MakeBitmapImage(UnmanagedMemoryStream ms, int width, int height)
     {
-        BitmapImage bitmapImage = new BitmapImage();
+        BitmapImage bitmapImage = new();
         bitmapImage.BeginInit();
         bitmapImage.StreamSource = ms;
         bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
@@ -898,28 +897,26 @@ public static class ApiImageUtils
     public static Dictionary<DrawingImage, ImageBrush> MakeIcon(InventoryItem item)
     {
         Dictionary<DrawingImage, ImageBrush> icon = new();
-        string? type = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash)).TagData.ItemType.Value;
-        if (type is null)
-            type = "";
+        string? type = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash)).TagData.ItemType.Value ?? "";
 
         // streams
-        var bgStream = item.GetIconBackgroundStream();
-        var bgOverlayStream = item.GetIconBackgroundOverlayStream();
-        var primaryStream = item.GetIconPrimaryStream();
-        var overlayStream = item.GetIconOverlayStream();
+        UnmanagedMemoryStream? bgStream = item.GetIconBackgroundStream();
+        UnmanagedMemoryStream? bgOverlayStream = item.GetIconBackgroundOverlayStream();
+        UnmanagedMemoryStream? primaryStream = item.GetIconPrimaryStream();
+        UnmanagedMemoryStream? overlayStream = item.GetIconOverlayStream();
 
         //sometimes only the primary icon is valid
-        var primary = primaryStream != null ? MakeBitmapImage(primaryStream, 96, 96) : null;
+        BitmapImage? primary = primaryStream != null ? MakeBitmapImage(primaryStream, 96, 96) : null;
 
         // Icon dyes
         if (bgOverlayStream != null && Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
             primary = MakeDyedIcon(item);
 
-        var bg = bgStream != null ? MakeBitmapImage(bgStream, 96, 96) : null;
+        BitmapImage? bg = bgStream != null ? MakeBitmapImage(bgStream, 96, 96) : null;
 
         //Most if not all legendary armor will use the ornament overlay because of transmog (I assume)
-        var bgOverlay = bgOverlayStream != null && type.Contains("Ornament") ? MakeBitmapImage(bgOverlayStream, 96, 96) : null;
-        var overlay = overlayStream != null ? MakeBitmapImage(overlayStream, 96, 96) : null;
+        BitmapImage? bgOverlay = bgOverlayStream != null && type.Contains("Ornament") ? MakeBitmapImage(bgOverlayStream, 96, 96) : null;
+        BitmapImage? overlay = overlayStream != null ? MakeBitmapImage(overlayStream, 96, 96) : null;
 
         var group = new DrawingGroup();
         group.Children.Add(new ImageDrawing(bg, new Rect(0, 0, 96, 96)));
@@ -930,7 +927,7 @@ public static class ApiImageUtils
         var dw = new DrawingImage(group);
         dw.Freeze();
 
-        ImageBrush brush = new ImageBrush(bg);
+        ImageBrush brush = new(bg);
         brush.Freeze();
 
         icon.TryAdd(dw, brush);
@@ -940,8 +937,8 @@ public static class ApiImageUtils
 
     public static DrawingImage MakeFoundryBanner(InventoryItem item)
     {
-        var foundryStream = item.GetFoundryIconStream();
-        var foundry = foundryStream != null ? MakeBitmapImage(foundryStream, 596, 596) : null;
+        UnmanagedMemoryStream? foundryStream = item.GetFoundryIconStream();
+        BitmapImage? foundry = foundryStream != null ? MakeBitmapImage(foundryStream, 596, 596) : null;
 
         var group = new DrawingGroup();
         group.Children.Add(new ImageDrawing(foundry, new Rect(0, 0, 596, 596)));
@@ -954,8 +951,8 @@ public static class ApiImageUtils
 
     public static ImageSource GetPlugWatermark(InventoryItem item)
     {
-        var overlayStream = item.GetIconOverlayStream(1);
-        var overlay = overlayStream != null ? MakeBitmapImage(overlayStream, 96, 96) : null;
+        UnmanagedMemoryStream? overlayStream = item.GetIconOverlayStream(1);
+        BitmapImage? overlay = overlayStream != null ? MakeBitmapImage(overlayStream, 96, 96) : null;
         var dw = new ImageBrush(overlay);
         dw.Freeze();
         return dw.ImageSource;
@@ -963,12 +960,12 @@ public static class ApiImageUtils
 
     public static ImageSource MakeIcon(int index, int texIndex = 0, int listIndex = 0)
     {
-        var container = Investment.Get().GetItemIconContainer(index);
+        Tag<D2Class_B83E8080>? container = Investment.Get().GetItemIconContainer(index);
         if (container == null || container.TagData.IconPrimaryContainer == null)
             return null;
 
-        var primaryStream = GetTexture(container.TagData.IconPrimaryContainer, texIndex, listIndex);
-        var primary = primaryStream != null ? MakeBitmapImage(primaryStream.GetTexture(), 96, 96) : null;
+        Texture? primaryStream = GetTexture(container.TagData.IconPrimaryContainer, texIndex, listIndex);
+        BitmapImage? primary = primaryStream != null ? MakeBitmapImage(primaryStream.GetTexture(), 96, 96) : null;
 
         var dw = new ImageBrush(primary);
         dw.Freeze();
@@ -978,7 +975,7 @@ public static class ApiImageUtils
 
     public static ImageSource MakeFullIcon(int index, int containerIndex = 0, int iconIndex = 0, int listIndex = 0)
     {
-        var container = Investment.Get().GetItemIconContainer(index);
+        Tag<D2Class_B83E8080>? container = Investment.Get().GetItemIconContainer(index);
         if (container == null)
             return null;
 
@@ -994,9 +991,9 @@ public static class ApiImageUtils
         if (containers[containerIndex] is null)
             return null;
 
-        var texture = GetTexture(containers[containerIndex], iconIndex, listIndex);
-        var primaryStream = texture?.GetTexture();
-        var primary = primaryStream != null ? MakeBitmapImage(primaryStream, texture.TagData.Width, texture.TagData.Height) : null;
+        Texture? texture = GetTexture(containers[containerIndex], iconIndex, listIndex);
+        UnmanagedMemoryStream? primaryStream = texture?.GetTexture();
+        BitmapImage? primary = primaryStream != null ? MakeBitmapImage(primaryStream, texture.TagData.Width, texture.TagData.Height) : null;
 
         var dw = new ImageBrush(primary);
         dw.Freeze();
@@ -1026,9 +1023,9 @@ public static class ApiImageUtils
 
     public static BitmapImage MakeDyedIcon(InventoryItem item)
     {
-        var iconContainer = Investment.Get().GetItemIconContainer(item);
-        var primaryStream = item.GetIconPrimaryStream();
-        var maskStream = item.GetIconBackgroundOverlayStream();
+        Tag<D2Class_B83E8080>? iconContainer = Investment.Get().GetItemIconContainer(item);
+        UnmanagedMemoryStream? primaryStream = item.GetIconPrimaryStream();
+        UnmanagedMemoryStream? maskStream = item.GetIconBackgroundOverlayStream();
 
         Bitmap mainImage = primaryStream != null ? MakeBitmap(primaryStream) : null;
         Bitmap colorMaskImage = maskStream != null ? MakeBitmap(maskStream) : null;
@@ -1104,8 +1101,8 @@ public static class ApiImageUtils
                 return new Bitmap(memoryStream);
             else
             {
-                Bitmap originalBitmap = new Bitmap(memoryStream);
-                Bitmap resizedBitmap = new Bitmap(wH, wH);
+                Bitmap originalBitmap = new(memoryStream);
+                Bitmap resizedBitmap = new(wH, wH);
 
                 using (Graphics graphics = Graphics.FromImage(resizedBitmap))
                 {
@@ -1118,14 +1115,14 @@ public static class ApiImageUtils
 
     public static BitmapImage Bitmap2BitmapImage(Bitmap bitmap, int width, int height)
     {
-        using (MemoryStream memoryStream = new MemoryStream())
+        using (MemoryStream memoryStream = new())
         {
             // Save bitmap to memory stream as PNG (to preserve alpha channel)
             bitmap.Save(memoryStream, ImageFormat.Png);
             memoryStream.Position = 0;
 
             // Create new BitmapImage and load it from memory stream
-            BitmapImage bitmapImage = new BitmapImage();
+            BitmapImage bitmapImage = new();
             bitmapImage.BeginInit();
             bitmapImage.DecodePixelWidth = width;
             bitmapImage.DecodePixelHeight = height;
@@ -1146,7 +1143,7 @@ public class PercentageConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (int.TryParse(value?.ToString(), out int intValue) && int.TryParse(parameter?.ToString(), out int totalWidth))
-            return ((float)intValue / 100f) * (float)totalWidth;
+            return (intValue / 100f) * totalWidth;
 
         return Binding.DoNothing;
     }
@@ -1195,7 +1192,7 @@ public class FlipSignPercentageConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is int adjustmentValue && adjustmentValue < 0 && int.TryParse(parameter?.ToString(), out int totalWidth))
-            return ((adjustmentValue * -1) / 100f) * (float)totalWidth;
+            return ((adjustmentValue * -1) / 100f) * totalWidth;
 
         return value;
     }
@@ -1210,7 +1207,7 @@ public class ToUpperConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var str = value as string;
+        string? str = value as string;
         return string.IsNullOrEmpty(str) ? string.Empty : str.ToUpper();
     }
 

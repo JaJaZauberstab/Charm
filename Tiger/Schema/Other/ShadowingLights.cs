@@ -13,7 +13,7 @@ public class ShadowingLights : Tag<SMapShadowingLight>
 
     public void LoadIntoExporter()
     {
-        var data = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || _tag.BufferData2 is null) ? _tag.BufferData : _tag.BufferData2;
+        Tag<D2Class_A16D8080>? data = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || _tag.BufferData2 is null) ? _tag.BufferData : _tag.BufferData2;
         if (data is null)
             return;
 
@@ -81,14 +81,14 @@ public class ShadowingLights : Tag<SMapShadowingLight>
 
         // 2x2x2 Cube
         Vector3[] cubePoints = new Vector3[] {
-            new Vector3(-1f, -1f, -1f),
-            new Vector3(-1f, -1f, 1f),
-            new Vector3(-1f, 1f, -1f),
-            new Vector3(-1f, 1f, 1f),
-            new Vector3(1f, -1f, -1f),
-            new Vector3(1f, -1f, 1f),
-            new Vector3(1f, 1f, -1f),
-            new Vector3(1f, 1f, 1f)
+            new(-1f, -1f, -1f),
+            new(-1f, -1f, 1f),
+            new(-1f, 1f, -1f),
+            new(-1f, 1f, 1f),
+            new(1f, -1f, -1f),
+            new(1f, -1f, 1f),
+            new(1f, 1f, -1f),
+            new(1f, 1f, 1f)
         };
 
         for (int i = 0; i < cubePoints.Length; i++)
@@ -105,7 +105,7 @@ public class ShadowingLights : Tag<SMapShadowingLight>
             r0 = matrix.Z_Axis * new Vector4(cubePoints[i].Z) + r0;
 
             //o0.xyzw = cb0[21].xyzw + r0.xyzw;
-            var b = (matrix.W_Axis + r0);
+            Vector4 b = (matrix.W_Axis + r0);
 
             cubePoints[i] = (b / new Vector4(b.W)).ToVec3();
         }

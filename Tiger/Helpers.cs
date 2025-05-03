@@ -14,7 +14,7 @@ public static class Helpers
     {
         StringBuilder sb = new();
         sb.Append($"{typeof(T).Name}(");
-        var fields = typeof(T).GetFields();
+        FieldInfo[] fields = typeof(T).GetFields();
         foreach (FieldInfo fieldInfo in fields)
         {
             sb.Append($"{fieldInfo.Name}: {fieldInfo.GetValue(value)}, ");
@@ -85,7 +85,7 @@ public static class Helpers
     public static uint Fnv(string fnvString, bool le = false)
     {
         uint value = 0x811c9dc5;
-        for (var i = 0; i < fnvString.Length; i++)
+        for (int i = 0; i < fnvString.Length; i++)
         {
             value *= 0x01000193;
             value ^= fnvString[i];
@@ -102,7 +102,7 @@ public static class Helpers
 
     public static string SanitizeString(string input, string replacement = "_")
     {
-        var pattern = @"[^a-zA-Z0-9 ]";
+        string pattern = @"[^a-zA-Z0-9 ]";
         return Regex.Replace(input, pattern, replacement).Trim();
     }
 
@@ -129,7 +129,7 @@ public static class Helpers
     public static string GetReadableSize(long byteLength)
     {
         string[] sizeSuffixes = { "B", "KB", "MB", "GB" };
-        if (byteLength == 0 || byteLength < 0) return "0 B";
+        if (byteLength is 0 or < 0) return "0 B";
 
         int suffixIndex = (int)Math.Floor(Math.Log(byteLength, 1024));
         double readableValue = byteLength / Math.Pow(1024, suffixIndex);
@@ -140,10 +140,10 @@ public static class Helpers
     // This is fine :)
     public static (ushort width, ushort height, ushort depth, ushort array_size) GetTextureDimensionsRaw(FileHash hash)
     {
-        var data = PackageResourcer.Get().GetFileData(hash);
-        using (TigerReader br = new TigerReader(data))
+        byte[] data = PackageResourcer.Get().GetFileData(hash);
+        using (TigerReader br = new(data))
         {
-            var offset = Strategy.IsD1() ? 0x28 : Strategy.IsPreBL() ? 0x0E : 0x22;
+            int offset = Strategy.IsD1() ? 0x28 : Strategy.IsPreBL() ? 0x0E : 0x22;
             br.Seek(offset, SeekOrigin.Begin);
             ushort width = br.ReadUInt16();
             ushort height = br.ReadUInt16();
@@ -385,7 +385,7 @@ public static class EnumExtensions
         if (Convert.ToInt32(enumValue) == -1)
             return string.Empty;
 
-        var fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
+        FieldInfo? fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
         if (fieldInfo == null)
             return "";
 

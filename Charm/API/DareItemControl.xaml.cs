@@ -25,7 +25,7 @@ public partial class DareItemControl : UserControl
         e.Handled = true;
         ApiItem apiItem = Container.DataContext as ApiItem;
 
-        APIItemView apiItemView = new APIItemView(apiItem);
+        APIItemView apiItemView = new(apiItem);
         _mainWindow.MakeNewTab(apiItem.ItemName, apiItemView);
         _mainWindow.SetNewestTabSelected();
     }

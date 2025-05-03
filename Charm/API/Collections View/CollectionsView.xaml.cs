@@ -33,7 +33,7 @@ public partial class CollectionsView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -51,13 +51,13 @@ public partial class CollectionsView : UserControl
     // Badges -> hash 498211331
     public void LoadMainItemCategory(int i = 0)
     {
-        var nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-        var strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        DynamicArray<D2Class_DB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<D2Class_07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
-        foreach (var node in nodes[0].PresentationNodes)
+        foreach (D2Class_ED788080 node in nodes[0].PresentationNodes)
         {
-            var curNode = nodes[node.PresentationNodeIndex];
-            var curNodeStrings = strings[node.PresentationNodeIndex];
+            D2Class_DB788080 curNode = nodes[node.PresentationNodeIndex];
+            D2Class_07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
             ItemCategory itemCategory = new()
             {
@@ -70,7 +70,7 @@ public partial class CollectionsView : UserControl
             };
             TotalItemAmount += itemCategory.ItemCategoryAmount;
 
-            Button btn = new Button
+            Button btn = new()
             {
                 DataContext = itemCategory,
                 Style = (Style)FindResource("MainItemsButton")
@@ -83,7 +83,7 @@ public partial class CollectionsView : UserControl
 
     public int GetItemCategoryAmount(int index)
     {
-        var node = PresentationNodes.TagData.PresentationNodeDefinitions[index];
+        D2Class_DB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[index];
         int count = node.Collectables.Count;
 
         for (int j = 0; j < node.PresentationNodes.Count; j++)

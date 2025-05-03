@@ -85,7 +85,7 @@ public class Exporter : Subsystem<Exporter>
     {
         bool aggregateOutput = outputDirectory is not null;
         if (outputDirectory is null)
-            outputDirectory = CharmInstance.GetSubsystem<ConfigSubsystem>().GetExportSavePath();
+            outputDirectory = TigerInstance.GetSubsystem<ConfigSubsystem>().GetExportSavePath();
 
         ExportEvent(new ExportEventArgs(_scenes, outputDirectory, aggregateOutput));
         Reset();
@@ -113,7 +113,7 @@ public class GlobalExporterScene : ExporterScene
             _objects = new ConcurrentBag<dynamic>();
 
         // Check if an item of the same type already exists (if there should only be one)
-        var type = item.GetType();
+        dynamic type = item.GetType();
         if (isUnique && _objects.Any(existing => existing.GetType() == type))
             throw new InvalidOperationException($"A unique item of type {type.Name} already exists in the Global Scene.");
 
@@ -130,7 +130,7 @@ public class GlobalExporterScene : ExporterScene
     {
         item = default;
 
-        foreach (var existing in _objects)
+        foreach (dynamic existing in _objects)
         {
             if (existing is T)
             {
@@ -295,7 +295,7 @@ public class ExporterScene
         if (_addedEntities.TryAdd(entity.Hash, true)) // Dont want duplicate entities being added
         {
             ExporterMesh mesh = new(dynamicResource.Entity.Hash);
-            var parts = entity.Model.Load(ExportDetailLevel.MostDetailed, entity.ModelParentResource);
+            List<DynamicMeshPart> parts = entity.Model.Load(ExportDetailLevel.MostDetailed, entity.ModelParentResource);
             for (int i = 0; i < parts.Count; i++)
             {
                 DynamicMeshPart part = parts[i];
@@ -327,7 +327,7 @@ public class ExporterScene
 
         if (_addedEntities.TryAdd(model.Hash, true)) // Dont want duplicate entities being added
         {
-            var parts = model.Load(ExportDetailLevel.MostDetailed, null, transparentsOnly);
+            List<DynamicMeshPart> parts = model.Load(ExportDetailLevel.MostDetailed, null, transparentsOnly);
             for (int i = 0; i < parts.Count; i++)
             {
                 DynamicMeshPart part = parts[i];
@@ -343,7 +343,7 @@ public class ExporterScene
     public void AddModel(EntityModel model)
     {
         ExporterMesh mesh = new(model.Hash);
-        var parts = model.Load(ExportDetailLevel.MostDetailed, null);
+        List<DynamicMeshPart> parts = model.Load(ExportDetailLevel.MostDetailed, null);
         for (int i = 0; i < parts.Count; i++)
         {
             DynamicMeshPart part = parts[i];

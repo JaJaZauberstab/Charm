@@ -82,7 +82,7 @@ public class Strategy
     public static bool IsLatest() => CurrentStrategy == TigerStrategy.DESTINY2_LATEST;
     public static bool IsPostBL() => CurrentStrategy > TigerStrategy.DESTINY2_BEYONDLIGHT_3402;
     public static bool IsBL() => CurrentStrategy == TigerStrategy.DESTINY2_BEYONDLIGHT_3402;
-    public static bool IsPreBL() => CurrentStrategy == TigerStrategy.DESTINY2_SHADOWKEEP_2601 || CurrentStrategy == TigerStrategy.DESTINY2_SHADOWKEEP_2999;
+    public static bool IsPreBL() => CurrentStrategy is TigerStrategy.DESTINY2_SHADOWKEEP_2601 or TigerStrategy.DESTINY2_SHADOWKEEP_2999;
     public static bool IsD1() => CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
 
     /// <exception cref="ArgumentException">'strategyString' does not exist.</exception>
@@ -128,7 +128,7 @@ public class Strategy
     /// <exception cref="ArgumentException">'strategy' does not exist.</exception>
     public static StrategyConfiguration GetStrategyConfiguration(TigerStrategy strategy)
     {
-        bool strategyExists = _strategyConfigurations.TryGetValue(strategy, out var configuration);
+        bool strategyExists = _strategyConfigurations.TryGetValue(strategy, out StrategyConfiguration configuration);
         if (!strategyExists)
         {
             throw new ArgumentException($"Game strategy does not exist '{strategy}'");
@@ -245,7 +245,7 @@ public class Strategy
 
     private static bool PackageFilesHasInvalidPrefix(TigerStrategy strategy, string packagesDirectory)
     {
-        var packagePaths = Directory.EnumerateFiles(packagesDirectory);
+        IEnumerable<string> packagePaths = Directory.EnumerateFiles(packagesDirectory);
         string prefix = GetStrategyPackagePrefix(strategy);
 
         return packagePaths.Any(path => !path.Contains(prefix + "_"));
@@ -253,7 +253,7 @@ public class Strategy
 
     private static bool PackageFilesHasInvalidExtension(string packagesDirectory)
     {
-        var packagePaths = Directory.EnumerateFiles(packagesDirectory);
+        IEnumerable<string> packagePaths = Directory.EnumerateFiles(packagesDirectory);
         return packagePaths.Any(path => !path.EndsWith(".pkg"));
     }
 
@@ -265,7 +265,7 @@ public class Strategy
 
     public static string GetStrategyPackagePrefix(TigerStrategy strategy)
     {
-        var member = typeof(TigerStrategy).GetMember(strategy.ToString());
+        MemberInfo[] member = typeof(TigerStrategy).GetMember(strategy.ToString());
         StrategyMetadataAttribute? attribute = (StrategyMetadataAttribute?)member[0].GetCustomAttribute(typeof(StrategyMetadataAttribute), false);
         if (attribute == null)
         {
@@ -312,7 +312,7 @@ public class Strategy
         // todo test this
         public static T Get(TigerStrategy strategy)
         {
-            if (_strategyInstances.TryGetValue(strategy, out var instance))
+            if (_strategyInstances.TryGetValue(strategy, out T? instance))
             {
                 return instance;
             }
@@ -414,14 +414,14 @@ public static class StrategyExtensions
 {
     public static StrategyMetadataAttribute GetStrategyMetadata(this TigerStrategy strategy)
     {
-        var member = typeof(TigerStrategy).GetMember(strategy.ToString());
+        MemberInfo[] member = typeof(TigerStrategy).GetMember(strategy.ToString());
         StrategyMetadataAttribute attribute = (StrategyMetadataAttribute)member[0].GetCustomAttribute(typeof(StrategyMetadataAttribute), false);
         return attribute;
     }
 
     public static StrategyConfiguration GetStrategyConfiguration(this TigerStrategy strategy)
     {
-        var member = typeof(TigerStrategy).GetMember(strategy.ToString());
+        MemberInfo[] member = typeof(TigerStrategy).GetMember(strategy.ToString());
         StrategyConfiguration strategyConfiguration = Strategy.GetStrategyConfiguration(strategy);
         return strategyConfiguration;
     }

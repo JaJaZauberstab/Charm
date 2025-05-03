@@ -53,7 +53,7 @@ public partial class MainMenuView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -86,7 +86,7 @@ public partial class MainMenuView : UserControl
 
     private bool ShowAPIButton(TigerStrategy strategy)
     {
-        return strategy > TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || strategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
+        return strategy is > TigerStrategy.DESTINY2_BEYONDLIGHT_3402 or TigerStrategy.DESTINY1_RISE_OF_IRON;
     }
 
     private void CategoryButton_MouseEnter(object sender, MouseEventArgs e)
@@ -114,7 +114,7 @@ public partial class MainMenuView : UserControl
     {
         await LoadInvestment();
 
-        DareView apiView = new DareView();
+        DareView apiView = new();
         apiView.LoadContent();
         _mainWindow.MakeNewTab("api", apiView);
         _mainWindow.SetNewestTabSelected();
@@ -124,7 +124,7 @@ public partial class MainMenuView : UserControl
     {
         await LoadInvestment();
 
-        CollectionsView apiView2 = new CollectionsView();
+        CollectionsView apiView2 = new();
         apiView2.LoadContent();
         _mainWindow.MakeNewTab("Collections", apiView2);
         _mainWindow.SetNewestTabSelected();
@@ -132,7 +132,7 @@ public partial class MainMenuView : UserControl
 
     private void NamedEntitiesBagsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.DestinationGlobalTagBagList);
         _mainWindow.MakeNewTab("destination global tag bag", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -140,7 +140,7 @@ public partial class MainMenuView : UserControl
 
     private void AllEntitiesViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.EntityList);
         _mainWindow.MakeNewTab("dynamics", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -148,7 +148,7 @@ public partial class MainMenuView : UserControl
 
     private void ActivitiesViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.ActivityList);
         _mainWindow.MakeNewTab("activities", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -156,7 +156,7 @@ public partial class MainMenuView : UserControl
 
     private void AllStaticsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.StaticsList);
         _mainWindow.MakeNewTab("statics", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -166,7 +166,7 @@ public partial class MainMenuView : UserControl
     {
         await LoadInvestment();
 
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.WeaponAudioGroupList);
         _mainWindow.MakeNewTab("weapon audio", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -174,7 +174,7 @@ public partial class MainMenuView : UserControl
 
     private void AllAudioViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.SoundsPackagesList);
         _mainWindow.MakeNewTab("sounds", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -182,7 +182,7 @@ public partial class MainMenuView : UserControl
 
     private void AllBKHDViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.BKHDGroupList);
         _mainWindow.MakeNewTab("sound banks", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -190,7 +190,7 @@ public partial class MainMenuView : UserControl
 
     private void AllStringsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.StringContainersList);
         _mainWindow.MakeNewTab("strings", tagListView);
         _mainWindow.SetNewestTabSelected();
@@ -206,7 +206,7 @@ public partial class MainMenuView : UserControl
 
     private void AllTexturesView2Button_OnClick(object sender, RoutedEventArgs e)
     {
-        TextureListView textureListView = new TextureListView();
+        TextureListView textureListView = new();
         textureListView.LoadContent();
         _mainWindow.MakeNewTab("textures", textureListView);
         _mainWindow.SetNewestTabSelected();
@@ -214,7 +214,7 @@ public partial class MainMenuView : UserControl
 
     private void AllMaterialsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.MaterialList);
         _mainWindow.MakeNewTab("materials", tagListView);
         _mainWindow.SetNewestTabSelected();

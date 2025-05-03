@@ -16,9 +16,9 @@ public class Lights : Tag<SMapLights>
         using TigerReader reader = GetReader();
         for (int i = 0; i < _tag.LightData.Count; i++)
         {
-            var data = _tag.LightData.ElementAt(reader, i);
+            SMapLightCollection data = _tag.LightData.ElementAt(reader, i);
 
-            var bufferData = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || data.BufferData2 is null) ? data.BufferData : data.BufferData2;
+            Tag<D2Class_A16D8080>? bufferData = (Strategy.CurrentStrategy < TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || data.BufferData2 is null) ? data.BufferData : data.BufferData2;
             if (bufferData is null)
                 continue;
 
@@ -43,8 +43,8 @@ public class Lights : Tag<SMapLights>
             }
 
             Vector3 size = GetSize(data.LightToWorld, lightType, $"{lightType}_{data.BufferData.Hash}_{i}");
-            var bounds = _tag.Bounds.TagData.InstanceBounds.ElementAt(_tag.Bounds.GetReader(), i);
-            var transforms = _tag.Transforms.ElementAt(reader, i);
+            SMeshInstanceOcclusionBounds bounds = _tag.Bounds.TagData.InstanceBounds.ElementAt(_tag.Bounds.GetReader(), i);
+            D2Class_4F9F8080 transforms = _tag.Transforms.ElementAt(reader, i);
             LightData lightData = new()
             {
                 Hash = bufferData.Hash,
@@ -96,14 +96,14 @@ public class Lights : Tag<SMapLights>
     {
         // 2x2x2 Cube
         Vector3[] cubePoints = new Vector3[] {
-            new Vector3(-1f, -1f, -1f),
-            new Vector3(-1f, -1f, 1f),
-            new Vector3(-1f, 1f, -1f),
-            new Vector3(-1f, 1f, 1f),
-            new Vector3(1f, -1f, -1f),
-            new Vector3(1f, -1f, 1f),
-            new Vector3(1f, 1f, -1f),
-            new Vector3(1f, 1f, 1f)
+            new(-1f, -1f, -1f),
+            new(-1f, -1f, 1f),
+            new(-1f, 1f, -1f),
+            new(-1f, 1f, 1f),
+            new(1f, -1f, -1f),
+            new(1f, -1f, 1f),
+            new(1f, 1f, -1f),
+            new(1f, 1f, 1f)
         };
 
         for (int i = 0; i < cubePoints.Length; i++)
@@ -120,7 +120,7 @@ public class Lights : Tag<SMapLights>
             r0 = matrix.Z_Axis * new Vector4(cubePoints[i].Z) + r0;
 
             //o0.xyzw = cb0[21].xyzw + r0.xyzw;
-            var b = (matrix.W_Axis + r0);
+            Vector4 b = (matrix.W_Axis + r0);
 
             cubePoints[i] = (b / new Vector4(b.W)).ToVec3();
         }

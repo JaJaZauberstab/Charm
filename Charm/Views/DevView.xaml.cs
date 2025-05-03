@@ -41,7 +41,7 @@ public partial class DevView : UserControl
 
     private void TagHashBoxKeydown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Return && e.Key != Key.H && e.Key != Key.R && e.Key != Key.E && e.Key != Key.L)
+        if (e.Key is not Key.Return and not Key.H and not Key.R and not Key.E and not Key.L)
             return;
 
         string strHash = TagHashBox.Text.Replace(" ", "");
@@ -55,9 +55,9 @@ public partial class DevView : UserControl
         FileHash hash;
         if (strHash.Contains("-"))
         {
-            var s = strHash.Split("-");
-            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
-            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
+            string[] s = strHash.Split("-");
+            int pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
+            int entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
             hash = new FileHash(pkgid, (uint)entryindex);  // fix to int/uint stuff here
         }
         else
@@ -79,7 +79,7 @@ public partial class DevView : UserControl
             if (uint.TryParse(strHash, out uint apiHash))
             {
                 Investment.LazyInit();
-                var item = Investment.Get().TryGetInventoryItem(new TigerHash(apiHash));
+                InventoryItem? item = Investment.Get().TryGetInventoryItem(new TigerHash(apiHash));
                 if (item is not null)
                 {
                     MainWindow.Progress.SetProgressStages(new() { "Starting investment system" });
@@ -87,7 +87,7 @@ public partial class DevView : UserControl
                     MainWindow.Progress.CompleteStage();
 
                     item.Load();
-                    APIItemView apiItemView = new APIItemView(item);
+                    APIItemView apiItemView = new(item);
                     _mainWindow.MakeNewTab(Investment.Get().GetItemName(item), apiItemView);
                     _mainWindow.SetNewestTabSelected();
                 }
@@ -154,7 +154,7 @@ public partial class DevView : UserControl
     private void ExportWem(ExportInfo info)
     {
         Wem wem = FileResourcer.Get().GetFile<Wem>(info.Hash as FileHash);
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         string saveDirectory = config.GetExportSavePath() + $"/Sound/{info.Hash}_{info.Name}/";
         Directory.CreateDirectory(saveDirectory);
         wem.SaveToFile($"{saveDirectory}/{info.Name}.wav");
@@ -200,11 +200,11 @@ public partial class DevView : UserControl
                 case 0x80800734:
                 case 0x80809C0F:
                 case 0x80809AD8:
-                    EntityView entityView = new EntityView();
+                    EntityView entityView = new();
                     entityView.LoadEntity(hash);
 
                     Entity entity = FileResourcer.Get().GetFile<Entity>(hash);
-                    List<Entity> entities = new List<Entity> { entity };
+                    List<Entity> entities = new() { entity };
                     entities.AddRange(entity.GetEntityChildren());
 
                     EntityView.Export(entities, hash, ExportTypeFlag.Full);
@@ -214,21 +214,21 @@ public partial class DevView : UserControl
 
                 case 0x808071a7:
                 case 0x80806D44:
-                    StaticView staticView = new StaticView();
+                    StaticView staticView = new();
                     staticView.LoadStatic(hash, ExportDetailLevel.MostDetailed);
                     _mainWindow.MakeNewTab(hash, staticView);
                     _mainWindow.SetNewestTabSelected();
                     break;
 
                 case 0x808093AD:
-                    MapView mapView = new MapView();
+                    MapView mapView = new();
                     mapView.LoadMap(hash, ExportDetailLevel.LeastDetailed);
                     _mainWindow.MakeNewTab(hash, mapView);
                     _mainWindow.SetNewestTabSelected();
                     break;
 
                 case 0x80808E8E:
-                    ActivityView activityView = new ActivityView();
+                    ActivityView activityView = new();
                     activityView.LoadActivity(hash);
                     _mainWindow.MakeNewTab(hash, activityView);
                     _mainWindow.SetNewestTabSelected();
@@ -266,7 +266,7 @@ public partial class DevView : UserControl
                     EntityModel entityModel = FileResourcer.Get().GetFile<EntityModel>(hash);
                     ExporterScene scene = Exporter.Get().CreateScene(hash, ExportType.Entities);
                     scene.AddModel(entityModel);
-                    var parts = entityModel.Load(ExportDetailLevel.MostDetailed, null);
+                    List<DynamicMeshPart> parts = entityModel.Load(ExportDetailLevel.MostDetailed, null);
                     foreach (DynamicMeshPart part in parts)
                     {
                         if (part.Material == null) continue;
@@ -274,7 +274,7 @@ public partial class DevView : UserControl
                     }
                     Exporter.Get().Export();
 
-                    EntityView entityModelView = new EntityView();
+                    EntityView entityModelView = new();
                     entityModelView.LoadEntityModel(hash);
                     _mainWindow.MakeNewTab(hash, entityModelView);
                     _mainWindow.SetNewestTabSelected();
@@ -324,7 +324,7 @@ public partial class DevView : UserControl
                     Console.WriteLine($"\n{skyComplex.Hash}: Unk00 {a.Unk00.Count}");
                     for (int i = 0; i < a.Unk00.Count; i += 3)
                     {
-                        Vector3 half = new Vector3(a.Unk00[i].Unk0, a.Unk00[i + 1].Unk0, a.Unk00[i + 2].Unk0);
+                        Vector3 half = new(a.Unk00[i].Unk0, a.Unk00[i + 1].Unk0, a.Unk00[i + 2].Unk0);
                         Console.WriteLine(half);
                     }
                     break;
@@ -368,7 +368,7 @@ public partial class DevView : UserControl
 
     public static void OpenHxD(FileHash hash)
     {
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         string savePath = config.GetExportSavePath() + "/temp";
         if (!Directory.Exists(savePath))
         {
@@ -405,8 +405,8 @@ public partial class DevView : UserControl
             BatchList.Text = "Invalid file or does not exist";
             return;
         }
-        var hashes = File.ReadAllLines(BatchList.Text);
-        foreach (var hash in hashes)
+        string[] hashes = File.ReadAllLines(BatchList.Text);
+        foreach (string hash in hashes)
         {
             Material material = FileResourcer.Get().GetFile<Material>(hash);
             material.Export($"{ConfigSubsystem.Get().GetExportSavePath()}/Materials/{hash}");

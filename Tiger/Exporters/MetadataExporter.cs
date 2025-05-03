@@ -29,7 +29,7 @@ class MetadataScene
         _config.TryAdd("Parts", parts);
         ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> instances = new();
         _config.TryAdd("Instances", instances);
-        ConcurrentDictionary<string, ConcurrentBag<string>> terrainDyemaps = new ConcurrentDictionary<string, ConcurrentBag<string>>();
+        ConcurrentDictionary<string, ConcurrentBag<string>> terrainDyemaps = new();
         _config.TryAdd("TerrainDyemaps", terrainDyemaps);
 
         if (ConfigSubsystem.Get().GetUnrealInteropEnabled())
@@ -55,42 +55,42 @@ class MetadataScene
                 _config["AssetsPath"] = (scene.DataType == DataExportType.Map ? args.OutputDirectory : Path.Join(args.OutputDirectory, scene.Name)).Replace("\\", "/");
         }
 
-        foreach (var mesh in scene.StaticMeshes)
+        foreach (ExporterMesh mesh in scene.StaticMeshes)
         {
-            foreach (var part in mesh.Parts)
+            foreach (ExporterPart part in mesh.Parts)
             {
                 AddPart(part, part.Name);
             }
         }
 
-        foreach (var mesh in scene.TerrainMeshes)
+        foreach (ExporterMesh mesh in scene.TerrainMeshes)
         {
-            foreach (var part in mesh.Parts)
+            foreach (ExporterPart part in mesh.Parts)
             {
                 AddPart(part, part.Name);
             }
         }
 
-        foreach (var meshInstanced in scene.StaticMeshInstances)
+        foreach (KeyValuePair<string, List<Transform>> meshInstanced in scene.StaticMeshInstances)
         {
             AddInstanced(meshInstanced.Key, meshInstanced.Value);
         }
-        foreach (var meshInstanced in scene.EntityInstances)
+        foreach (KeyValuePair<string, List<Transform>> meshInstanced in scene.EntityInstances)
         {
             AddInstanced(meshInstanced.Key, meshInstanced.Value);
         }
 
         foreach (ExporterEntity entityMesh in scene.Entities)
         {
-            foreach (var part in entityMesh.Mesh.Parts)
+            foreach (ExporterPart part in entityMesh.Mesh.Parts)
             {
                 AddPart(part, part.Name);
             }
         }
 
-        foreach (var dyemaps in scene.TerrainDyemaps)
+        foreach (KeyValuePair<string, List<FileHash>> dyemaps in scene.TerrainDyemaps)
         {
-            foreach (var dyemap in dyemaps.Value)
+            foreach (FileHash dyemap in dyemaps.Value)
                 AddTerrainDyemap(dyemaps.Key, dyemap);
         }
     }

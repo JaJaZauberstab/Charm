@@ -15,7 +15,7 @@ namespace Charm
     /// </summary>
     public partial class App : Application
     {
-        public static ApplicationVersion CurrentVersion = new ApplicationVersion("2.6.4");
+        public static ApplicationVersion CurrentVersion = new("2.6.4");
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -41,7 +41,7 @@ namespace Charm
                 }
             }
 
-            var args = e.Args;
+            string[] args = e.Args;
             if (args.Length > 0)
             {
                 uint apiHash = 0;
@@ -57,50 +57,7 @@ namespace Charm
                 }
                 if (apiHash != 0)
                 {
-                    return; // todo fix api
-                    // to check if we need to update caches
-                    // PackageHandler.Initialise();
-                    //
-                    // // Initialise FNV handler -- must be first bc my code is shit
-                    // FnvHandler.Initialise();
-                    //
-                    // // Get all hash64 -- must be before InvestmentHandler
-                    // TagHash64Handler.Initialise();
-                    //
-                    // // Initialise investment
-                    // InvestmentHandler.Initialise();
-                    //
-                    // // InvestmentHandler.DebugAllInvestmentEntities();
-                    // // InvestmentHandler.DebugAPIRequestAllInfo();
-                    // // InvestmentHandler.DebugAPIRenderMetadata();
-                    //
-                    // FbxHandler fbxHandler = new FbxHandler();
-                    //
-                    // TigerHash hash = new TigerHash(apiHash);
-                    //
-                    // var entities = InvestmentHandler.GetEntitiesFromHash(hash);
-                    // string meshName = hash;
-                    // string savePath = ConfigSubsystem.GetExportSavePath() + $"/API_{meshName}";
-                    // Directory.CreateDirectory(savePath);
-                    //
-                    // foreach (var entity in entities)
-                    // {
-                    //     var dynamicParts = entity.Load(ExportDetailLevel.MostDetailed);
-                    //     fbxHandler.AddEntityToScene(entity, dynamicParts, ExportDetailLevel.MostDetailed);
-                    //     entity.SaveMaterialsFromParts(savePath, dynamicParts, ConfigSubsystem.GetUnrealInteropEnabled() || ConfigSubsystem.GetS2ShaderExportEnabled());
-                    //     entity.SaveTexturePlates(savePath);
-                    // }
-                    //
-                    // fbxHandler.InfoHandler.SetMeshName(meshName);
-                    // if (ConfigSubsystem.GetUnrealInteropEnabled())
-                    // {
-                    //     fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigSubsystem.GetUnrealInteropPath());
-                    //     AutomatedExporter.SaveInteropUnrealPythonFile(savePath, meshName, AutomatedExporter.EImportType.Entity, ConfigSubsystem.GetOutputTextureFormat());
-                    //     //AutomatedExporter.SaveInteropBlenderPythonFile(savePath, meshName, AutomatedExporter.ImportType.Entity, ConfigSubsystem.GetOutputTextureFormat());
-                    // }
-                    // fbxHandler.ExportScene($"{savePath}/{meshName}.fbx");
-                    // Console.WriteLine($"[Charm] Saved all data to {savePath}.");
-                    // //Shutdown();
+                    return;
                 }
             }
         }
@@ -171,7 +128,7 @@ namespace Charm
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
-                DoubleAnimation fadeInAnimation = new DoubleAnimation();
+                DoubleAnimation fadeInAnimation = new();
                 fadeInAnimation.From = from;
                 fadeInAnimation.To = to;
                 fadeInAnimation.Duration = TimeSpan.FromSeconds(seconds);
@@ -184,12 +141,12 @@ namespace Charm
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
-                var child = VisualTreeHelper.GetChild(parent, i);
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
                 if (child is T t)
                 {
                     return t;
                 }
-                var result = FindVisualChild<T>(child);
+                T result = FindVisualChild<T>(child);
                 if (result != null)
                 {
                     return result;

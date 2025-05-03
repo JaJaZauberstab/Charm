@@ -24,15 +24,15 @@ public class MeshPart
     public uint IndexCount;
     public PrimitiveType PrimitiveType;
     public ELodCategory LodCategory;
-    public List<UIntVector3> Indices = new List<UIntVector3>();
-    public List<uint> VertexIndices = new List<uint>();
-    public List<Vector4> VertexPositions = new List<Vector4>();
-    public List<Vector2> VertexTexcoords0 = new List<Vector2>();
-    public List<Vector2> VertexTexcoords1 = new List<Vector2>();
-    public List<Vector4> VertexNormals = new List<Vector4>();
-    public List<Vector4> VertexTangents = new List<Vector4>();
-    public List<Vector4> VertexColours = new List<Vector4>();
-    public List<Vector4> VertexAO = new List<Vector4>();
+    public List<UIntVector3> Indices = new();
+    public List<uint> VertexIndices = new();
+    public List<Vector4> VertexPositions = new();
+    public List<Vector2> VertexTexcoords0 = new();
+    public List<Vector2> VertexTexcoords1 = new();
+    public List<Vector4> VertexNormals = new();
+    public List<Vector4> VertexTangents = new();
+    public List<Vector4> VertexColours = new();
+    public List<Vector4> VertexAO = new();
     public Dictionary<int, List<Vector4>> VertexExtraData = new(); //TEXCOORD#, extra data
     public Material? Material;
     public int GroupIndex = 0;
@@ -66,7 +66,7 @@ public class MeshPart
     uint indexOffset,
     TfxRenderStage renderStage = TfxRenderStage.GenerateGbuffer) where T : MeshPart, new()
     {
-        T part = new T();
+        T part = new();
 
         if (mat is not null)
         {
@@ -82,7 +82,7 @@ public class MeshPart
             (part as DynamicMeshPart).RenderStage = renderStage;
 
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in part.Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -114,7 +114,7 @@ public class MeshPart
     {
         for (int i = 0; i < VertexTexcoords0.Count; i++)
         {
-            var tx = VertexTexcoords0[i];
+            Vector2 tx = VertexTexcoords0[i];
             VertexTexcoords0[i] = new Vector2(
                 tx.X * scale.X + offset.X,
                 1 - (tx.Y * scale.Y + offset.Y)
@@ -135,7 +135,7 @@ public class StaticMesh : Tag<SStaticMesh>
 
     public void SaveMaterialsFromParts(ExporterScene scene, List<StaticPart> parts)
     {
-        foreach (var part in parts)
+        foreach (StaticPart part in parts)
         {
             if (part.Material == null)
             {
@@ -148,7 +148,7 @@ public class StaticMesh : Tag<SStaticMesh>
     public List<StaticPart> Load(ExportDetailLevel detailLevel)
     {
         List<StaticPart> decalParts = LoadDecals(detailLevel);
-        var mainParts = _tag.StaticData.Load(detailLevel, _tag);
+        List<StaticPart> mainParts = _tag.StaticData.Load(detailLevel, _tag);
         mainParts.AddRange(decalParts);
         return mainParts;
     }
@@ -160,27 +160,27 @@ public class StaticMesh : Tag<SStaticMesh>
 
     private List<StaticPart> LoadDecals(ExportDetailLevel detailLevel)
     {
-        List<StaticPart> parts = new List<StaticPart>();
-        foreach (var decalPartEntry in _tag.Decals)
+        List<StaticPart> parts = new();
+        foreach (SStaticMeshDecal decalPartEntry in _tag.Decals)
         {
             if (!Globals.Get().GetExportStages().Contains((TfxRenderStage)decalPartEntry.GetRenderStage()))
                 continue;
 
             if (detailLevel == ExportDetailLevel.MostDetailed)
             {
-                if (decalPartEntry.LODLevel != 1 && decalPartEntry.LODLevel != 2 && decalPartEntry.LODLevel != 10)
+                if (decalPartEntry.LODLevel is not 1 and not 2 and not 10)
                 {
                     continue;
                 }
             }
             else if (detailLevel == ExportDetailLevel.LeastDetailed)
             {
-                if (decalPartEntry.LODLevel == 1 || decalPartEntry.LODLevel == 2 || decalPartEntry.LODLevel == 10)
+                if (decalPartEntry.LODLevel is 1 or 2 or 10)
                 {
                     continue;
                 }
             }
-            StaticPart part = new StaticPart(decalPartEntry);
+            StaticPart part = new(decalPartEntry);
             part.GetDecalData(decalPartEntry, _tag);
             if (decalPartEntry.Material is not null)
             {

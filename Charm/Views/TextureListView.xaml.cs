@@ -23,7 +23,7 @@ namespace Charm;
 public partial class TextureListView : UserControl
 {
     private static MainWindow _mainWindow = null;
-    private ConfigSubsystem Config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+    private ConfigSubsystem Config = TigerInstance.GetSubsystem<ConfigSubsystem>();
     private APITooltip ToolTip;
 
     private ConcurrentBag<PackageItem> PackageItems;
@@ -53,7 +53,7 @@ public partial class TextureListView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -79,22 +79,22 @@ public partial class TextureListView : UserControl
 
     private void CreateFilterOptions()
     {
-        ComboBoxControl presets = new ComboBoxControl();
+        ComboBoxControl presets = new();
         presets.Text = "Presets";
         presets.FontSize = 14;
         presets.Combobox.ItemsSource = new List<ComboBoxItem>()
         {
-            new ComboBoxItem { Content = "None", Tag = "", FontSize = 10 },
-            new ComboBoxItem { Content = "(De)Buff Icons", Tag = "75x75", FontSize = 10 },
-            new ComboBoxItem { Content = "Items/Perks", Tag = "96x96", FontSize = 10 },
-            new ComboBoxItem { Content = "Ability Icons", Tag = "54x54", FontSize = 10 },
-            new ComboBoxItem { Content = "Weapon Icons", Tag = "137x76", FontSize = 10 },
-            new ComboBoxItem { Content = "Upsell Screen", Tag = "1920x830", FontSize = 10 },
-            new ComboBoxItem { Content = "Cubemap", Tag = "Cubemap", FontSize = 10 },
-            new ComboBoxItem { Content = "Volume", Tag = "Volume", FontSize = 10 },
-            new ComboBoxItem { Content = "1K", Tag = "1024", FontSize = 10 },
-            new ComboBoxItem { Content = "2K", Tag = "2048", FontSize = 10 },
-            new ComboBoxItem { Content = "4K", Tag = "4096", FontSize = 10 }
+            new() { Content = "None", Tag = "", FontSize = 10 },
+            new() { Content = "(De)Buff Icons", Tag = "75x75", FontSize = 10 },
+            new() { Content = "Items/Perks", Tag = "96x96", FontSize = 10 },
+            new() { Content = "Ability Icons", Tag = "54x54", FontSize = 10 },
+            new() { Content = "Weapon Icons", Tag = "137x76", FontSize = 10 },
+            new() { Content = "Upsell Screen", Tag = "1920x830", FontSize = 10 },
+            new() { Content = "Cubemap", Tag = "Cubemap", FontSize = 10 },
+            new() { Content = "Volume", Tag = "Volume", FontSize = 10 },
+            new() { Content = "1K", Tag = "1024", FontSize = 10 },
+            new() { Content = "2K", Tag = "2048", FontSize = 10 },
+            new() { Content = "4K", Tag = "4096", FontSize = 10 }
 
         };
         if (presets.Combobox.SelectedIndex == -1)
@@ -108,15 +108,15 @@ public partial class TextureListView : UserControl
 
         //----------------------------------------------
 
-        ComboBoxControl sortBy = new ComboBoxControl();
+        ComboBoxControl sortBy = new();
         sortBy.Text = "Sort By";
         sortBy.FontSize = 14;
         sortBy.Combobox.ItemsSource = new List<ComboBoxItem>()
         {
-            new ComboBoxItem { Content = "Hash ↓", Tag = 4 },
-            new ComboBoxItem { Content = "Hash ↑", Tag = 3 },
-            new ComboBoxItem { Content = "Size ↓", Tag = 2 },
-            new ComboBoxItem { Content = "Size ↑", Tag = 1 }
+            new() { Content = "Hash ↓", Tag = 4 },
+            new() { Content = "Hash ↑", Tag = 3 },
+            new() { Content = "Size ↓", Tag = 2 },
+            new() { Content = "Size ↑", Tag = 1 }
         };
         if (sortBy.Combobox.SelectedIndex == -1)
         {
@@ -136,9 +136,9 @@ public partial class TextureListView : UserControl
         {
             PackageItems = new();
             ConcurrentDictionary<int, ConcurrentHashSet<FileHash>> packageIds = new();
-            var hashes = PackageResourcer.Get().GetAllHashes<Texture>();
+            ConcurrentHashSet<FileHash> hashes = PackageResourcer.Get().GetAllHashes<Texture>();
 
-            foreach (var item in hashes)
+            foreach (FileHash item in hashes)
             {
                 if (packageIds.ContainsKey(item.PackageId))
                     packageIds[item.PackageId].Add(item);
@@ -151,7 +151,7 @@ public partial class TextureListView : UserControl
                 if (pkgId.Value.Count == 0)
                     return;
 
-                var name = string.Join('_', PackageResourcer.Get().GetPackage((ushort)pkgId.Key).GetPackageMetadata().Name.Split('_').Skip(1).SkipLast(1));
+                string name = string.Join('_', PackageResourcer.Get().GetPackage((ushort)pkgId.Key).GetPackageMetadata().Name.Split('_').Skip(1).SkipLast(1));
                 PackageItems.Add(new PackageItem
                 {
                     Name = name,
@@ -168,8 +168,7 @@ public partial class TextureListView : UserControl
 
     private async void PackageItem_Checked(object sender, RoutedEventArgs e)
     {
-        var btn = sender as ToggleButton;
-        if (btn is null)
+        if (sender is not ToggleButton btn)
             return;
 
         PackageItem item = ((ToggleButton)sender).DataContext as PackageItem;
@@ -185,7 +184,7 @@ public partial class TextureListView : UserControl
         {
             // Get the textures dimensions directly from the raw data but only if we're loading from a parent pkg.
             // Adds a slight delay to loading but allows searching by dimensions
-            var dims = Helpers.GetTextureDimensionsRaw(hash);
+            (ushort width, ushort height, ushort depth, ushort array_size) dims = Helpers.GetTextureDimensionsRaw(hash);
             string dims_str = $"{dims.width}x{dims.height}";
 
             Textures.Add(new()
@@ -210,7 +209,7 @@ public partial class TextureListView : UserControl
         if (PackageItems.IsEmpty)
             return;
 
-        var searchStr = SearchBox.Text;
+        string searchStr = SearchBox.Text;
 
         uint parsedHash = 0;
         bool isHash = Helpers.ParseHash(searchStr, out parsedHash);
@@ -220,7 +219,7 @@ public partial class TextureListView : UserControl
         {
             if (isHash && pkg.Hashes.Any(x => x.Hash32 == parsedHash)) // hacky but eh
             {
-                var hashes = pkg.Hashes.Where(x => x.Hash32 == parsedHash);
+                IEnumerable<FileHash> hashes = pkg.Hashes.Where(x => x.Hash32 == parsedHash);
                 displayItems.Add(new PackageItem
                 {
                     Name = pkg.Name,
@@ -246,7 +245,7 @@ public partial class TextureListView : UserControl
         if (Textures.IsEmpty)
             return;
 
-        var searchStr = TextureSearchBox.Text;
+        string searchStr = TextureSearchBox.Text;
 
         uint parsedHash = 0;
         bool isHash = Helpers.ParseHash(searchStr, out parsedHash);
@@ -331,14 +330,13 @@ public partial class TextureListView : UserControl
 
     private void Presets_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var preset = (string)((sender as ComboBox).SelectedItem as ComboBoxItem).Tag;
+        string preset = (string)((sender as ComboBox).SelectedItem as ComboBoxItem).Tag;
         TextureSearchBox.Text = preset;
     }
 
     private async void BulkExportButton_Click(object sender, RoutedEventArgs e)
     {
-        var items = TextureList.ItemsSource as IEnumerable<TextureItem>;
-        if (items is null || items.Count() == 0)
+        if (TextureList.ItemsSource is not IEnumerable<TextureItem> items || !items.Any())
             return;
 
         // Hopefully this works fine, and not just for me
@@ -369,7 +367,7 @@ public partial class TextureListView : UserControl
         if (_currentDisplayedTexture is null)
             return;
 
-        var hash = _currentDisplayedTexture;
+        FileHash hash = _currentDisplayedTexture;
         TextureControl.ExportCurrent();
 
         string pkgName = PackageResourcer.Get().GetPackage(hash.PackageId).GetPackageMetadata().Name.Split(".")[0];
@@ -467,11 +465,11 @@ public partial class TextureListView : UserControl
             if (Hash == null || TagImageSource != null)
                 return;
 
-            var texture = await FileResourcer.Get().GetFileAsync<Texture>(Hash, shouldCache: true);
+            Texture texture = await FileResourcer.Get().GetFileAsync<Texture>(Hash, shouldCache: true);
             if (texture == null)
                 return;
 
-            var image = await Task.Run(() => TextureLoader.LoadTexture(texture, 96, 96));
+            ImageSource image = await Task.Run(() => TextureLoader.LoadTexture(texture, 96, 96));
 
             if (image != null)
             {

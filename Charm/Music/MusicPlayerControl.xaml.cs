@@ -152,8 +152,8 @@ public partial class MusicPlayerControl : UserControl
 
     private void SetPosition(long bytePosition, bool bForce = false)
     {
-        var duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
-        var proportion = bytePosition / (duration.TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
+        TimeSpan duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
+        double proportion = bytePosition / (duration.TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
         _prevPositionValue = ProgressBar.Value;
         if (Math.Abs(ProgressBar.Value - proportion) * duration.TotalMilliseconds < 500 || bForce)
         {
@@ -233,7 +233,7 @@ public partial class MusicPlayerControl : UserControl
 
         Pause();
         _prevPositionValue = 0;
-        var duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
+        TimeSpan duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
         var s = sender as Slider;
         _waveProvider.Position = (long)(s.Value * duration.TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
         SetPosition(_waveProvider.Position);
@@ -247,7 +247,7 @@ public partial class MusicPlayerControl : UserControl
 
         Pause();
         _prevPositionValue = 0;
-        var duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
+        TimeSpan duration = _wem == null ? _sound.GetDuration() : _wem.GetDuration();
         var s = sender as Slider;
         _waveProvider.Position = (long)(s.Value * duration.TotalSeconds * _waveProvider.WaveFormat.AverageBytesPerSecond);
         SetPosition(_waveProvider.Position);

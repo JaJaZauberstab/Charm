@@ -15,9 +15,9 @@ public class RoadDecals : Tag<SMapRoadDecals>
 
     public void LoadIntoExporter(ExporterScene scene)
     {
-        foreach (var a in _tag.Entries)
+        foreach (D2Class_E3688080 a in _tag.Entries)
         {
-            Transform transform = new Transform
+            Transform transform = new()
             {
                 Position = a.Position.ToVec3(),
                 Quaternion = a.Rotation,
@@ -25,8 +25,8 @@ public class RoadDecals : Tag<SMapRoadDecals>
                 Scale = new(a.Position.W)
             };
 
-            var len = a.IndexCount * 3; //  Is actually face count
-            var part = MeshPart.CreateFromBuffers<DynamicMeshPart>(a.IndexBuffer, a.VertexBuffer, a.Material, PrimitiveType.Triangles, 9, (uint)len, a.IndexOffset);
+            int len = a.IndexCount * 3; //  Is actually face count
+            DynamicMeshPart part = MeshPart.CreateFromBuffers<DynamicMeshPart>(a.IndexBuffer, a.VertexBuffer, a.Material, PrimitiveType.Triangles, 9, (uint)len, a.IndexOffset);
             part.TransformPosition(a.Offset, a.Scale);
             part.TransformTexcoord(a.TexcoordOffset, a.TexcoordScale);
 

@@ -20,7 +20,7 @@ public partial class GeneralConfigView : UserControl
     public GeneralConfigView()
     {
         InitializeComponent();
-        _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        _config = TigerInstance.GetSubsystem<ConfigSubsystem>();
     }
 
     public void OnControlLoaded(object sender, RoutedEventArgs e)
@@ -38,7 +38,7 @@ public partial class GeneralConfigView : UserControl
         GeneralConfigPanel.Children.Clear();
 
         // Strategy
-        ConfigSettingComboControl cs = new ConfigSettingComboControl();
+        ConfigSettingComboControl cs = new();
         cs.SettingName = "Game Version";
         TigerStrategy csval = _config.GetCurrentStrategy();
         cs.SettingsCombobox.ItemsSource = MakeEnumComboBoxItems<TigerStrategy>(); //MakeEnumComboBoxItems((TigerStrategy val) => Strategy.HasConfiguration(val));
@@ -58,7 +58,7 @@ public partial class GeneralConfigView : UserControl
             _packagePathStrategy = _config.GetCurrentStrategy();
         }
 
-        ConfigSettingControl cpp = new ConfigSettingControl();
+        ConfigSettingControl cpp = new();
         // cpp.Settings.Children.Add(_packagePathStrategyComboBox);
         cpp.SettingName = "Packages Path";
         if (_packagePathStrategy == TigerStrategy.NONE)
@@ -68,7 +68,7 @@ public partial class GeneralConfigView : UserControl
         }
         else
         {
-            var packagesPath = _config.GetPackagesPath(_packagePathStrategy);
+            string packagesPath = _config.GetPackagesPath(_packagePathStrategy);
             cpp.SettingValue = packagesPath == "" ? "Not Set (Required)" : packagesPath;
             cpp.ChangeButton.Click += PackagesPath_OnClick;
         }
@@ -76,7 +76,7 @@ public partial class GeneralConfigView : UserControl
 
 
         // Save path
-        ConfigSettingControl csp = new ConfigSettingControl();
+        ConfigSettingControl csp = new();
         csp.SettingName = "Export Save Path";
         string exportSavePath = _config.GetExportSavePath();
         csp.SettingValue = exportSavePath == "" ? "Not Set (Required)" : exportSavePath;
@@ -84,7 +84,7 @@ public partial class GeneralConfigView : UserControl
         GeneralConfigPanel.Children.Add(csp);
 
         // Output texture format
-        ConfigSettingComboControl ctf = new ConfigSettingComboControl();
+        ConfigSettingComboControl ctf = new();
         ctf.SettingName = "Output Texture Format";
         ctf.SettingLabel = "(Use PNG or TGA in Blender)";
         TextureExportFormat etfval = _config.GetOutputTextureFormat();
@@ -99,19 +99,19 @@ public partial class GeneralConfigView : UserControl
 
         // Store all exported map assets in a single "Maps/Assets/" folder  
         // instead of "ExportPath/(MapName)/".
-        ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl cfe = new();
         cfe.SettingName = "Unified Map Asset Exports";
         cfe.SettingLabel = "Export all map assets to a single \"Maps/Assets/\" folder";
-        var eval = _config.GetSingleFolderMapAssetsEnabled();
+        bool eval = _config.GetSingleFolderMapAssetsEnabled();
         cfe.SettingValue = eval.ToString();
         cfe.ChangeButton.Click += SingleFolderMapAssetsEnabled_OnClick;
         MiscConfigPanel.Children.Add(cfe);
 
 
-        ConfigSettingToggleControl disBg = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl disBg = new();
         disBg.SettingName = "Animated Background";
         disBg.SettingLabel = "(Requires Restart)";
-        var bval = _config.GetAnimatedBackground();
+        bool bval = _config.GetAnimatedBackground();
         disBg.SettingValue = bval.ToString();
         disBg.ChangeButton.Click += AnimatedBackground_OnClick;
         MiscConfigPanel.Children.Add(disBg);
@@ -134,7 +134,7 @@ public partial class GeneralConfigView : UserControl
 
     private List<ComboBoxItem> MakeEnumComboBoxItems<T>(Func<T, bool> filterAction) where T : Enum
     {
-        List<ComboBoxItem> items = new List<ComboBoxItem>();
+        List<ComboBoxItem> items = new();
         foreach (T val in Enum.GetValues(typeof(T)))
         {
             if (filterAction(val))
@@ -269,7 +269,7 @@ public partial class GeneralConfigView : UserControl
 
     private void OutputTextureFormat_OnSelectionChanged(object sender, RoutedEventArgs e)
     {
-        var index = ((sender as ComboBox).DataContext as ConfigSettingComboControl).SettingsCombobox.SelectedIndex;
+        int index = ((sender as ComboBox).DataContext as ConfigSettingComboControl).SettingsCombobox.SelectedIndex;
         _config.SetOutputTextureFormat((TextureExportFormat)index);
         TextureExtractor.SetTextureFormat(_config.GetOutputTextureFormat());
         PopulateConfigPanel();

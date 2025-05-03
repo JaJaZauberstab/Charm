@@ -15,7 +15,7 @@ public class Decals : Tag<SMapDecals>
     {
         Exporter.Get().GetGlobalScene().AddToGlobalScene(this);
 
-        foreach (var instance in _tag.DecalResources.Enumerate(GetReader()))
+        foreach (D2Class_63698080 instance in _tag.DecalResources.Enumerate(GetReader()))
         {
             for (int i = instance.StartIndex; i < instance.StartIndex + instance.Count; i++)
             {
@@ -33,7 +33,7 @@ public class Decals : Tag<SMapDecals>
         List<Vector4> cube = GetCube();
         List<Transform> transforms = GetTransforms();
         int j = 0;
-        foreach (var transform in transforms)
+        foreach (Transform transform in transforms)
         {
             List<Vector4> transformedCubes = ApplyTransformsToCube(cube, transform);
             ExportCube($"{savePath}\\cube_{j}.obj", transformedCubes);
@@ -44,7 +44,7 @@ public class Decals : Tag<SMapDecals>
     public List<Transform> GetTransforms()
     {
         using TigerReader reader = _tag.Transforms.GetReferenceReader();
-        var stride = _tag.Transforms.TagData.Stride;
+        short stride = _tag.Transforms.TagData.Stride;
         List<Transform> transforms = new();
 
         for (int i = 0; i < reader.BaseStream.Length / stride; i++)
@@ -82,22 +82,22 @@ public class Decals : Tag<SMapDecals>
 
     public List<Vector4> ApplyTransformsToCube(List<Vector4> cubeVertices, Transform transform)
     {
-        List<Vector4> transformedVertices = new List<Vector4>();
+        List<Vector4> transformedVertices = new();
 
         Vector3 position = transform.Position;
         Vector4 rotation = transform.Quaternion;
         Vector3 scale = transform.Scale;
 
-        foreach (var vertex in cubeVertices)
+        foreach (Vector4 vertex in cubeVertices)
         {
             // Scale
-            Vector3 scaledVertex = new Vector3(vertex.X * scale.X, vertex.Y * scale.Y, vertex.Z * scale.Z);
+            Vector3 scaledVertex = new(vertex.X * scale.X, vertex.Y * scale.Y, vertex.Z * scale.Z);
 
             // Rotate
             Vector3 rotatedVertex = Vector3.Transform(scaledVertex, rotation);
 
             // Translate
-            Vector4 finalVertex = new Vector4(rotatedVertex.X + position.X, rotatedVertex.Y + position.Y, rotatedVertex.Z + position.Z, 1);
+            Vector4 finalVertex = new(rotatedVertex.X + position.X, rotatedVertex.Y + position.Y, rotatedVertex.Z + position.Z, 1);
 
             transformedVertices.Add(finalVertex);
         }
@@ -108,10 +108,10 @@ public class Decals : Tag<SMapDecals>
 
     public void ExportCube(string filePath, List<Vector4> cubePoints)
     {
-        using (StreamWriter writer = new StreamWriter(filePath))
+        using (StreamWriter writer = new(filePath))
         {
             // Write vertices
-            foreach (var point in cubePoints)
+            foreach (Vector4 point in cubePoints)
             {
                 writer.WriteLine($"v {point.X} {point.Y} {point.Z}");
             }

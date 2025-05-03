@@ -110,7 +110,7 @@ PS
         bool bInline = material.Pixel.GetBytecode().CanInlineBytecode() || material.RenderStage == TfxRenderStage.WaterReflection;
 
         //Pixel Shader
-        StringBuilder texSamples = new StringBuilder();
+        StringBuilder texSamples = new();
         hlsl = new StringReader(material.Pixel.Shader.Decompile($"ps{material.Pixel.Shader.Hash}"));
         vfx = new StringBuilder();
 
@@ -140,7 +140,7 @@ PS
             if (material.PSSamplers[i] is null)
                 continue;
 
-            var sampler = material.PSSamplers[i].Sampler;
+            DirectXSampler.D3D11_SAMPLER_DESC sampler = material.PSSamplers[i].Sampler;
             texSamples.AppendLine($"\tSamplerState s{i + 1}_s < Filter({sampler.Filter}); AddressU({sampler.AddressU}); AddressV({sampler.AddressV}); AddressW({sampler.AddressW}); ComparisonFunc({sampler.ComparisonFunc}); MaxAniso({sampler.MaxAnisotropy}); >;");
         }
 
@@ -200,7 +200,7 @@ PS
                 if (material.VSSamplers[i] is null)
                     continue;
 
-                var sampler = material.VSSamplers[i].Sampler;
+                DirectXSampler.D3D11_SAMPLER_DESC sampler = material.VSSamplers[i].Sampler;
                 texSamples.AppendLine($"\tSamplerState s{i + 1}_s < Filter({sampler.Filter}); AddressU({sampler.AddressU}); AddressV({sampler.AddressV}); AddressW({sampler.AddressW}); ComparisonFunc({sampler.ComparisonFunc}); MaxAniso({sampler.MaxAnisotropy}); >;");
             }
 
@@ -234,7 +234,7 @@ PS
     {
         bool bInline = (isVertexShader ? material.Vertex : material.Pixel).GetBytecode().CanInlineBytecode() || (isVertexShader && shaderType == ShaderType.WaterDecal);
         StringBuilder CBuffers = new();
-        foreach (var resource in Resources)
+        foreach (DXBCShaderResource resource in Resources)
         {
             switch (resource.ResourceType)
             {
@@ -272,9 +272,9 @@ PS
                                 break;
 
                             case 0:
-                                var cb0 = isVertexShader ? material.Vertex.GetCBuffer0() : material.Pixel.GetCBuffer0();
+                                List<Vector4> cb0 = isVertexShader ? material.Vertex.GetCBuffer0() : material.Pixel.GetCBuffer0();
                                 CBuffers.AppendLine($"\n\t\tfloat4 cb0[{cb0.Count}] =\n\t\t{{");
-                                foreach (var vec in cb0)
+                                foreach (Vector4 vec in cb0)
                                 {
                                     CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString().Replace("Infinity", "1.#INF")},");
                                 }
@@ -284,9 +284,9 @@ PS
                                 {
                                     // Dynamic expressions
                                     TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(isVertexShader ? material.Vertex.TFX_Bytecode : material.Pixel.TFX_Bytecode));
-                                    var bytecode_hlsl = bytecode.Evaluate(isVertexShader ? material.Vertex.TFX_Bytecode_Constants : material.Pixel.TFX_Bytecode_Constants, false, material);
+                                    Dictionary<int, string> bytecode_hlsl = bytecode.Evaluate(isVertexShader ? material.Vertex.TFX_Bytecode_Constants : material.Pixel.TFX_Bytecode_Constants, false, material);
 
-                                    foreach (var entry in bytecode_hlsl)
+                                    foreach (KeyValuePair<int, string> entry in bytecode_hlsl)
                                     {
                                         CBuffers.AppendLine($"\t\tcb0[{entry.Key}] = {entry.Value.Replace("dot4", "dot")};");
                                     }
@@ -329,7 +329,7 @@ PS
                                 data[21] = new Vector4(0.27266484, -0.31473818, -0.15603681, 1.0);
                                 data[36] = new Vector4(1.0, 0.0, 0.0, 0.0);
 
-                                foreach (var vec in data)
+                                foreach (Vector4 vec in data)
                                 {
                                     CBuffers.AppendLine($"\t\t\tfloat4{vec.ToString()},");
                                 }
@@ -367,7 +367,7 @@ PS
         else
             funcDef.AppendLine($"{AddRenderStates()}");
 
-        foreach (var e in Textures)
+        foreach (STextureTag e in Textures)
         {
             if (e.Texture != null)
             {
@@ -395,15 +395,15 @@ PS
         if (isVertexShader)
             return funcDef;
 
-        var opcodes = material.Pixel.GetBytecode();
+        TfxBytecodeInterpreter opcodes = material.Pixel.GetBytecode();
         bool bInline = opcodes.CanInlineBytecode() || material.RenderStage == TfxRenderStage.WaterReflection;
-        foreach ((int i, var op) in opcodes.Opcodes.Select((value, index) => (index, value)))
+        foreach ((int i, TfxData op) in opcodes.Opcodes.Select((value, index) => (index, value)))
         {
             switch (op.op)
             {
                 case TfxBytecode.PushExternInputFloat:
                     var externFloatData = (PushExternInputFloatData)op.data;
-                    var externIndex = externFloatData.element * 4;
+                    int externIndex = externFloatData.element * 4;
 
                     if (bInline)
                     {
@@ -426,8 +426,8 @@ PS
                             }
                         };
 
-                        if (attributeMap.TryGetValue(externFloatData.extern_, out var externDict) &&
-                            externDict.TryGetValue(externIndex, out var attributeString) &&
+                        if (attributeMap.TryGetValue(externFloatData.extern_, out Dictionary<int, string>? externDict) &&
+                            externDict.TryGetValue(externIndex, out string? attributeString) &&
                             !funcDef.ToString().Contains(attributeString))
                         {
                             funcDef.AppendLine(attributeString);
@@ -453,8 +453,8 @@ PS
                             }
                         };
 
-                        if (attributeMap.TryGetValue(externVec4Data.extern_, out var externDict) &&
-                            externDict.TryGetValue(externIndex, out var attributeString) &&
+                        if (attributeMap.TryGetValue(externVec4Data.extern_, out Dictionary<int, string>? externDict) &&
+                            externDict.TryGetValue(externIndex, out string? attributeString) &&
                             !funcDef.ToString().Contains(attributeString))
                         {
                             funcDef.AppendLine(attributeString);
@@ -464,8 +464,8 @@ PS
 
                 case TfxBytecode.PushExternInputTextureView:
                     var data = (PushExternInputTextureViewData)op.data;
-                    var slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
-                    var index = data.element * 8;
+                    int slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
+                    int index = data.element * 8;
                     ExternTextureSlots.Add(slot);
                     switch (data.extern_)
                     {
@@ -548,7 +548,7 @@ PS
 
                 case TfxBytecode.PushGlobalChannelVector when bInline:
                     var channelData = (PushGlobalChannelVectorData)op.data;
-                    var channelIndex = channelData.Index;
+                    byte channelIndex = channelData.Index;
 
                     if (!funcDef.ToString().Contains($"GlobalChannel{channelIndex}"))
                         funcDef.AppendLine($"\tfloat4 GlobalChannel{channelIndex} < Attribute(\"GlobalChannel{channelIndex}\"); Default4{GlobalChannels.Get(channelIndex).ToString()}; >;");
@@ -556,7 +556,7 @@ PS
             }
         }
 
-        foreach (var scope in Scopes) // These should be compilied out if not used
+        foreach (TfxScope scope in Scopes) // These should be compilied out if not used
         {
             switch (scope)
             {
@@ -599,7 +599,7 @@ PS
             else
                 funcDef.AppendLine(AddDecalScope(isVertexShader));
 
-            foreach (var i in Inputs)
+            foreach (DXBCIOSignature i in Inputs)
             {
                 switch (i.Semantic)
                 {
@@ -694,7 +694,7 @@ PS
             }
 
 
-            foreach (var i in Inputs)
+            foreach (DXBCIOSignature i in Inputs)
             {
                 switch (i.GetMaskType())
                 {
@@ -822,13 +822,13 @@ PS
                 }
                 else if (line.Contains("Sample") || line.Contains("Load"))
                 {
-                    var type = line.Contains("Sample") ? "Sample" : "Load";
-                    var equal = line.Split("=")[0];
-                    var equal_post = line.Split("=")[1];
-                    var equal_tex_post = equal_post.Substring(equal_post.IndexOf(".") + 1);
-                    var texIndex = Int32.Parse(line.Split($".{type}")[0].Split("t")[1]);
-                    var sampleUv = type == "Sample" ? line.Split(", ")[1].Split(").")[0] : line.Split("(")[1].Split(").")[0];
-                    var dotAfter = line.Split(").")[1];
+                    string type = line.Contains("Sample") ? "Sample" : "Load";
+                    string equal = line.Split("=")[0];
+                    string equal_post = line.Split("=")[1];
+                    string equal_tex_post = equal_post.Substring(equal_post.IndexOf(".") + 1);
+                    int texIndex = Int32.Parse(line.Split($".{type}")[0].Split("t")[1]);
+                    string sampleUv = type == "Sample" ? line.Split(", ")[1].Split(").")[0] : line.Split("(")[1].Split(").")[0];
+                    string dotAfter = line.Split(").")[1];
 
                     if (!bInline && sampleUv.Contains("cb")) //Rare case where a cbuffer value is used as a texcoord
                     {
@@ -856,9 +856,9 @@ PS
 
                     if ((!Textures.Exists(texture => texture.TextureIndex == texIndex && texture.Texture is not null))) // Some kind of buffer texture or not defined in the material
                     {
-                        var defaultString = $"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}";
+                        string defaultString = $"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}";
                         // Textures provided through Scopes (static texture slots)
-                        foreach (var scope in Scopes)
+                        foreach (TfxScope scope in Scopes)
                         {
                             if (ExternTextureSlots.Contains(texIndex))
                                 continue;
@@ -924,18 +924,18 @@ PS
                         }
 
                         // Textures provided through Externs (dynamic texture slots)
-                        var opcodes = (isVertexShader ? material.Vertex : material.Pixel).GetBytecode();
-                        foreach ((int i, var op) in opcodes.Opcodes.Select((value, index) => (index, value)))
+                        TfxBytecodeInterpreter opcodes = (isVertexShader ? material.Vertex : material.Pixel).GetBytecode();
+                        foreach ((int i, TfxData op) in opcodes.Opcodes.Select((value, index) => (index, value)))
                         {
                             if (op.op != TfxBytecode.PushExternInputTextureView)
                                 continue;
 
                             var data = (PushExternInputTextureViewData)op.data;
-                            var slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
+                            int slot = ((SetShaderTextureData)opcodes.Opcodes[i + 1].data).value & 0x1F;
                             if (texIndex != slot)
                                 continue;
 
-                            var index = data.element * 8;
+                            int index = data.element * 8;
                             switch (data.extern_)
                             {
                                 //funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.{equal_tex_post}");
@@ -1031,10 +1031,10 @@ PS
                 }
                 else if (line.Contains("CalculateLevelOfDetail"))
                 {
-                    var equal = line.Split("=")[0];
-                    var texIndex = Int32.Parse(line.Split(".CalculateLevelOfDetail")[0].Split("t")[1]);
-                    var sampleIndex = Int32.Parse(line.Split("(s")[1].Split("_s,")[0]);
-                    var sampleUv = line.Split(", ")[1].Split(")")[0];
+                    string equal = line.Split("=")[0];
+                    int texIndex = Int32.Parse(line.Split(".CalculateLevelOfDetail")[0].Split("t")[1]);
+                    int sampleIndex = Int32.Parse(line.Split("(s")[1].Split("_s,")[0]);
+                    string sampleUv = line.Split(", ")[1].Split(")")[0];
 
                     funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.CalculateLevelOfDetail(s{sampleIndex}_s, {sampleUv});");
                 }
@@ -1057,11 +1057,11 @@ PS
                 }
                 else if (line.Contains("sincos")) // 3dmigoto bug?
                 {
-                    var args = line.Split('(', ')')[1].Split(',').Select(a => a.Trim()).ToArray();
+                    string[] args = line.Split('(', ')')[1].Split(',').Select(a => a.Trim()).ToArray();
 
-                    var v0 = args[0];
-                    var v1 = args[1];
-                    var v2 = args[2];
+                    string v0 = args[0];
+                    string v1 = args[1];
+                    string v2 = args[2];
 
                     funcDef.AppendLine($"\t\tsincos({v0}, {v2}, {v1});");
                     funcDef.AppendLine($"\t\t{v2} = -{v2};");
@@ -1079,7 +1079,7 @@ PS
 
     private StringBuilder AddOutput(bool isVertexShader = false)
     {
-        StringBuilder output = new StringBuilder();
+        StringBuilder output = new();
 
         if (isVertexShader)
         {
@@ -1169,7 +1169,7 @@ PS
 
     private StringBuilder AddPixelInput()
     {
-        StringBuilder pixelInput = new StringBuilder();
+        StringBuilder pixelInput = new();
         switch (shaderType)
         {
             case ShaderType.Decal:
@@ -1217,7 +1217,7 @@ PS
 
     private string AddViewScope(bool isVertexShader = false)
     {
-        StringBuilder viewScope = new StringBuilder();
+        StringBuilder viewScope = new();
         viewScope.AppendLine("\t\tfloat3 vCameraPos = g_vCameraPositionWs/TO_INCHES;");
         viewScope.AppendLine("\t\tfloat4x4 mWorldToProj = transpose(g_matWorldToProjection);");
         viewScope.AppendLine($"\t\tfloat4 cb12[{(isVertexShader ? "16" : "15")}] = {{");
@@ -1253,7 +1253,7 @@ PS
 
     private string AddCB1()
     {
-        StringBuilder cb1 = new StringBuilder();
+        StringBuilder cb1 = new();
         cb1.AppendLine($"\t\tfloat3x4 matObjectToWorld = CalculateInstancingObjectToWorldMatrix( i );");
         cb1.AppendLine($"\t\tmatObjectToWorld[0].w /= TO_INCHES;");
         cb1.AppendLine($"\t\tmatObjectToWorld[1].w /= TO_INCHES;");
@@ -1290,7 +1290,7 @@ PS
 
     private string AddDecalScope(bool isVertexShader = false)
     {
-        StringBuilder decalScope = new StringBuilder();
+        StringBuilder decalScope = new();
         decalScope.AppendLine($"\t\tfloat4 cb9[{(isVertexShader ? "6" : "5")}] = {{");
 
         decalScope.AppendLine($"\t\t\tg_matViewToProjection,"); //0-3 Unk View->_0x240
@@ -1314,7 +1314,7 @@ PS
 
     private string AddTransparentScope(bool isVertexShader = false)
     {
-        StringBuilder transScope = new StringBuilder();
+        StringBuilder transScope = new();
         transScope.AppendLine($"\t\tfloat4 cb2[6] = {{");
         //transScope.AppendLine($"\t\t\tfloat4(0,100,0,0),"); // Depth constants
         transScope.AppendLine($"\t\t\tfloat4((1 / g_flFarPlane)*TO_INCHES, ((g_flFarPlane - g_flNearPlane) / (g_flFarPlane * g_flNearPlane))*TO_INCHES,0,0),");
@@ -1330,7 +1330,7 @@ PS
 
     private string AddFrameScope()
     {
-        StringBuilder frameScope = new StringBuilder();
+        StringBuilder frameScope = new();
         frameScope.AppendLine($"\n\t\tfloat4 cb13[8] =\n\t\t{{ // Frame");
 
         frameScope.AppendLine($"\t\t\tfloat4(CurrentTime, CurrentTime, 0.05, 0.016),");
@@ -1348,7 +1348,7 @@ PS
 
     private void AddTPToProj()
     {
-        StringBuilder tp = new StringBuilder();
+        StringBuilder tp = new();
         tp.AppendLine("\tfloat4x4 TargetPixelToProjective(float2 size)\n\t{");
         tp.AppendLine("\t\treturn float4x4(");
         tp.AppendLine("\t\t\t2.0f / size.x,  0.0f,          0.0f, \t0.0f,");
@@ -1365,7 +1365,7 @@ PS
         StringBuilder renderStates = new();
         if (Material.RenderStates.BlendState() != -1)
         {
-            var blendState = RenderStates.BlendStates[Material.RenderStates.BlendState()];
+            RenderStates.BungieBlendDesc blendState = RenderStates.BlendStates[Material.RenderStates.BlendState()];
             renderStates.AppendLine($"\tRenderState(AlphaToCoverageEnable, {blendState.AlphaToCoverageEnable.ToString().ToLower()})");
             renderStates.AppendLine($"\tRenderState(IndependentBlendEnable, {blendState.IndependentBlendEnable.ToString().ToLower()})");
             renderStates.AppendLine($"\tRenderState(BlendEnable, {blendState.BlendDesc.IsBlendEnabled.ToString().ToLower()})");
@@ -1379,7 +1379,7 @@ PS
 
         if (Material.RenderStates.RasterizerState() != -1)
         {
-            var rasState = RenderStates.RasterizerStates[Material.RenderStates.RasterizerState()];
+            RenderStates.BungieRasterizerDesc rasState = RenderStates.RasterizerStates[Material.RenderStates.RasterizerState()];
             renderStates.AppendLine($"\tRenderState(FillMode, {rasState.FillMode.ToString().ToUpper()})");
             renderStates.AppendLine($"\tRenderState(CullMode, {rasState.CullMode.ToString().ToUpper()})");
             renderStates.AppendLine($"\tRenderState(DepthClipEnable, {rasState.DepthClipEnable.ToString().ToLower()})\n");
@@ -1387,7 +1387,7 @@ PS
 
         if (Material.RenderStates.DepthBiasState() != -1)
         {
-            var depthState = RenderStates.DepthBiasStates[Material.RenderStates.DepthBiasState()];
+            RenderStates.BungieDepthBiasDesc depthState = RenderStates.DepthBiasStates[Material.RenderStates.DepthBiasState()];
             renderStates.AppendLine($"\tRenderState(DepthBias, {depthState.DepthBias.ToString("F1")})");
             renderStates.AppendLine($"\tRenderState(SlopeScaleDepthBias, {depthState.SlopeScaledDepthBias.ToString("F1")})");
             renderStates.AppendLine($"\tRenderState(DepthBiasClamp, {depthState.DepthBiasClamp.ToString("F1")})\n");
@@ -1395,7 +1395,7 @@ PS
 
         if (Material.RenderStates.DepthStencilState() != -1)
         {
-            var depthStencilState = RenderStates.DepthStencilStates[Material.RenderStates.DepthStencilState()];
+            RenderStates.BungieDepthStencilDesc depthStencilState = RenderStates.DepthStencilStates[Material.RenderStates.DepthStencilState()];
             renderStates.AppendLine($"\tRenderState(DepthEnable, {depthStencilState.Depth.Enable.ToString().ToLower()})");
             renderStates.AppendLine($"\tRenderState(DepthWriteEnable, {(depthStencilState.Depth.WriteMask == 0 ? "false" : "true")})");
             renderStates.AppendLine($"\tRenderState(DepthFunc, {CompareFuncString(depthStencilState.Depth.Func)})\n");
@@ -1422,111 +1422,70 @@ PS
 
     private string StencilOpString(StencilOperation op)
     {
-        switch (op)
+        return op switch
         {
-            case (StencilOperation.Keep):
-                return "KEEP";
-            case (StencilOperation.Zero):
-                return "ZERO";
-            case (StencilOperation.Replace):
-                return "REPLACE";
-            case (StencilOperation.IncrementAndClamp):
-                return "INCR_SAT";
-            case (StencilOperation.DecrementAndClamp):
-                return "DECR_SAT";
-            case (StencilOperation.Invert):
-                return "INVERT";
-            case (StencilOperation.Increment):
-                return "INCR";
-            case (StencilOperation.Decrement):
-                return "DECR";
-            default:
-                return "KEEP";
-        }
+            (StencilOperation.Keep) => "KEEP",
+            (StencilOperation.Zero) => "ZERO",
+            (StencilOperation.Replace) => "REPLACE",
+            (StencilOperation.IncrementAndClamp) => "INCR_SAT",
+            (StencilOperation.DecrementAndClamp) => "DECR_SAT",
+            (StencilOperation.Invert) => "INVERT",
+            (StencilOperation.Increment) => "INCR",
+            (StencilOperation.Decrement) => "DECR",
+            _ => "KEEP",
+        };
     }
 
     private string CompareFuncString(Comparison comparison)
     {
-        switch (comparison)
+        return comparison switch
         {
-            case (Comparison.Never):
-                return "NEVER";
-            case (Comparison.Less):
-                return "LESS";
-            case (Comparison.Equal):
-                return "EQUAL";
-            case (Comparison.LessEqual):
-                return "LESS_EQUAL";
-            case (Comparison.Greater):
-                return "GREATER";
-            case (Comparison.GreaterEqual):
-                return "GREATER_EQUAL";
-            case (Comparison.NotEqual):
-                return "NOT_EQUAL";
-            case (Comparison.Always):
-                return "ALWAYS";
-            default:
-                return "ALWAYS";
-        }
+            (Comparison.Never) => "NEVER",
+            (Comparison.Less) => "LESS",
+            (Comparison.Equal) => "EQUAL",
+            (Comparison.LessEqual) => "LESS_EQUAL",
+            (Comparison.Greater) => "GREATER",
+            (Comparison.GreaterEqual) => "GREATER_EQUAL",
+            (Comparison.NotEqual) => "NOT_EQUAL",
+            (Comparison.Always) => "ALWAYS",
+            _ => "ALWAYS",
+        };
     }
 
     private string BlendOptionString(BlendOption blendOption)
     {
-        switch (blendOption)
+        return blendOption switch
         {
-            case (BlendOption.Zero):
-                return "ZERO";
-            case (BlendOption.One):
-                return "ONE";
-            case (BlendOption.SourceColor):
-                return "SRC_COLOR";
-            case (BlendOption.InverseSourceColor):
-                return "INV_SRC_COLOR";
-            case (BlendOption.SourceAlpha):
-                return "SRC_ALPHA";
-            case (BlendOption.InverseSourceAlpha):
-                return "INV_SRC_ALPHA";
-            case (BlendOption.DestinationAlpha):
-                return "DEST_ALPHA";
-            case (BlendOption.InverseDestinationAlpha):
-                return "INV_DEST_ALPHA";
-            case (BlendOption.DestinationColor):
-                return "DEST_COLOR";
-            case (BlendOption.InverseDestinationColor):
-                return "INV_DEST_COLOR";
-            case (BlendOption.SourceAlphaSaturate):
-                return "SRC_ALPHA_SAT";
-            case (BlendOption.BlendFactor):
-                return "BLEND_FACTOR";
-            case (BlendOption.SecondarySourceColor):
-                return "SRC1_COLOR";
-            case (BlendOption.InverseSecondarySourceColor):
-                return "INV_SRC1_COLOR";
-            case (BlendOption.SecondarySourceAlpha):
-                return "SRC1_ALPHA";
-            case (BlendOption.InverseSecondarySourceAlpha):
-                return "INV_SRC1_ALPHA";
-            default:
-                return "ONE";
-        }
+            (BlendOption.Zero) => "ZERO",
+            (BlendOption.One) => "ONE",
+            (BlendOption.SourceColor) => "SRC_COLOR",
+            (BlendOption.InverseSourceColor) => "INV_SRC_COLOR",
+            (BlendOption.SourceAlpha) => "SRC_ALPHA",
+            (BlendOption.InverseSourceAlpha) => "INV_SRC_ALPHA",
+            (BlendOption.DestinationAlpha) => "DEST_ALPHA",
+            (BlendOption.InverseDestinationAlpha) => "INV_DEST_ALPHA",
+            (BlendOption.DestinationColor) => "DEST_COLOR",
+            (BlendOption.InverseDestinationColor) => "INV_DEST_COLOR",
+            (BlendOption.SourceAlphaSaturate) => "SRC_ALPHA_SAT",
+            (BlendOption.BlendFactor) => "BLEND_FACTOR",
+            (BlendOption.SecondarySourceColor) => "SRC1_COLOR",
+            (BlendOption.InverseSecondarySourceColor) => "INV_SRC1_COLOR",
+            (BlendOption.SecondarySourceAlpha) => "SRC1_ALPHA",
+            (BlendOption.InverseSecondarySourceAlpha) => "INV_SRC1_ALPHA",
+            _ => "ONE",
+        };
     }
 
     private string BlendOpString(BlendOperation blendOp)
     {
-        switch (blendOp)
+        return blendOp switch
         {
-            case (BlendOperation.Add):
-                return "ADD";
-            case (BlendOperation.Subtract):
-                return "SUBTRACT";
-            case (BlendOperation.ReverseSubtract):
-                return "REV_SUBTRACT";
-            case (BlendOperation.Minimum):
-                return "MIN";
-            case (BlendOperation.Maximum):
-                return "MAX";
-            default:
-                return "ADD";
-        }
+            (BlendOperation.Add) => "ADD",
+            (BlendOperation.Subtract) => "SUBTRACT",
+            (BlendOperation.ReverseSubtract) => "REV_SUBTRACT",
+            (BlendOperation.Minimum) => "MIN",
+            (BlendOperation.Maximum) => "MAX",
+            _ => "ADD",
+        };
     }
 }

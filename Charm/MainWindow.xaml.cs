@@ -74,7 +74,7 @@ public partial class MainWindow
 
         // Check if packages path exists in config
         // ConfigSubsystem.CheckPackagesPathIsValid();
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         if (config.GetPackagesPath(Strategy.CurrentStrategy) != "" && config.GetExportSavePath() != "")
         {
             MainMenuTab.Visibility = Visibility.Visible;
@@ -166,18 +166,18 @@ public partial class MainWindow
         return strategistSingletons.Count;
     }
 
-    private static IEnumerable<Type> SortByInitializationOrder(IEnumerable<Type> types)
+    private static List<Type> SortByInitializationOrder(IEnumerable<Type> types)
     {
         var dependencyMap = new Dictionary<Type, List<Type>>();
         var dependencyCount = new Dictionary<Type, int>();
 
         // Build dependency map and count dependencies
-        foreach (var type in types)
+        foreach (Type type in types)
         {
-            var attributes = type.GenericTypeArguments[0].GetCustomAttributes(typeof(InitializeAfterAttribute), true);
+            object[] attributes = type.GenericTypeArguments[0].GetCustomAttributes(typeof(InitializeAfterAttribute), true);
             foreach (InitializeAfterAttribute attribute in attributes)
             {
-                var dependentType = attribute.TypeToInitializeAfter.GetNonGenericParent(
+                Type? dependentType = attribute.TypeToInitializeAfter.GetNonGenericParent(
                     typeof(Strategy.StrategistSingleton<>));
                 if (!dependencyMap.ContainsKey(dependentType))
                 {
@@ -194,12 +194,12 @@ public partial class MainWindow
         var queue = new Queue<Type>(dependencyMap.Keys.Where(k => dependencyCount[k] == 0));
         while (queue.Count > 0)
         {
-            var type = queue.Dequeue();
+            Type type = queue.Dequeue();
             sortedTypes.Add(type);
 
             if (dependencyMap.ContainsKey(type))
             {
-                foreach (var dependentType in dependencyMap[type])
+                foreach (Type dependentType in dependencyMap[type])
                 {
                     dependencyCount[dependentType]--;
                     if (dependencyCount[dependentType] == 0)
@@ -222,8 +222,8 @@ public partial class MainWindow
     {
         Arithmic.Log.Info("Initialising Charm subsystems");
         string[] args = Environment.GetCommandLineArgs();
-        CharmInstance.Args = new CharmArgs(args);
-        CharmInstance.InitialiseSubsystems();
+        TigerInstance.Args = new TigerArgs(args);
+        TigerInstance.InitialiseSubsystems();
         Arithmic.Log.Info("Initialised Charm subsystems");
 
     }
@@ -232,8 +232,8 @@ public partial class MainWindow
     {
         try
         {
-            ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
-            var path = config.GetPackagesPath(Strategy.CurrentStrategy).Split("packages")[0] + "destiny2.exe";
+            ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
+            string path = config.GetPackagesPath(Strategy.CurrentStrategy).Split("packages")[0] + "destiny2.exe";
             var versionInfo = FileVersionInfo.GetVersionInfo(path);
             string version = versionInfo.FileVersion;
             GameInfo = versionInfo;
@@ -252,9 +252,9 @@ public partial class MainWindow
         versionChecker.LatestVersionName = "version";
         try
         {
-            var latestVersion = await versionChecker.GetLatestVersion();
-            var latestID = int.Parse(latestVersion.Id.Replace(".", ""));
-            var currentID = int.Parse(App.CurrentVersion.Id.Replace(".", ""));
+            ApplicationVersion latestVersion = await versionChecker.GetLatestVersion();
+            int latestID = int.Parse(latestVersion.Id.Replace(".", ""));
+            int currentID = int.Parse(App.CurrentVersion.Id.Replace(".", ""));
 
             bool upToDate = currentID >= latestID;
             if (!upToDate)
@@ -304,7 +304,7 @@ public partial class MainWindow
     private async void InitialiseHandlers()
     {
         // Set texture format
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         TextureExtractor.SetTextureFormat(config.GetOutputTextureFormat());
     }
 
@@ -362,7 +362,7 @@ public partial class MainWindow
         name = name.ToUpper();
         name = name.Replace('_', '.');
         // Check if the name already exists, if so set newest tab to that
-        var items = MainTabControl.Items;
+        ItemCollection items = MainTabControl.Items;
         foreach (TabItem item in items)
         {
             if (name == (string)item.Header)
@@ -381,7 +381,7 @@ public partial class MainWindow
         name = name.ToUpper();
         name = name.Replace('_', '.');
         // Check if the name already exists, if so set newest tab to that
-        var items = MainTabControl.Items;
+        ItemCollection items = MainTabControl.Items;
         foreach (TabItem item in items)
         {
             if (name == (string)item.Header)
@@ -432,7 +432,7 @@ public partial class MainWindow
         {
             var tab = (TabItem)MainTabControl.Items[MainTabControl.SelectedIndex];
             dynamic content = tab.Content;
-            if (content is APIItemView || content is CategoryView)
+            if (content is APIItemView or CategoryView)
                 MainTabControl.Items.Remove(tab);
         }
         else if (e.Key == Key.W

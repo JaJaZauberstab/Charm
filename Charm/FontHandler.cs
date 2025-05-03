@@ -43,7 +43,7 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
 
         //0x80a00000 represents 0100 package
         //var vals = PackageHandler.GetAllEntriesOfReference(0x100, 0x80803c0f);
-        var vals = PackageResourcer.Get().GetAllHashes<D2Class_0F3C8080>();
+        ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<D2Class_0F3C8080>();
         Tag<D2Class_0F3C8080> fontsContainer = FileResourcer.Get().GetSchemaTag<D2Class_0F3C8080>(vals.First());
         // Check if the font exists in the Fonts/ folder, if not extract it
         if (!Directory.Exists("fonts/"))
@@ -52,13 +52,13 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
         }
         Parallel.ForEach(fontsContainer.TagData.FontParents, f =>
         {
-            var ff = f.FontParent.TagData.FontFile;
-            var fontName = f.FontParent.TagData.FontName.Value;
+            TigerFile ff = f.FontParent.TagData.FontFile;
+            string? fontName = f.FontParent.TagData.FontName.Value;
             if (!File.Exists($"fonts/{fontName}"))
             {
                 using (TigerReader reader = ff.GetReader())
                 {
-                    var bytes = reader.ReadBytes((int)f.FontParent.TagData.FontFileSize);
+                    byte[] bytes = reader.ReadBytes((int)f.FontParent.TagData.FontFileSize);
                     File.WriteAllBytes($"fonts/{fontName}", bytes);
                 }
             }
@@ -70,17 +70,17 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
         if (!Directory.Exists(@"fonts"))
             return false;
 
-        foreach (var s in Directory.GetFiles(@"fonts/"))
+        foreach (string s in Directory.GetFiles(@"fonts/"))
         {
-            var otfPath = Environment.CurrentDirectory + "/" + s;
+            string otfPath = Environment.CurrentDirectory + "/" + s;
             FontInfo fontInfo = GetFontInfo(otfPath);
-            FontFamily font = new FontFamily(otfPath + $"#{fontInfo.Family}");
+            FontFamily font = new(otfPath + $"#{fontInfo.Family}");
             Fonts.TryAdd(fontInfo, font);
 
             // Adds the Destiny Keys fonts as the fallback font for Haas Grot
             if (fontInfo.Family.Contains("Haas Grot Text"))
             {
-                FontFamily fontKeys = new FontFamily(otfPath + $"#{fontInfo.Family}, " +
+                FontFamily fontKeys = new(otfPath + $"#{fontInfo.Family}, " +
                     $"{Environment.CurrentDirectory + $"/fonts/destiny_symbols_common.otf#Destiny Keys"}, " +
                     $"{Environment.CurrentDirectory + $"/fonts/destiny_symbols_pc.otf#Destiny Keys"}");
 
@@ -93,7 +93,7 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
 
     private void RegisterFonts()
     {
-        foreach (var (key, value) in Fonts)
+        foreach ((FontInfo key, FontFamily value) in Fonts)
         {
             if (!Application.Current.Resources.Contains($"{key.Family} {key.Subfamily}"))
                 Application.Current.Resources.Add($"{key.Family} {key.Subfamily}", value);
@@ -152,15 +152,15 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
             val = br.ReadBytes(4);
         }
 
-        var nameTableRecord = br.ReadType<OtfNameTableRecord>(true);
+        OtfNameTableRecord nameTableRecord = br.ReadType<OtfNameTableRecord>(true);
         br.BaseStream.Seek(nameTableRecord.Offset, SeekOrigin.Begin);
 
-        var namingTableVer0 = br.ReadType<OtfNamingTableVersion0>(true);
+        OtfNamingTableVersion0 namingTableVer0 = br.ReadType<OtfNamingTableVersion0>(true);
 
         List<OtfNameRecord> nameRecords = new(namingTableVer0.Count);
         for (int i = 0; i < namingTableVer0.Count; i++)
         {
-            var nameRecord = br.ReadType<OtfNameRecord>(true);
+            OtfNameRecord nameRecord = br.ReadType<OtfNameRecord>(true);
             nameRecords.Add(nameRecord);
         }
 
@@ -169,7 +169,7 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
         {
             familyRecord = nameRecords.First(x => x.NameId == 16);
         }
-        catch (InvalidOperationException e)
+        catch (InvalidOperationException)
         {
             familyRecord = nameRecords.First(x => x.NameId == 1);
         }
@@ -181,7 +181,7 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
         {
             subfamilyRecord = nameRecords.FirstOrDefault(x => x.NameId == 17);
         }
-        catch (InvalidOperationException e)
+        catch (InvalidOperationException)
         {
             subfamilyRecord = nameRecords.FirstOrDefault(x => x.NameId == 2);
         }
@@ -202,7 +202,7 @@ public class FontHandler : Strategy.StrategistSingleton<FontHandler>
 
     private static string ReadString(BinaryReaderBE br, int length)
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         for (int i = 0; i < length; i++)
         {
             char c = br.ReadChar();
@@ -257,28 +257,28 @@ public class BinaryReaderBE : BinaryReader
 
     public override int ReadInt32()
     {
-        var data = base.ReadBytes(4);
+        byte[] data = base.ReadBytes(4);
         Array.Reverse(data);
         return BitConverter.ToInt32(data, 0);
     }
 
     public override Int16 ReadInt16()
     {
-        var data = base.ReadBytes(2);
+        byte[] data = base.ReadBytes(2);
         Array.Reverse(data);
         return BitConverter.ToInt16(data, 0);
     }
 
     public override Int64 ReadInt64()
     {
-        var data = base.ReadBytes(8);
+        byte[] data = base.ReadBytes(8);
         Array.Reverse(data);
         return BitConverter.ToInt64(data, 0);
     }
 
     public override UInt32 ReadUInt32()
     {
-        var data = base.ReadBytes(4);
+        byte[] data = base.ReadBytes(4);
         Array.Reverse(data);
         return BitConverter.ToUInt32(data, 0);
     }
@@ -297,7 +297,7 @@ public class BinaryReaderBE : BinaryReader
 
     public dynamic ReadType(Type type, bool BE)
     {
-        var buffer = new byte[Marshal.SizeOf(type)];
+        byte[] buffer = new byte[Marshal.SizeOf(type)];
         Read(buffer, 0, buffer.Length);
         if (BE)
             Array.Reverse(buffer);

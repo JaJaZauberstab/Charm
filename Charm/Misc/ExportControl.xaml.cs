@@ -51,7 +51,7 @@ public partial class ExportControl : UserControl
         var values = Enum.GetValues(typeof(ExportTypeFlag)).Cast<ExportTypeFlag>().ToList();
         for (int i = 0; i < values.Count; i++)
         {
-            var value = values[i];
+            ExportTypeFlag value = values[i];
             if (((int)value & exportTypeFlags) == (int)value)
             {
                 string name = EnumExtensions.GetEnumDescription(value);

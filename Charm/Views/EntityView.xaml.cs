@@ -30,14 +30,13 @@ public partial class EntityView : UserControl
 
         Entity entity = FileResourcer.Get().GetFile<Entity>(entityHash);
 
-        List<Entity> entities = new List<Entity> { entity };
+        List<Entity> entities = new() { entity };
         entities.AddRange(entity.GetEntityChildren());
 
-        if (MVM is null)
-            MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
+        MVM ??= (MainViewModel)ModelView.UCModelView.Resources["MVM"];
 
         MVM.Clear();
-        var displayParts = MakeEntityDisplayParts(entities, ModelView.GetSelectedLod());
+        List<MainViewModel.DisplayPart> displayParts = MakeEntityDisplayParts(entities, ModelView.GetSelectedLod());
         MVM.SetChildren(displayParts);
         MVM.Title = entityHash;
         MVM.SubTitle = $"{displayParts.Sum(p => p.BasePart.Indices.Count)} triangles";
@@ -56,7 +55,7 @@ public partial class EntityView : UserControl
             MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
 
         MVM.Clear();
-        var displayParts = MakeEntityModelDisplayParts(entityModel, ModelView.GetSelectedLod());
+        List<MainViewModel.DisplayPart> displayParts = MakeEntityModelDisplayParts(entityModel, ModelView.GetSelectedLod());
         MVM.SetChildren(displayParts);
         MVM.Title = entityModelHash;
         MVM.SubTitle = $"{displayParts.Sum(p => p.BasePart.Indices.Count)} triangles";
@@ -68,7 +67,7 @@ public partial class EntityView : UserControl
     {
         fbxHandler.Clear();
         List<Entity> entities = Investment.Get().GetEntitiesFromHash(apiHash);
-        foreach (var entity in entities)
+        foreach (Entity entity in entities)
         {
             // todo find out why sometimes this is null
             if (entity == null)
@@ -82,7 +81,7 @@ public partial class EntityView : UserControl
 
     private void AddEntity(Entity entity, ExportDetailLevel detailLevel, FbxHandler fbxHandler)
     {
-        var dynamicParts = entity.Load(detailLevel);
+        List<DynamicMeshPart> dynamicParts = entity.Load(detailLevel);
         ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
         if (ModelView.GetSelectedGroupIndex() != -1)
             dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
@@ -93,7 +92,7 @@ public partial class EntityView : UserControl
     private bool LoadUI(FbxHandler fbxHandler)
     {
         MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         string filePath = $"{config.GetExportSavePath()}/temp.fbx";
         fbxHandler.ExportScene(filePath);
         bool loaded = MVM.LoadEntityFromFbx(filePath);
@@ -112,12 +111,12 @@ public partial class EntityView : UserControl
 
         Log.Verbose($"Exporting entity model name: {name}");
 
-        foreach (var entity in entities)
+        foreach (Entity entity in entities)
         {
             if (entity.Skeleton == null && overrideSkeleton != null)
                 entity.Skeleton = overrideSkeleton;
 
-            var dynamicParts = entity.Load(ExportDetailLevel.MostDetailed);
+            List<DynamicMeshPart> dynamicParts = entity.Load(ExportDetailLevel.MostDetailed);
             List<BoneNode> boneNodes = overrideSkeleton != null ? overrideSkeleton.GetBoneNodes() : new List<BoneNode>();
             if (entity.Skeleton != null && overrideSkeleton == null)
             {
@@ -154,7 +153,7 @@ public partial class EntityView : UserControl
 
         Directory.CreateDirectory(savePath);
         Directory.CreateDirectory($"{savePath}/Textures");
-        var scene = Tiger.Exporters.Exporter.Get().CreateScene(name, Strategy.IsD1() ? ExportType.D1API : ExportType.API);
+        ExporterScene scene = Tiger.Exporters.Exporter.Get().CreateScene(name, Strategy.IsD1() ? ExportType.D1API : ExportType.API);
 
         ExportGearShader(item, name, savePath);
 
@@ -173,22 +172,22 @@ public partial class EntityView : UserControl
             overrideSkeleton = new EntitySkeleton(playerBase.Skeleton.Hash);
         }
 
-        var val = Investment.Get().GetPatternEntityFromHash(item.Parent != null ? item.Parent.TagData.InventoryItemHash : item.Item.TagData.InventoryItemHash);
+        Entity? val = Investment.Get().GetPatternEntityFromHash(item.Parent != null ? item.Parent.TagData.InventoryItemHash : item.Item.TagData.InventoryItemHash);
         if (val != null && val.Skeleton != null)
         {
             overrideSkeleton = val.Skeleton;
         }
 
-        var entities = Investment.Get().GetEntitiesFromHash(item.Item.TagData.InventoryItemHash);
+        List<Entity> entities = Investment.Get().GetEntitiesFromHash(item.Item.TagData.InventoryItemHash);
 
         Log.Info($"Exporting entity model name: {name}");
 
-        foreach (var entity in entities)
+        foreach (Entity entity in entities)
         {
             if (entity.Skeleton == null && overrideSkeleton != null)
                 entity.Skeleton = overrideSkeleton;
 
-            var dynamicParts = entity.Load(ExportDetailLevel.MostDetailed);
+            List<DynamicMeshPart> dynamicParts = entity.Load(ExportDetailLevel.MostDetailed);
             List<BoneNode> boneNodes = overrideSkeleton != null ? overrideSkeleton.GetBoneNodes() : new List<BoneNode>();
             if (entity.Skeleton != null && overrideSkeleton == null)
             {
@@ -226,10 +225,10 @@ public partial class EntityView : UserControl
         // Export the dye info
         if (Strategy.IsD1())
         {
-            Dictionary<TigerHash, DyeD1> dyes = new Dictionary<TigerHash, DyeD1>();
+            Dictionary<TigerHash, DyeD1> dyes = new();
             if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is D2Class_77738080 translationBlock)
             {
-                foreach (var dyeEntry in translationBlock.DefaultDyes)
+                foreach (D2Class_7B738080 dyeEntry in translationBlock.DefaultDyes)
                 {
                     DyeD1 dye = Investment.Get().GetD1DyeFromIndex(dyeEntry.DyeIndex);
                     if (dye != null)
@@ -238,7 +237,7 @@ public partial class EntityView : UserControl
                         dye.ExportTextures($"{savePath}/Textures", config.GetOutputTextureFormat());
                     }
                 }
-                foreach (var dyeEntry in translationBlock.LockedDyes)
+                foreach (D2Class_7B738080 dyeEntry in translationBlock.LockedDyes)
                 {
                     DyeD1 dye = Investment.Get().GetD1DyeFromIndex(dyeEntry.DyeIndex);
                     if (dye != null)
@@ -252,10 +251,10 @@ public partial class EntityView : UserControl
         }
         else
         {
-            Dictionary<TigerHash, Dye> dyes = new Dictionary<TigerHash, Dye>();
+            Dictionary<TigerHash, Dye> dyes = new();
             if (item.Item.TagData.Unk90.GetValue(item.Item.GetReader()) is D2Class_77738080 translationBlock)
             {
-                foreach (var dyeEntry in translationBlock.DefaultDyes)
+                foreach (D2Class_7B738080 dyeEntry in translationBlock.DefaultDyes)
                 {
                     Dye dye = Investment.Get().GetDyeFromIndex(dyeEntry.DyeIndex);
                     dyes.Add(Investment.Get().GetChannelHashFromIndex(dyeEntry.ChannelIndex), dye);
@@ -263,7 +262,7 @@ public partial class EntityView : UserControl
                     System.Console.WriteLine($"{item.ItemName}: DefaultDye {dye.Hash}");
 #endif
                 }
-                foreach (var dyeEntry in translationBlock.LockedDyes)
+                foreach (D2Class_7B738080 dyeEntry in translationBlock.LockedDyes)
                 {
                     Dye dye = Investment.Get().GetDyeFromIndex(dyeEntry.DyeIndex);
                     dyes.Add(Investment.Get().GetChannelHashFromIndex(dyeEntry.ChannelIndex), dye);
@@ -276,7 +275,7 @@ public partial class EntityView : UserControl
             AutomatedExporter.SaveBlenderApiFile(savePath, itemName,
                 config.GetOutputTextureFormat(), dyes.Values.ToList());
 
-            var iridesceneLookup = Globals.Get().RenderGlobals.TagData.Textures.TagData.IridescenceLookup;
+            Texture iridesceneLookup = Globals.Get().RenderGlobals.TagData.Textures.TagData.IridescenceLookup;
             TextureExtractor.SaveTextureToFile($"{savePath}/Textures/Iridescence_Lookup", iridesceneLookup.GetScratchImage());
         }
         Log.Info($"Exported Gear Shader for: {item.ItemName}");
@@ -286,19 +285,19 @@ public partial class EntityView : UserControl
     {
         bool useTextures = ModelView.TextureCheckBox.IsChecked == true;
 
-        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
-        foreach (var ent in entities)
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
+        foreach (Entity ent in entities)
         {
             if (ent.HasGeometry())
             {
-                var dynamicParts = ent.Load(detailLevel);
+                List<DynamicMeshPart> dynamicParts = ent.Load(detailLevel);
                 ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
                 if (ModelView.GetSelectedGroupIndex() != -1)
                     dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
 
-                foreach (var part in dynamicParts)
+                foreach (DynamicMeshPart part in dynamicParts)
                 {
-                    MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                    MainViewModel.DisplayPart displayPart = new();
                     displayPart.BasePart = part;
                     displayPart.Translations.Add(Vector3.Zero);
                     displayPart.Rotations.Add(Vector4.Zero);
@@ -306,7 +305,7 @@ public partial class EntityView : UserControl
 
                     if (useTextures && part.Material?.Pixel.Textures.Any() == true)
                     {
-                        var texture = TextureView.RemoveAlpha(part.Material.Pixel.Textures[0].Texture.GetTexture());
+                        Stream texture = TextureView.RemoveAlpha(part.Material.Pixel.Textures[0].Texture.GetTexture());
                         displayPart.DiffuseMaterial = new()
                         {
                             DiffuseMap = new HelixToolkit.SharpDX.Core.TextureModel(texture, true),
@@ -319,7 +318,7 @@ public partial class EntityView : UserControl
 
             if (ent.Skeleton != null)
             {
-                MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                MainViewModel.DisplayPart displayPart = new();
                 displayPart.BoneNodes = ent.Skeleton.GetBoneNodes();
                 displayPart.Translations.Add(Vector3.Zero);
                 displayPart.Rotations.Add(Vector4.Zero);
@@ -335,16 +334,16 @@ public partial class EntityView : UserControl
     // TODO combine with above, I don't like this
     private List<MainViewModel.DisplayPart> MakeEntityModelDisplayParts(EntityModel entModel, ExportDetailLevel detailLevel)
     {
-        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
 
-        var dynamicParts = entModel.Load(detailLevel, null);
+        List<DynamicMeshPart> dynamicParts = entModel.Load(detailLevel, null);
         ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
         if (ModelView.GetSelectedGroupIndex() != -1)
             dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
 
-        foreach (var part in dynamicParts)
+        foreach (DynamicMeshPart part in dynamicParts)
         {
-            MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+            MainViewModel.DisplayPart displayPart = new();
             displayPart.BasePart = part;
             displayPart.Translations.Add(Vector3.Zero);
             displayPart.Rotations.Add(Vector4.Zero);

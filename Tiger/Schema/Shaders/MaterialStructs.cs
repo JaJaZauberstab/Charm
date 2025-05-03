@@ -114,7 +114,7 @@ public struct SMaterialShader
         }
         else
         {
-            foreach (var vec in CBuffers)
+            foreach (Vec4 vec in CBuffers)
             {
                 data.Add(vec.Vec);
             }

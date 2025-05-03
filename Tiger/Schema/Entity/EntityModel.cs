@@ -90,7 +90,7 @@ public class EntityModel : Tag<SEntityModel>
 
     private List<DynamicMeshPart> GenerateParts(Dictionary<int, Dictionary<int, D2Class_CB6E8080>> dynamicParts, EntityResource parentResource, bool hasSkeleton = false)
     {
-        var _strategy = Strategy.CurrentStrategy;
+        TigerStrategy _strategy = Strategy.CurrentStrategy;
 
         List<DynamicMeshPart> parts = new();
         List<int> exportPartRange = new();
@@ -142,7 +142,7 @@ public class EntityModel : Tag<SEntityModel>
 
         foreach (TfxRenderStage stage in Globals.Get().GetExportStages())
         {
-            var range = mesh.GetRangeForStage((int)stage);
+            Range range = mesh.GetRangeForStage((int)stage);
             if (!(range.Start.Value < range.End.Value))
                 continue;
 
@@ -156,12 +156,12 @@ public class EntityModel : Tag<SEntityModel>
 
 public class DynamicMeshPart : MeshPart
 {
-    public List<VertexWeight> VertexWeights = new List<VertexWeight>();
+    public List<VertexWeight> VertexWeights = new();
 
     // used for single-pass skin buffer, where we want to find the position vec from a global index
-    public Dictionary<uint, int> VertexIndexMap = new Dictionary<uint, int>();
+    public Dictionary<uint, int> VertexIndexMap = new();
 
-    public List<Vector4> VertexColourSlots = new List<Vector4>();
+    public List<Vector4> VertexColourSlots = new();
     public bool bAlphaClip;
     public bool HasSkeleton;
     public byte GearDyeChangeColorIndex = 0xFF;
@@ -191,7 +191,7 @@ public class DynamicMeshPart : MeshPart
         Indices = mesh.Indices.GetIndexData(PrimitiveType, IndexOffset, IndexCount);
 
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -234,11 +234,10 @@ public class DynamicMeshPart : MeshPart
     {
         Vector2 texcoordScale = !Strategy.IsD1() ? header.TexcoordScale : mesh.TexcoordScale;
         Vector2 texcoordTranslation = !Strategy.IsD1() ? header.TexcoordTranslation : mesh.TexcoordTranslation;
-        float yOffset = 0f;//5f / 3f; // idfk
 
         for (int i = 0; i < VertexTexcoords0.Count; i++)
         {
-            var tx = VertexTexcoords0[i];
+            Vector2 tx = VertexTexcoords0[i];
             VertexTexcoords0[i] = new Vector2(
                 tx.X * texcoordScale.X + texcoordTranslation.X,
                 tx.Y * texcoordScale.Y + texcoordTranslation.Y
@@ -251,7 +250,7 @@ public class DynamicMeshPart : MeshPart
         {
             try
             {
-                var stride = mesh.SinglePassSkinningBuffer.TagData.Stride;
+                short stride = mesh.SinglePassSkinningBuffer.TagData.Stride;
                 using TigerReader handle = mesh.SinglePassSkinningBuffer.GetReferenceReader();
 
                 for (int i = 0; i < VertexPositions.Count; i++)
@@ -264,7 +263,7 @@ public class DynamicMeshPart : MeshPart
                     float UVX = (float)handle.ReadHalf();
                     float UVY = (float)handle.ReadHalf();
 
-                    var tx = VertexTexcoords0[i];
+                    Vector2 tx = VertexTexcoords0[i];
                     var tx1 = new Vector2(tx.X * UVX, ((tx.Y * UVY) * -1) - 0.65); // idfk whats going wrong here
                     VertexTexcoords1.Add(tx1);
                     //Console.WriteLine($"({i}) {mesh.SinglePassSkinningBuffer.Hash} {index} ({(index * 0x4):X}): XY ({tx.X}, {tx.Y}) ZW ({tx1.X}, {tx1.Y})");
@@ -277,15 +276,14 @@ public class DynamicMeshPart : MeshPart
         }
         else
         {
-            yOffset = 0f;
             VertexTexcoords1 = VertexTexcoords0.Select(tx1 => new Vector2(tx1.X * 5, (1 - tx1.Y) * 5)).ToList();
         }
 
         // Flip Y axis, fix detail UV offset
         for (int i = 0; i < VertexTexcoords0.Count; i++)
         {
-            var tx = VertexTexcoords0[i];
-            var tx1 = VertexTexcoords1[i];
+            Vector2 tx = VertexTexcoords0[i];
+            Vector2 tx1 = VertexTexcoords1[i];
             VertexTexcoords0[i] = new Vector2(tx.X, 1f - tx.Y);
         }
     }
@@ -310,11 +308,11 @@ public class DynamicMeshPart : MeshPart
     {
         using TigerReader reader = parentResource.GetReader();
 
-        var map = parentResource is EntityPhysicsModelParent ?
+        DynamicArrayUnloaded<SExternalMaterialMapEntry> map = parentResource is EntityPhysicsModelParent ?
             ((D2Class_6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap :
             ((D2Class_8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap;
 
-        var mats = parentResource is EntityPhysicsModelParent ?
+        DynamicArrayUnloaded<D2Class_14008080> mats = parentResource is EntityPhysicsModelParent ?
             ((D2Class_6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials :
             ((D2Class_8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials;
 
@@ -325,7 +323,7 @@ public class DynamicMeshPart : MeshPart
         if (variantShaderIndex >= map.Count)
             return null; // todo this is actually wrong ig...
 
-        var mapEntry = map[reader, variantShaderIndex];
+        SExternalMaterialMapEntry mapEntry = map[reader, variantShaderIndex];
 
         return mats[reader, mapEntry.MaterialStartIndex + (0 % mapEntry.MaterialCount)].Material;
     }

@@ -11,7 +11,7 @@ public class EntityResource : Tag<D2Class_069B8080>
     // Used only for D1 / ROI
     public List<SMapDataEntry> CollapseIntoDataEntry()
     {
-        List<SMapDataEntry> entries = new List<SMapDataEntry>();
+        List<SMapDataEntry> entries = new();
         if (Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON)
             return entries;
 

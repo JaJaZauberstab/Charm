@@ -29,19 +29,19 @@ public partial class MusicView : UserControl
         if (extra is Entity entity)
         {
             List<D2Class_40668080> sounds = new();
-            foreach (var resourceHash in entity.TagData.EntityResources.Select(entity.GetReader(), r => r.Resource))
+            foreach (FileHash? resourceHash in entity.TagData.EntityResources.Select(entity.GetReader(), r => r.Resource))
             {
                 EntityResource e = FileResourcer.Get().GetFile<EntityResource>(resourceHash);
                 if (e.TagData.Unk18.GetValue(e.GetReader()) is D2Class_79818080 a)
                 {
-                    foreach (var d2ClassF1918080 in a.Array1)
+                    foreach (D2Class_F1918080 d2ClassF1918080 in a.Array1)
                     {
                         if (d2ClassF1918080.Unk10.GetValue(e.GetReader()) is D2Class_40668080 b)
                         {
                             sounds.Add(b);
                         }
                     }
-                    foreach (var d2ClassF1918080 in a.Array2)
+                    foreach (D2Class_F1918080 d2ClassF1918080 in a.Array2)
                     {
                         if (d2ClassF1918080.Unk10.GetValue(e.GetReader()) is D2Class_40668080 b)
                         {
@@ -72,7 +72,7 @@ public partial class MusicView : UserControl
         //    throw new NotImplementedException();
         //}
 
-        var resource = music.TagData.Unk28[0].Unk00.GetValue(music.GetReader());
+        dynamic? resource = music.TagData.Unk28[0].Unk00.GetValue(music.GetReader());
         if (resource is D2Class_F5458080 f5458080)
         {
             WemsControl.Load(f5458080);
@@ -90,7 +90,7 @@ public partial class MusicView : UserControl
             EventsControl.Load(res);
             if (res.AmbientMusicSet != null)
             {
-                var sbhash = res.AmbientMusicSet.TagData.Unk08[0].MusicLoopSound.TagData.SoundbankWQ.TagData.SoundBank.Hash;
+                FileHash sbhash = res.AmbientMusicSet.TagData.Unk08[0].MusicLoopSound.TagData.SoundbankWQ.TagData.SoundBank.Hash;
                 SoundbankHash.Text = $"Soundbank: {sbhash} / {sbhash.PackageId:X4}-{sbhash.FileIndex:X4}";
             }
         }
@@ -112,7 +112,7 @@ public partial class MusicView : UserControl
     {
         List<WwiseSound> sounds = new();
         EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(hash);
-        foreach (var value in ((S8F4E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Pointers.Select(x => x.Pointer.GetValue(resource.GetReader())))
+        foreach (dynamic? value in ((S8F4E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Pointers.Select(x => x.Pointer.GetValue(resource.GetReader())))
         {
             switch (value)
             {
@@ -123,7 +123,7 @@ public partial class MusicView : UserControl
                 case S944E8080 entry2:
                     if (entry2.Unk00 is not null)
                     {
-                        foreach (var sound in entry2.Unk00.TagData.Unk08)
+                        foreach (S5A8E8080 sound in entry2.Unk00.TagData.Unk08)
                         {
                             if (sound.Sound is not null)
                                 sounds.Add(sound.Sound);

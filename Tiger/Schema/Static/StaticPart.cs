@@ -41,7 +41,7 @@ public class StaticPart : MeshPart
     {
         Indices = mesh.Indices.GetIndexData(PrimitiveType, IndexOffset, IndexCount);
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -58,7 +58,7 @@ public class StaticPart : MeshPart
     {
         Indices = buffers.Indices.GetIndexData(PrimitiveType, IndexOffset, IndexCount);
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -78,7 +78,7 @@ public class StaticPart : MeshPart
     {
         Indices = mesh.Indices.GetIndexData(PrimitiveType, IndexOffset, IndexCount);
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -98,7 +98,7 @@ public class StaticPart : MeshPart
     {
         if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_BEYONDLIGHT_3402)
         {
-            var t = (container.StaticData as DESTINY2_BEYONDLIGHT_3402.StaticMeshData).TagData;
+            SStaticMeshData_BL t = (container.StaticData as DESTINY2_BEYONDLIGHT_3402.StaticMeshData).TagData;
             TransformPositions(t.ModelTransform);
             TransformUVs(new Vector2(t.TexcoordScale, t.TexcoordScale), t.TexcoordTranslation);
 

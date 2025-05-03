@@ -49,7 +49,7 @@ public class GlobalExporter : AbstractExporter
             string texSavePath = $"{SavePath}/Textures/Atmosphere";
             Directory.CreateDirectory(texSavePath);
 
-            foreach (var tex in AtmosTextures)
+            foreach (Texture tex in AtmosTextures)
             {
                 // Not ideal but it works
                 TextureExtractor.SaveTextureToFile($"{texSavePath}/{tex.Hash}", tex.IsVolume() ? Texture.FlattenVolume(tex.GetScratchImage(true)) : tex.GetScratchImage());
@@ -84,7 +84,7 @@ public class GlobalExporter : AbstractExporter
 
                 if (dayCycle.Unk10 is not null && dayCycle.Unk10.TagData.Unk10 is not null)
                 {
-                    var cycles = dayCycle.Unk10.TagData.Unk10;
+                    Tag<D2Class_C88A8080> cycles = dayCycle.Unk10.TagData.Unk10;
                     data.DayCycle.Unk2 = cycles.TagData.Unk08;
                     data.DayCycle.Unk3 = cycles.TagData.Unk0C;
                     data.DayCycle.Rotations = cycles.TagData.Unk30.Enumerate(cycles.GetReader()).Select(x => x.Vec).ToList();
@@ -108,9 +108,9 @@ public class GlobalExporter : AbstractExporter
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
-            foreach (var lensFlare in GlobalScene.GetAllOfType<LensFlare>())
+            foreach (LensFlare lensFlare in GlobalScene.GetAllOfType<LensFlare>())
             {
-                var lensFlareData = data.GetOrAdd(lensFlare.Hash, _ => new LensFlareData
+                LensFlareData lensFlareData = data.GetOrAdd(lensFlare.Hash, _ => new LensFlareData
                 {
                     Instances = new(),
                     Materials = lensFlare.Materials.Select(x => x.ToString()).ToList()
@@ -136,13 +136,13 @@ public class GlobalExporter : AbstractExporter
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
-            List<Texture> textures = new List<Texture>();
+            List<Texture> textures = new();
             string texSavePath = $"{SavePath}/Textures/Cubemaps";
             Directory.CreateDirectory(texSavePath);
 
-            foreach (var cubemapEntry in GlobalScene.GetAllOfType<Cubemap>())
+            foreach (Cubemap cubemapEntry in GlobalScene.GetAllOfType<Cubemap>())
             {
-                var cubemap = cubemapEntry.CubemapEntry;
+                Schema.Entity.SMapCubemapResource cubemap = cubemapEntry.CubemapEntry;
                 string name = cubemap.CubemapName != null ? cubemap.CubemapName.Value : $"Cubemap_{cubemap.WorldID:X}";
                 _ = data.GetOrAdd(name, _ => new CubemapData
                 {
@@ -162,7 +162,7 @@ public class GlobalExporter : AbstractExporter
                     textures.Add(cubemap.CubemapIBLTexture);
             }
 
-            foreach (var tex in textures)
+            foreach (Texture tex in textures)
             {
                 TextureExtractor.SaveTextureToFile($"{texSavePath}/{tex.Hash}", tex.IsVolume() ? Texture.FlattenVolume(tex.GetScratchImage(true)) : Texture.FlattenCubemap(tex.GetScratchImage()));
                 if (_config.GetS2ShaderExportEnabled())
@@ -181,15 +181,15 @@ public class GlobalExporter : AbstractExporter
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
-            List<Texture> textures = new List<Texture>();
+            List<Texture> textures = new();
             string texSavePath = $"{SavePath}/Textures/Lights";
             Directory.CreateDirectory(texSavePath);
 
-            foreach (var light in GlobalScene.GetAllOfType<Lights.LightData>())
+            foreach (Lights.LightData light in GlobalScene.GetAllOfType<Lights.LightData>())
             {
                 // this is so stupid...but ensures theres no accidental overwrites with mismatches
-                var hash = Helpers.Fnv($"{light.LightType}{light.Material}{light.Hash}");
-                var lightData = data.GetOrAdd($"{light.LightType}_{hash.ToString("X")}", _ => new LightData
+                uint hash = Helpers.Fnv($"{light.LightType}{light.Material}{light.Hash}");
+                LightData lightData = data.GetOrAdd($"{light.LightType}_{hash.ToString("X")}", _ => new LightData
                 {
                     Type = light.LightType.ToString(),
                     Instances = new(),
@@ -212,7 +212,7 @@ public class GlobalExporter : AbstractExporter
                     textures.Add(new Texture(light.Cookie));
             }
 
-            foreach (var tex in textures)
+            foreach (Texture tex in textures)
             {
                 tex.SavetoFile($"{texSavePath}/{tex.Hash}");
                 if (_config.GetS2ShaderExportEnabled())
@@ -235,18 +235,18 @@ public class GlobalExporter : AbstractExporter
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
-            foreach (var decal in GlobalScene.GetAllOfType<Decals>())
+            foreach (Decals decal in GlobalScene.GetAllOfType<Decals>())
             {
                 List<Transform> transforms = decal.GetTransforms();
-                foreach (var instance in decal.TagData.DecalResources.Enumerate(decal.GetReader()))
+                foreach (D2Class_63698080 instance in decal.TagData.DecalResources.Enumerate(decal.GetReader()))
                 {
                     for (int i = instance.StartIndex; i < instance.StartIndex + instance.Count; i++)
                     {
-                        var loc = transforms[i].Position;
-                        var rot = transforms[i].Quaternion;
-                        var scale = transforms[i].Scale;
+                        Vector3 loc = transforms[i].Position;
+                        Vector4 rot = transforms[i].Quaternion;
+                        Vector3 scale = transforms[i].Scale;
 
-                        var decalData = data.GetOrAdd(instance.Material.Hash, _ => new DecalsData
+                        DecalsData decalData = data.GetOrAdd(instance.Material.Hash, _ => new DecalsData
                         {
                             Instances = new(),
                         });
@@ -273,7 +273,7 @@ public class GlobalExporter : AbstractExporter
             string dataSavePath = $"{SavePath}/Rendering";
             Directory.CreateDirectory(dataSavePath);
 
-            foreach (var globals in GlobalScene.GetAllOfType<D2Class_D1918080>())
+            foreach (D2Class_D1918080 globals in GlobalScene.GetAllOfType<D2Class_D1918080>())
             {
                 channels.Add(new GlobalChannelData
                 {

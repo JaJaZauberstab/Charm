@@ -44,7 +44,7 @@ public class Entity : Tag<SEntity>
         Deserialize();
         _loaded = true;
         //Debug.Assert(_tag.FileSize != 0); // Is this really needed?
-        foreach (var resourceHash in _tag.EntityResources.Select(GetReader(), r => r.Resource))
+        foreach (FileHash? resourceHash in _tag.EntityResources.Select(GetReader(), r => r.Resource))
         {
             if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && resourceHash.GetReferenceHash() != 0x80800861)
                 continue;
@@ -82,14 +82,14 @@ public class Entity : Tag<SEntity>
                     // we care more about the specific name so if the entity name is already assigned, dont assign this one
                     if (EntityName == null)
                     {
-                        var genericName = ((D2Class_18808080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk3C0.TagData.EntityName;
+                        StringHash genericName = ((D2Class_18808080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk3C0.TagData.EntityName;
                         if (GlobalStrings.Get().GetString(genericName) != genericName)
                             EntityName = GlobalStrings.Get().GetString(genericName);
                     }
                     break;
 
                 case D2Class_DA5E8080: // Specific name
-                    var specificName = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON ?
+                    StringHash specificName = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON ?
                         ((D2Class_DB5E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Unk108.TagData.EntityName :
                         ((D2Class_DB5E8080)resource.TagData.Unk18.GetValue(resource.GetReader())).EntityName;
 
@@ -137,7 +137,7 @@ public class Entity : Tag<SEntity>
 
     public void SaveMaterialsFromParts(ExporterScene scene, List<DynamicMeshPart> dynamicParts)
     {
-        foreach (var dynamicPart in dynamicParts)
+        foreach (DynamicMeshPart dynamicPart in dynamicParts)
         {
             if (dynamicPart.Material == null) continue;
             scene.Materials.Add(new ExportMaterial(dynamicPart.Material));
@@ -158,7 +158,7 @@ public class Entity : Tag<SEntity>
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && (parentResource.TexturePlatesROI.Count == 0 || parentResource.TexturePlatesROI[0].TexturePlates is null))
             return;
 
-        var rsrc = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
+        D2Class_1C6E8080 rsrc = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
             ? parentResource.TexturePlates.TagData : parentResource.TexturePlatesROI[0].TexturePlates.TagData;
 
 
@@ -200,7 +200,7 @@ public class Entity : Tag<SEntity>
             }
         }
 
-        List<Entity> entities = new List<Entity>();
+        List<Entity> entities = new();
         if (Strategy.IsPreBL() && EntityChildren2 is not null)
             entities.AddRange(GetEntityChildren2());
 
@@ -209,7 +209,7 @@ public class Entity : Tag<SEntity>
 
         if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
         {
-            foreach (var entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk100)
+            foreach (S712B8080 entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk100)
             {
                 if (entry.Entity is null)
                     continue;
@@ -227,7 +227,7 @@ public class Entity : Tag<SEntity>
                     //entity.Model.RotationOffset = entry.Transforms.FirstOrDefault().Rotation;
                     entities.Add(entity);
                     //Just in case
-                    foreach (var child in entity.GetEntityChildren())
+                    foreach (Entity child in entity.GetEntityChildren())
                         entities.Add(child);
                 }
             }
@@ -236,9 +236,9 @@ public class Entity : Tag<SEntity>
         {
             if (EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader()) is D2Class_0E848080)
             {
-                foreach (var entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk88)
+                foreach (D2Class_1B848080 entry in ((D2Class_0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk88)
                 {
-                    foreach (var entry2 in entry.Unk08)
+                    foreach (D2Class_1D848080 entry2 in entry.Unk08)
                     {
                         if (entry2.Entity is null)
                             continue;
@@ -248,7 +248,7 @@ public class Entity : Tag<SEntity>
                         {
                             entities.Add(entity);
                             //Just in case
-                            foreach (var child in entity.GetEntityChildren())
+                            foreach (Entity child in entity.GetEntityChildren())
                                 entities.Add(child);
                         }
                     }
@@ -261,15 +261,15 @@ public class Entity : Tag<SEntity>
 
     public List<Entity> GetEntityChildren2() // THIS SUCKS WHYYY BUNGIEEE
     {
-        List<Entity> entities = new List<Entity>();
+        List<Entity> entities = new();
         if (EntityChildren2 is null)
             return entities;
 
-        foreach (var resource in EntityChildren2)
+        foreach (EntityResource resource in EntityChildren2)
         {
             if (resource.TagData.Unk18.GetValue(resource.GetReader()) is D2Class_79818080)
             {
-                foreach (var entry in ((D2Class_79818080)resource.TagData.Unk18.GetValue(resource.GetReader())).Array2)
+                foreach (D2Class_F1918080 entry in ((D2Class_79818080)resource.TagData.Unk18.GetValue(resource.GetReader())).Array2)
                 {
                     if (entry.Unk10.GetValue(resource.GetReader()) is D2Class_81888080 entry2)
                     {
@@ -283,7 +283,7 @@ public class Entity : Tag<SEntity>
                         {
                             entities.Add(entity);
                             //Just in case
-                            foreach (var child in entity.GetEntityChildren())
+                            foreach (Entity child in entity.GetEntityChildren())
                                 entities.Add(child);
                         }
                     }

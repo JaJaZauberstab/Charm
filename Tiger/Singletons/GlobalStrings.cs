@@ -27,10 +27,10 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
 
         if (Strategy.IsD1())
         {
-            var vals = PackageResourcer.Get().GetAllHashes<S50058080>();
+            ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<S50058080>();
             Parallel.ForEach(vals, val =>
             {
-                var tag = FileResourcer.Get().GetSchemaTag<S50058080>(val);
+                Tag<S50058080> tag = FileResourcer.Get().GetSchemaTag<S50058080>(val);
                 AddStrings(tag.TagData.CharacterNames);
                 AddStrings(tag.TagData.ActivityGlobalStrings);
             });
@@ -38,11 +38,11 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
         // surely this is fine..
         else
         {
-            var vals = PackageResourcer.Get().GetAllHashes<D2Class_02218080>(); //TODO: Beyond Light
+            ConcurrentCollections.ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<D2Class_02218080>(); //TODO: Beyond Light
             Parallel.ForEach(vals, val =>
             {
-                var tag = FileResourcer.Get().GetSchemaTag<D2Class_02218080>(val);
-                foreach (var entry in tag.TagData.Unk28)
+                Tag<D2Class_02218080> tag = FileResourcer.Get().GetSchemaTag<D2Class_02218080>(val);
+                foreach (D2Class_0E3C8080 entry in tag.TagData.Unk28)
                 {
                     if (Strategy.IsPostBL() && entry.Unk10 is not null && entry.Unk10.Hash.GetReferenceHash() == 0x808099EF) // EF998080
                     {
@@ -50,7 +50,7 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
                     }
                     else if (Strategy.IsBL() && entry.Unk00 is not null)
                     {
-                        var tag2 = FileResourcer.Get().GetSchemaTag<S8080760A>(entry.Unk00.Hash);
+                        Tag<S8080760A> tag2 = FileResourcer.Get().GetSchemaTag<S8080760A>(entry.Unk00.Hash);
                         if (tag2.TagData.Container is not null && tag2.TagData.Container.Hash.GetReferenceHash() == 0x808099EF)
                             AddStrings(FileResourcer.Get().GetFile<LocalizedStrings>(tag2.TagData.Container.Hash));
                     }
@@ -77,8 +77,8 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
 
         Stopwatch stopwatch = Stopwatch.StartNew();
         string line;
-        using (FileStream fs = new FileStream("./wordlist.txt", FileMode.Open, FileAccess.Read, FileShare.Read, 65536, true))
-        using (StreamReader sr = new StreamReader(fs))
+        using (FileStream fs = new("./wordlist.txt", FileMode.Open, FileAccess.Read, FileShare.Read, 65536, true))
+        using (StreamReader sr = new(fs))
         {
             while ((line = sr.ReadLine()) != null)
             {
@@ -95,7 +95,7 @@ public class GlobalStrings : Strategy.StrategistSingleton<GlobalStrings>
         {
             if (!_localizedStringsBias.IsEmpty)
             {
-                var bias = sv.Find(s => _localizedStringsBias.Contains(s.ContainerHash));
+                StringBiasView bias = sv.Find(s => _localizedStringsBias.Contains(s.ContainerHash));
                 if (!string.IsNullOrEmpty(bias.String))
                 {
                     return bias.String;

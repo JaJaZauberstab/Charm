@@ -35,7 +35,7 @@ public partial class MusicEventsControl : UserControl
     private IEnumerable GetEventItems(DynamicArray<SUnkMusicE8BF8080> array)
     {
         var items = new List<EventItem>();
-        foreach (var entry in array)
+        foreach (SUnkMusicE8BF8080 entry in array)
         {
             items.Add(new EventItem
             {
@@ -52,7 +52,7 @@ public partial class MusicEventsControl : UserControl
     private List<EventItem> GetEventItems(List<D2Class_FB458080> array)
     {
         var items = new List<EventItem>();
-        foreach (var entry in array)
+        foreach (D2Class_FB458080 entry in array)
         {
             items.Add(new EventItem
             {
@@ -67,7 +67,7 @@ public partial class MusicEventsControl : UserControl
     private List<EventItem> GetEventItems(List<D2Class_FA458080> array)
     {
         var items = new List<EventItem>();
-        foreach (var entry in array)
+        foreach (D2Class_FA458080 entry in array)
         {
             items.Add(new EventItem
             {

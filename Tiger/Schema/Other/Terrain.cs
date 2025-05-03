@@ -22,14 +22,12 @@ public class Terrain : Tag<STerrain>
             saveDirectory = Path.Join(_config.GetExportSavePath(), $"Maps/Assets/");
 
         // Uses triangle strip + only using first set of vertices and indices
-        Dictionary<StaticPart, Material> parts = new Dictionary<StaticPart, Material>();
-        List<Texture> dyeMaps = new List<Texture>();
-
-        int terrainTextureIndex = 14;
+        Dictionary<StaticPart, Material> parts = new();
+        List<Texture> dyeMaps = new();
         Texture lastValidEntry = null;
         for (int i = 0; i < _tag.MeshGroups.Count; i++)
         {
-            var meshGroup = _tag.MeshGroups[i];
+            SMeshGroup meshGroup = _tag.MeshGroups[i];
             // Check if the current Dyemap is null
 
             if (meshGroup.Dyemap == null)
@@ -42,7 +40,7 @@ public class Terrain : Tag<STerrain>
                 }
                 else // Use the first valid dyemap if it gets to this point
                 {
-                    var firstValidDyemap = _tag.MeshGroups.FirstOrDefault(x => x.Dyemap != null).Dyemap;
+                    Texture firstValidDyemap = _tag.MeshGroups.FirstOrDefault(x => x.Dyemap != null).Dyemap;
                     if (firstValidDyemap != null)
                     {
                         scene.ExternalTextures.Add(firstValidDyemap);
@@ -58,14 +56,14 @@ public class Terrain : Tag<STerrain>
                 dyeMaps.Add(meshGroup.Dyemap);
             }
 
-            foreach (var partEntry in _tag.StaticParts.Where(x => x.GroupIndex == i))
+            foreach (STerrainPart partEntry in _tag.StaticParts.Where(x => x.GroupIndex == i))
             {
                 // MainGeom0 LOD0, GripStock0 LOD1, Stickers0 LOD2?
                 if ((ELodCategory)partEntry.DetailLevel == ELodCategory.MainGeom0)
                 {
                     if (partEntry.Material != null && partEntry.Material.Vertex.Shader != null)
                     {
-                        var part = MakePart(partEntry);
+                        StaticPart part = MakePart(partEntry);
 
                         scene.Materials.Add(new ExportMaterial(partEntry.Material, true));
                         part.Material = partEntry.Material;
@@ -117,7 +115,7 @@ public class Terrain : Tag<STerrain>
         }
 
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in part.Indices)
         {
             uniqueVertexIndices.Add(index.X);

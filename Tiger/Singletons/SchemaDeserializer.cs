@@ -112,7 +112,7 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
 
     private void FillSchemaTypeCaches()
     {
-        var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
+        IEnumerable<Type> types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
 
         Parallel.ForEach(types, type =>
         {
@@ -204,14 +204,14 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
     private FieldInfo[] GetStrategyFields(FieldInfo[] getFields)
     {
 #if DEBUG
-        foreach (var field in getFields)
+        foreach (FieldInfo field in getFields)
         {
-            var attributes = field.GetCustomAttributes<SchemaFieldAttribute>().ToArray();
+            SchemaFieldAttribute[] attributes = field.GetCustomAttributes<SchemaFieldAttribute>().ToArray();
             // Check if attributes array is null or empty
             if (attributes == null || attributes.Length == 0)
                 continue;
 
-            var attribute = GetAttribute<SchemaFieldAttribute>(field);
+            SchemaFieldAttribute? attribute = GetAttribute<SchemaFieldAttribute>(field);
 
             // Check if attribute is null
             if (attribute == null)
@@ -292,7 +292,7 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
         int bIs32Bit = reader.ReadInt32();
         ulong u64 = reader.ReadUInt64();
         //Console.WriteLine($"{u32:X} : {bIs32Bit:X} : {u64:X}");
-        if (bIs32Bit == 1 || bIs32Bit == 2) // TFS can have 2 instead of 1?
+        if (bIs32Bit is 1 or 2) // TFS can have 2 instead of 1?
         {
             return new FileHash(u32);
         }
@@ -380,7 +380,7 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
             }
             else if (fieldType.IsArray)
             {
-                var attr = GetAttribute<SchemaFieldAttribute>(fieldInfo);
+                SchemaFieldAttribute? attr = GetAttribute<SchemaFieldAttribute>(fieldInfo);
                 if (attr == null)
                 {
                     throw new Exception($"Array type must have SchemaFieldAttribute to define array size. ({reader.Hash:X})");
@@ -595,9 +595,9 @@ public class SchemaDeserializer : Strategy.StrategistSingleton<SchemaDeserialize
     private static readonly ConcurrentDictionary<(ICustomAttributeProvider provider, Type attributeType, TigerStrategy strategy), StrategyAttribute?> _attributeCache = new();
     private T? GetAttribute<T>(ICustomAttributeProvider var) where T : StrategyAttribute
     {
-        var key = (var, typeof(T), _strategy);
+        (ICustomAttributeProvider var, Type, TigerStrategy _strategy) key = (var, typeof(T), _strategy);
 
-        if (_attributeCache.TryGetValue(key, out var cached))
+        if (_attributeCache.TryGetValue(key, out StrategyAttribute? cached))
         {
             return (T?)cached;
         }

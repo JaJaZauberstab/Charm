@@ -20,7 +20,7 @@ public class LensFlare : Tag<SLensFlare>
         using TigerReader reader = GetReader();
         for (int i = 0; i < _tag.Entries.Count; i++)
         {
-            var entry = _tag.Entries.ElementAt(reader, i);
+            SLensFlareEntry entry = _tag.Entries.ElementAt(reader, i);
             if (entry.Material == null) continue;
             entry.Material.RenderStage = TfxRenderStage.LensFlares;
             scene.Materials.Add(new ExportMaterial(entry.Material));

@@ -28,9 +28,9 @@ public partial class ConfigView : UserControl
         };
         ButtonCollection = new ObservableCollection<ButtonData>
         {
-            new ButtonData { Text = "GENERAL" },
-            new ButtonData { Text = "S&BOX" },
-            new ButtonData { Text = "UNREAL" }
+            new() { Text = "GENERAL" },
+            new() { Text = "S&BOX" },
+            new() { Text = "UNREAL" }
         };
 
         Settings.ItemsSource = ButtonCollection;
@@ -42,7 +42,7 @@ public partial class ConfigView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -62,7 +62,7 @@ public partial class ConfigView : UserControl
         string buttonText = textBlock.Text;
 
         // Set all controls to collapsed initially
-        foreach (var control in controlMapping.Values)
+        foreach (UIElement control in controlMapping.Values)
         {
             UIHelper.AnimateFadeIn(control, 0.25f, 0.25f, 1);
             control.Visibility = Visibility.Collapsed;
@@ -83,10 +83,10 @@ public partial class ConfigView : UserControl
             if (index < 0 || index >= itemsControl.Items.Count)
                 return;
 
-            var item = itemsControl.Items[index];
+            object item = itemsControl.Items[index];
             if (itemsControl.ItemContainerGenerator.ContainerFromItem(item) is ContentPresenter contentPresenter)
             {
-                var radioButton = UIHelper.FindVisualChild<RadioButton>(contentPresenter);
+                RadioButton radioButton = UIHelper.FindVisualChild<RadioButton>(contentPresenter);
                 if (radioButton != null)
                 {
                     radioButton.IsChecked = true;

@@ -28,7 +28,7 @@ public partial class MaterialView : UserControl
         _mainWindow = Window.GetWindow(this) as MainWindow;
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -101,7 +101,7 @@ public partial class MaterialView : UserControl
     {
         var items = new List<TextureDetail>();
 
-        foreach (var tex in material.Vertex.EnumerateTextures())
+        foreach (STextureTag tex in material.Vertex.EnumerateTextures())
         {
             if (tex.Texture is null)
                 continue;
@@ -119,7 +119,7 @@ public partial class MaterialView : UserControl
             });
         }
 
-        foreach (var tex in material.Pixel.EnumerateTextures())
+        foreach (STextureTag tex in material.Pixel.EnumerateTextures())
         {
             if (tex.Texture is null)
                 continue;
@@ -137,7 +137,7 @@ public partial class MaterialView : UserControl
             });
         }
 
-        foreach (var tex in material.Compute.EnumerateTextures())
+        foreach (STextureTag tex in material.Compute.EnumerateTextures())
         {
             if (tex.Texture is null)
                 continue;
@@ -168,7 +168,7 @@ public partial class MaterialView : UserControl
         if (bVertexShader)
         {
             data = material.Vertex.GetCBuffer0();
-            foreach (var vec in material.Vertex.TFX_Bytecode_Constants)
+            foreach (Vec4 vec in material.Vertex.TFX_Bytecode_Constants)
             {
                 const_data.Add(vec.Vec);
             }
@@ -176,7 +176,7 @@ public partial class MaterialView : UserControl
         else
         {
             data = material.Pixel.GetCBuffer0();
-            foreach (var vec in material.Pixel.TFX_Bytecode_Constants)
+            foreach (Vec4 vec in material.Pixel.TFX_Bytecode_Constants)
             {
                 const_data.Add(vec.Vec);
             }
@@ -218,9 +218,9 @@ public partial class MaterialView : UserControl
             Dispatcher.Invoke(() =>
             {
                 TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(dc.Stage == CBufferDetail.Shader.Pixel ? Material.Pixel.TFX_Bytecode : Material.Vertex.TFX_Bytecode));
-                var bytecode_hlsl = bytecode.Evaluate(dc.Stage == CBufferDetail.Shader.Pixel ? Material.Pixel.TFX_Bytecode_Constants : Material.Vertex.TFX_Bytecode_Constants, dc.Index != "TFX Constants", Material);
+                Dictionary<int, string> bytecode_hlsl = bytecode.Evaluate(dc.Stage == CBufferDetail.Shader.Pixel ? Material.Pixel.TFX_Bytecode_Constants : Material.Vertex.TFX_Bytecode_Constants, dc.Index != "TFX Constants", Material);
 
-                ConcurrentBag<CBufferDataDetail> items = new ConcurrentBag<CBufferDataDetail>();
+                ConcurrentBag<CBufferDataDetail> items = new();
                 for (int i = 0; i < dc.Data.Count; i++)
                 {
                     CBufferDataDetail dataEntry = new();
@@ -273,7 +273,7 @@ public partial class MaterialView : UserControl
 
     public BitmapImage LoadTexture(Texture textureHeader)
     {
-        BitmapImage bitmapImage = new BitmapImage();
+        BitmapImage bitmapImage = new();
         bitmapImage.BeginInit();
         bitmapImage.StreamSource = (textureHeader.IsCubemap() || textureHeader.IsVolume()) ? textureHeader.GetCubemapFace(0) : textureHeader.GetTexture();
         bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
@@ -316,7 +316,7 @@ public partial class MaterialView : UserControl
             if (material.PSSamplers[i].Hash.GetFileMetadata().Type != 34)
                 continue;
 
-            var sampler = material.PSSamplers[i].Sampler;
+            DirectXSampler.D3D11_SAMPLER_DESC sampler = material.PSSamplers[i].Sampler;
             items.Add(new SamplerDataDetail
             {
                 Slot = i + 1,

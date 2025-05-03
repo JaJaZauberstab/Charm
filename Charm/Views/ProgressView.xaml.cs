@@ -42,7 +42,7 @@ public partial class ProgressView : UserControl
         {
             TotalStageCount = progressStages.Count;
             _progressStages = new Queue<string>();
-            foreach (var progressStage in progressStages)
+            foreach (string progressStage in progressStages)
             {
                 _progressStages.Enqueue(progressStage);
             }
@@ -76,7 +76,7 @@ public partial class ProgressView : UserControl
     {
         if (_progressStages.Count > 0)
         {
-            var stage = _progressStages.Peek();
+            string stage = _progressStages.Peek();
             if (bLogProgress)
                 Log.Verbose($"Starting loading stage: {stage}");
             return stage;

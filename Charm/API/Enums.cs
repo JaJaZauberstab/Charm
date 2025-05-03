@@ -98,7 +98,7 @@ public enum DestinyUnlockValueUIStyle
 
 public static class DestinyTierTypeColor
 {
-    private static readonly Dictionary<DestinyTierType, Color> Colors = new Dictionary<DestinyTierType, Color>
+    private static readonly Dictionary<DestinyTierType, Color> Colors = new()
     {
         { DestinyTierType.Unknown, Color.FromArgb(255, 56, 56, 56) },
         { DestinyTierType.Currency, Color.FromArgb(255, 56, 56, 56) },

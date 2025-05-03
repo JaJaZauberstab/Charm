@@ -19,7 +19,7 @@ public class WwiseSound : TigerReferenceFile<D2Class_38978080>
 
     public void Load()
     {
-        var provider = MakeProvider();
+        MixingSampleProvider provider = MakeProvider();
         _soundStream = new MemoryStream();
         WaveFileWriter.WriteWavFileToStream(_soundStream, provider.ToWaveProvider());
         _soundStream.Position = 0;
@@ -31,7 +31,7 @@ public class WwiseSound : TigerReferenceFile<D2Class_38978080>
         MixingSampleProvider provider = new(_tag.Wems[0].MakeWaveChannel()?.WaveFormat);
         Parallel.ForEach(_tag.Wems, wem =>
         {
-            if(wem != null)
+            if (wem != null)
                 provider.AddMixerInput(wem.MakeWaveChannel());
         });
 
@@ -60,7 +60,7 @@ public class WwiseSound : TigerReferenceFile<D2Class_38978080>
         get
         {
             CheckLoaded();
-            var timespan = GetDuration();
+            TimeSpan timespan = GetDuration();
             return GetDurationString(timespan);
         }
     }

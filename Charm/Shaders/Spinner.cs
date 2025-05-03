@@ -8,11 +8,11 @@ public class SpinnerShader : ShaderEffect
 {
     static SpinnerShader()
     {
-        var uri = MakePackUri("Shaders/Spinner.fx");
+        Uri uri = MakePackUri("Shaders/Spinner.fx");
         _pixelShader.UriSource = uri;
     }
 
-    private static PixelShader _pixelShader = new PixelShader();
+    private static PixelShader _pixelShader = new();
 
     public SpinnerShader()
     {

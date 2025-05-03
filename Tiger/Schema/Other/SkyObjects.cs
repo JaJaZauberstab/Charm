@@ -18,7 +18,7 @@ public class SkyObjects : Tag<SMapSkyObjects>
         if (_tag.Entries is null)
             return;
 
-        foreach ((int i, var element) in _tag.Entries.Select((value, index) => (index, value)))
+        foreach ((int i, D2Class_A96A8080 element) in _tag.Entries.Select((value, index) => (index, value)))
         {
             if (element.Model.TagData.Model is null || (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307 && element.Unk70 == 5))
                 continue;
