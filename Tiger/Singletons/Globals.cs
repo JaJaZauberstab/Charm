@@ -48,7 +48,7 @@ public class Globals : Strategy.StrategistSingleton<Globals>
     {
         _inputLayouts.AddRange(BaseInputLayouts);
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON) // D1 has an extra base layout, so just gonna reuse the last entry (suuurely its fine)
+        if (Strategy.IsD1()) // D1 has an extra base layout, so just gonna reuse the last entry (suuurely its fine)
             _inputLayouts.Add(BaseInputLayouts[BaseInputLayouts.Count - 1]);
 
         FileHash hash = Strategy.CurrentStrategy switch
@@ -201,7 +201,7 @@ public class Globals : Strategy.StrategistSingleton<Globals>
 
     private List<TigerInputLayoutElement> GetInputFormats()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             InputFormats = new List<TigerInputLayoutElement>
             {

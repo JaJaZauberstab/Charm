@@ -44,7 +44,7 @@ namespace Tiger.Schema.Shaders
 
         public void SavePixelShader(string saveDirectory, bool isTerrain = false)
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (Strategy.IsD1())
                 return;
 
             if (Pixel.Shader != null && Pixel.Shader.Hash.IsValid())
@@ -84,7 +84,7 @@ namespace Tiger.Schema.Shaders
         // TODO: do this properly
         public void SaveVertexShader(string saveDirectory)
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (Strategy.IsD1())
                 return;
 
             if (Vertex.Shader != null && Vertex.Shader.Hash.IsValid())

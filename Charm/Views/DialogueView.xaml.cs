@@ -29,7 +29,7 @@ public partial class DialogueView : UserControl
     {
         List<dynamic?> result = new();
         _viewer = viewer;
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             _dialogueD1 = new DialogueD1(hash);
             result = _dialogueD1.Load();
@@ -63,7 +63,7 @@ public partial class DialogueView : UserControl
             }
             else
             {
-                if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+                if (Strategy.IsD1())
                 {
                     SAA078080 a = dyn;
 

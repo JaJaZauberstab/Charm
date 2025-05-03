@@ -166,7 +166,7 @@ public partial class EntityView : UserControl
             Entity skele = FileResourcer.Get().GetFile<Entity>(new FileHash(Hash64Map.Get().GetHash32Checked(skeleHash))); // 64 bit more permanent
             overrideSkeleton = new EntitySkeleton(skele.Skeleton.Hash);
         }
-        else if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        else if (Strategy.IsD1())
         {
             Entity playerBase = FileResourcer.Get().GetFile<Entity>(new FileHash("0AE18481"));
             overrideSkeleton = new EntitySkeleton(playerBase.Skeleton.Hash);

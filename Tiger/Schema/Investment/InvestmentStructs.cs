@@ -7,7 +7,7 @@ namespace Tiger.Schema.Investment;
 /// Stores all the inventory item definitions in a huge hashmap.
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "33198080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "97798080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "97798080", 0x18)]
 public struct S97798080
 {
     public long FileSize;
@@ -15,7 +15,7 @@ public struct S97798080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "BD168080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "9B798080", 0x20)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "9B798080", 0x20)]
 public struct S9B798080
 {
     public TigerHash InventoryItemHash;
@@ -29,7 +29,6 @@ public struct S9B798080
 /// Inventory item definition.
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "06188080", 0x9C)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "9D798080", 0x120)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "9D798080", 0x124)]
 public struct S9D798080
 {
@@ -38,13 +37,13 @@ public struct S9D798080
     [SchemaField(0x18)]
     public ResourcePointer Unk18;  // SE7778080, 06178080 D1
 
-    [SchemaField(0x28, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x28, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk28;  // SC5738080, 'gearset'
 
-    [SchemaField(0x30, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x30, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk30;  // SB6738080, lore entry index (map CF508080 BDA1A780)
 
-    [SchemaField(0x38, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x38, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk38;  // B0738080, 'objectives'
 
     [SchemaField(0x48)]
@@ -58,7 +57,6 @@ public struct S9D798080
     public ResourcePointer Unk70;  // C0778080 socketEntries
 
     [SchemaField(0x58, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x78, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x70, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk78;  // S81738080, BD178080 D1
 
@@ -66,38 +64,32 @@ public struct S9D798080
     //public ResourcePointer Unk88;  // S7F738080
 
     [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x90, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk90;  // S77738080
 
     [SchemaField(0x78, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0xA8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x90, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash InventoryItemHash;
     public TigerHash UnkAC;
     public byte SeasonIndex; // 'seasonHash', not used for gear
 
     [SchemaField(0x8A, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0xC2, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xA4, TigerStrategy.DESTINY2_LATEST)]
     public byte ItemRarity;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xC4, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xAE, TigerStrategy.DESTINY2_LATEST)]
     public byte UnkC4; // 'isInstanceItem'?
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xCA, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0xCA, TigerStrategy.DESTINY2_LATEST)]
     public byte RecipeItemIndex; // 'recipeItemHash'
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x108, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xF0, TigerStrategy.DESTINY2_LATEST)]
     public short SummaryItemIndex;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x110, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xD0, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<S05798080> TraitIndices;
 }
@@ -111,20 +103,6 @@ public struct S15108080
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "13108080", 0x2)]
 public struct S13108080
 {
-}
-
-[SchemaStruct("E4768080", 0x90)]
-public struct SE4768080
-{
-    [SchemaField(0x48)]
-    public TigerHash Unk48;
-    public TigerHash Unk4C;
-    [SchemaField(0x54)]
-    public int Unk54;
-    [SchemaField(0x70)]
-    public int Unk70;
-    [SchemaField(0x88)]
-    public float Unk88;
 }
 
 /// <summary>
@@ -155,7 +133,6 @@ public struct S3A7A8080
 }
 
 // 'quality'
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "DC778080", 0x70)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "DC778080", 0x70)]
 public struct SDC778080
 {
@@ -167,7 +144,6 @@ public struct SDC778080
     [SchemaField(0x28)]
     public DynamicArray<S2D788080> DisplayVersionWatermarkIcons; // Unsure
 
-    [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x50, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<SDE778080> Versions;
 }
@@ -242,7 +218,7 @@ public struct S26908080
 /// "translationBlock" from API, "equippingBlock" in D1
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "20108080", 0x68)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "77738080", 0x60)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "77738080", 0x60)]
 public struct S77738080
 {
     // D1 has "customDyeExpression" at 0x40 but idk what its used for
@@ -250,19 +226,19 @@ public struct S77738080
     public DynamicArrayUnloaded<S7D738080> Arrangements;  // "arrangements" from API
 
     [SchemaField(0x50, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x28, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x28, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<S7B738080> CustomDyes;  // "customDyes" from API
 
     [SchemaField(0x30, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x38, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x38, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<S7B738080> DefaultDyes;  // "defaultDyes" from API
 
     [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x48, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x48, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<S7B738080> LockedDyes;  // "lockedDyes" from API
 
     [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x58, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x58, TigerStrategy.DESTINY2_LATEST)]
     public short WeaponPatternIndex;  // "weaponPatternHash" from API, "weaponSandboxPatternIndex" in D1
 }
 
@@ -270,7 +246,7 @@ public struct S77738080
 /// "arrangement" from API
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "1A108080", 4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "7D738080", 4)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "7D738080", 4)]
 public struct S7D738080
 {
     public short ClassHash;  // "classHash" from API
@@ -281,7 +257,7 @@ public struct S7D738080
 /// "lockedDyes" from API
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "1C108080", 4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "7B738080", 4)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "7B738080", 4)]
 public struct S7B738080
 {
     public short ChannelIndex;  // "channelHash" from API
@@ -291,14 +267,14 @@ public struct S7B738080
 #endregion
 
 #region Stats
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "BE548080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "BE548080", 0x18)]
 public struct SBE548080
 {
     public ulong FileSize;
     public DynamicArrayUnloaded<SC4548080> StatGroupDefinitions;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C4548080", 0x38)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "C4548080", 0x38)]
 public struct SC4548080
 {
     public TigerHash StatGroupHash;
@@ -311,7 +287,7 @@ public struct SC4548080
     public int MaximumValue;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C8548080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "C8548080", 0x18)]
 public struct SC8548080
 {
     public byte StatIndex; // 'statHash'
@@ -323,21 +299,21 @@ public struct SC8548080
 
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "257A8080", 0x8)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "257A8080", 0x8)]
 public struct S257A8080
 {
     public int Value;
     public int Weight;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "6B588080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "6B588080", 0x18)]
 public struct S6B588080
 {
     public ulong FileSize;
     public DynamicArrayUnloaded<S6F588080> StatDefinitions;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "6F588080", 0x24)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "6F588080", 0x24)]
 public struct S6F588080
 {
     public TigerHash StatHash;
@@ -346,14 +322,14 @@ public struct S6F588080
     public short StatIconIndex;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C9798080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "C9798080", 0x18)]
 public struct SC9798080
 {
     [SchemaField(0x8)]
     public DynamicArray<SCF798080> PowerCapDefinitions;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CF798080", 0x8)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "CF798080", 0x8)]
 public struct SCF798080
 {
     public TigerHash PowerCapHash;
@@ -364,7 +340,7 @@ public struct SCF798080
 #region String Stuff
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "C7348080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "99548080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "99548080", 0x18)]
 public struct S99548080
 {
     public long FileSize;
@@ -372,76 +348,65 @@ public struct S99548080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "C7348080", 0x10)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "9D548080", 0x20)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "9D548080", 0x20)]
 public struct S9D548080
 {
     public TigerHash ApiHash;
 
     [SchemaField(0x8, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public Tag<S9F548080> StringThing;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "84348080", 0xB4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "9F548080", 0x130)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "9F548080", 0x130)]
 public struct S9F548080
 {
     public long FileSize;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x38, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x40, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk38;  // SD8548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x40, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x48, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk40;  // SD7548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x60, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x60, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk60;  // SCF548080
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x78, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x68, TigerStrategy.DESTINY2_LATEST)]
     public ResourcePointer Unk78;  // SB4548080
 
     [SchemaField(0x60, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307, Obsolete = true)]
+    [SchemaField(TigerStrategy.DESTINY2_LATEST, Obsolete = true)]
     public Tag<SB83E8080> IconContainer;
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0x88, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_LATEST)]
     public short IconIndex;
     public short FoundryIconIndex; // the banner that appears on foundry weapons (Hakke, veist, etc)
     public short EmblemContainerIndex; // Can be the emblem or foundry container post-TFS
 
     [SchemaField(0x78, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x8C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x80, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemName;  // "displayProperties" -> "name"
 
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x98, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x8C, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemType;  // "itemTypeDisplayName"
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xA0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x94, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemDisplaySource; // "displaySource"
 
     [SchemaField(0x88, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0xB0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xA4, TigerStrategy.DESTINY2_LATEST)]
     public StringIndexReference ItemFlavourText;  // "flavorText"
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xB8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xB0, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArrayUnloaded<SF1598080> UnkB8;
 
@@ -454,15 +419,8 @@ public struct S9F548080
     public DestinyUIDisplayStyle DisplayStyle; // 'uiItemDisplayStyle'
 
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0xE0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xD8, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<SB2548080> TooltipNotifications;
-    // ive missed lots of stuff here
-
-    //[SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    //[SchemaField(0x120, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
-    //[SchemaField(0x128, TigerStrategy.DESTINY2_LATEST)]
-    //public DynamicArrayUnloaded<S59238080> Unk120;
 }
 
 [SchemaStruct("D8548080", 0x88)]
@@ -524,45 +482,6 @@ public struct SEF548080
 {
     public StringIndexReference DestructionTerm;
     // some other terms, integers
-}
-
-[SchemaStruct("E7548080", 8)]
-public struct SE7548080
-{
-    public short Unk00;
-}
-
-[SchemaStruct("E5548080", 0x28)]
-public struct SE5548080
-{
-    public short Unk00;
-    public short Unk02;
-    public short Unk04;
-    [SchemaField(0x8)]
-    public DynamicArray<SF2598080> Unk08;
-    public DynamicArray<SAE578080> Unk18;
-}
-
-[SchemaStruct("F2598080", 8)]
-public struct SF2598080
-{
-    public short Unk00;
-    [SchemaField(0x4)]
-    public TigerHash Unk04;
-}
-
-[SchemaStruct("AE578080", 2)]
-public struct SAE578080
-{
-    public short Unk00;
-}
-
-[SchemaStruct("E4548080", 8)]
-public struct SE4548080
-{
-    public short Unk00;
-    [SchemaField(0x4)]
-    public TigerHash Unk04;
 }
 
 [SchemaStruct("CA548080", 0x18)]
@@ -646,7 +565,7 @@ public struct SED6F8080
 /// The file is massive so I don't auto-parse it.
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "D7348080", 0x28)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CE558080", 0x28)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "CE558080", 0x28)]
 public struct SCE558080
 {
     public long FileSize;
@@ -656,32 +575,32 @@ public struct SCE558080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "33348080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "D4558080", 0x20)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "D4558080", 0x20)]
 public struct SD4558080
 {
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(TigerStrategy.DESTINY2_LATEST)]
     public TigerHash ArtArrangementHash;
 
     [SchemaField(0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash MasculineSingleEntityAssignment; // things like armour only have 1 entity, so can skip the jumps
     public TigerHash FeminineSingleEntityAssignment;
 
     [SchemaField(0x8, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<SD7558080> MultipleEntityAssignments;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "635D8080", 8)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "D7558080", 8)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "D7558080", 8)]
 public struct SD7558080
 {
     public ResourceInTablePointer<SD8558080> EntityAssignmentResource;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "C1338080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "D8558080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "D8558080", 0x18)]
 public struct SD8558080
 {
     public long Unk00;
@@ -689,7 +608,7 @@ public struct SD8558080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "A3338080", 4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "DA558080", 4)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "DA558080", 4)]
 public struct SDA558080
 {
     public TigerHash EntityAssignmentHash;
@@ -699,7 +618,7 @@ public struct SDA558080
 /// The "final" assignment map of assignment hash : entity hash
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "AA3A8080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "434F8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "434F8080", 0x18)]
 public struct S434F8080
 {
     public long FileSize;
@@ -709,7 +628,7 @@ public struct S434F8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "A93A8080", 8)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "454F8080", 8)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "454F8080", 8)]
 public struct S454F8080 : IComparer<S454F8080>
 {
     public TigerHash AssignmentHash;
@@ -737,24 +656,24 @@ public struct SA44E8080
 /// The assignment map for api entity sandbox patterns, for things like skeletons and audio || OR art dye references
 /// </summary>
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "41038080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "8C978080", 0x28)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "8C978080", 0x28)]
 public struct S8C978080
 {
     public long FileSize;
     public DynamicArrayUnloaded<S0F878080> AssignmentBSL;
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(TigerStrategy.DESTINY2_LATEST)]
     public DynamicArray<S0B008080> Unk18;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "D7058080", 0x8)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "0F878080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "0F878080", 0x18)]
 public struct S0F878080 : IComparer<S0F878080>
 {
     public TigerHash ApiHash;
 
     [SchemaField(0x4, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public FileHash EntityRelationHash;  // can be entity or smth else, if SandboxPattern is entity if ArtDyeReference idk
 
     public int Compare(S0F878080 x, S0F878080 y)
@@ -765,7 +684,7 @@ public struct S0F878080 : IComparer<S0F878080>
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "9A338080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "AA528080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "AA528080", 0x18)]
 public struct SAA528080
 {
     public long FileSize;
@@ -773,32 +692,32 @@ public struct SAA528080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "BC338080", 0x20)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "AE528080", 0x30)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "AE528080", 0x30)]
 public struct SAE528080
 {
     [SchemaField(0xC, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash PatternHash;  // "patternHash" from API
 
     [SchemaField(0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x4, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x4, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash PatternGlobalTagIdHash;  // "patternGlobalTagIdHash" from API
 
     [SchemaField(0x4, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x10, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash WeaponContentGroupHash; // "weaponContentGroupHash" from API
     public TigerHash WeaponTypeHash; // "weaponTypeHash" from API
     // filters are also in here but idc
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, 0x18)] // Non-8080
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A36F8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "A36F8080", 0x18)]
 public struct SA36F8080
 {
     public long FileSize;
 
     [SchemaField(0x10, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(8, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true)]
+    [SchemaField(8, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public FileHash EntityData;  // can be entity, can be audio group for entity
 }
 
@@ -842,7 +761,7 @@ public struct S075A8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "97278080", 0x80)] // Non-8080
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B83E8080", 0x80)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "B83E8080", 0x80)]
 public struct SB83E8080
 {
     public long FileSize;
@@ -851,22 +770,22 @@ public struct SB83E8080
     public Tag<SCF3E8080> IconPrimaryContainer;
 
     [SchemaField(0x20, TigerStrategy.DESTINY1_RISE_OF_IRON)] // Unsure
-    [SchemaField(0x18, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x18, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SCF3E8080> IconAdContainer; //Eververse item advertisement
 
     [SchemaField(0x24, TigerStrategy.DESTINY1_RISE_OF_IRON)] // Icon dyemap?
-    [SchemaField(0x1C, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x1C, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SCF3E8080> IconBGOverlayContainer;
 
     [SchemaField(0x18, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x20, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x20, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SCF3E8080> IconBackgroundContainer;
 
     [SchemaField(0x1C, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(0x24, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x24, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SCF3E8080> IconOverlayContainer;
 
-    [SchemaField(0x28, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0x28, TigerStrategy.DESTINY2_LATEST)]
     public Tag<SCF3E8080> IconSpecialContainer;
 
     [SchemaField(0x30, TigerStrategy.DESTINY1_RISE_OF_IRON)]
@@ -877,7 +796,7 @@ public struct SB83E8080
 
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "70208080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CF3E8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "CF3E8080", 0x18)]
 public struct SCF3E8080
 {
     public long FileSize;
@@ -886,7 +805,7 @@ public struct SCF3E8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "CD298080", 0x1C)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CD3E8080", 0x20)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "CD3E8080", 0x20)]
 public struct SCD3E8080
 {
     public DynamicArrayUnloaded<SD23E8080> Unk00;
@@ -899,7 +818,7 @@ public struct SCB3E8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "78248080", 0x10)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "D23E8080", 0x10)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "D23E8080", 0x10)]
 public struct SD23E8080
 {
     public DynamicArrayUnloaded<SD53E8080> TextureList;
@@ -912,7 +831,7 @@ public struct SD03E8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "992B8080", 0x4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "D53E8080", 4)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "D53E8080", 4)]
 public struct SD53E8080
 {
     public Texture IconTexture;
@@ -930,7 +849,7 @@ public struct SD43E8080
 #region Dyes
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "20348080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C2558080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "C2558080", 0x18)]
 public struct SC2558080
 {
     public long FileSize;
@@ -938,14 +857,14 @@ public struct SC2558080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "CC338080", 4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "C6558080", 8)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "C6558080", 8)]
 public struct SC6558080
 {
     [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
-    [SchemaField(0, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(0, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash ArtDyeHash;
     [SchemaField(0, TigerStrategy.DESTINY1_RISE_OF_IRON)]
-    [SchemaField(4, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
+    [SchemaField(4, TigerStrategy.DESTINY2_LATEST)]
     public TigerHash DyeManifestHash;
 }
 
@@ -959,8 +878,7 @@ public struct SE36C8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "F6178080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "DE5B8080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "F2518080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "F2518080", 0x18)]
 public struct SDyeChannels
 {
     public long FileSize;
@@ -968,8 +886,7 @@ public struct SDyeChannels
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "21188080", 4)]
-[SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "E25B8080", 4)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "2C4F8080", 4)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "2C4F8080", 4)]
 public struct SDyeChannelHash
 {
     public TigerHash ChannelHash;
@@ -981,7 +898,7 @@ public struct SDyeChannelHash
 #region String container hash + indexmap
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "CB348080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "095A8080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "095A8080", 0x18)]
 public struct S095A8080
 {
     public long FileSize;
@@ -989,25 +906,24 @@ public struct S095A8080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "73348080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "0E5A8080", 0x18)]
-[SchemaStruct(TigerStrategy.DESTINY2_LIGHTFALL_7366, "0E5A8080", 0x20)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "0E5A8080", 0x20)]
 public struct S0E5A8080
 {
     public TigerHash BankFnvHash;  // some kind of name for the bank
 
     [SchemaField(0x10, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
-    [SchemaField(0x8, TigerStrategy.DESTINY2_WITCHQUEEN_6307, Tag64 = true), NoLoad]
+    [SchemaField(0x8, TigerStrategy.DESTINY2_LATEST, Tag64 = true), NoLoad]
     public LocalizedStrings LocalizedStrings;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "CF508080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "CF508080", 0x18)]
 public struct SCF508080
 {
     public long FileSize;
     public DynamicArrayUnloaded<SD3508080> LoreStringMap;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "D3508080", 0x28)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "D3508080", 0x28)]
 public struct SD3508080
 {
     public long Unk00;
@@ -1078,12 +994,10 @@ public struct SC8778080
     public short PlugItemIndex; // plugItemHash
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "A1738080", 0x128)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "A1738080", 0x124)]
 public struct SA1738080
 {
     public TigerHash PlugCategoryHash;
-    [SchemaField(0xF8, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0xE8, TigerStrategy.DESTINY2_LATEST)]
     public StringHash PlugStyle; // 'uiPlugLabel', theres only none (invalid) and masterwork (6048A01E)
 }
@@ -1186,32 +1100,30 @@ public struct SC3598080
 
 #region Objectives
 // objective definition
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "3C758080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "3C758080", 0x18)]
 public struct S3C758080
 {
     [SchemaField(0x8)]
     public DynamicArrayUnloaded<S40758080> ObjectiveDefinitionEntries;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "40758080", 0xB0)]
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "40758080", 0xA8)]
 public struct S40758080
 {
     public TigerHash ObjectiveHash;
-    [SchemaField(0x10, TigerStrategy.DESTINY2_WITCHQUEEN_6307)]
     [SchemaField(0x14, TigerStrategy.DESTINY2_LATEST)]
     public int CompletionValue;
 }
 
 // objective definition strings
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "4C588080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "4C588080", 0x18)]
 public struct S4C588080
 {
     [SchemaField(0x8)]
     public DynamicArrayUnloaded<S50588080> ObjectiveDefinitionStringEntries;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "50588080", 0x58)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "50588080", 0x58)]
 public struct S50588080
 {
     public TigerHash ObjectiveHash;
@@ -1223,13 +1135,13 @@ public struct S50588080
     public short LocationIndex; // 'locationHash' DestinyLocationDefinition
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B0738080", 0x28)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "B0738080", 0x28)]
 public struct SB0738080
 {
     public DynamicArray<S15908080> Objectives;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "15908080", 0x2)]
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "15908080", 0x2)]
 public struct S15908080
 {
     public short ObjectiveIndex;

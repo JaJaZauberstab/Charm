@@ -262,7 +262,7 @@ public class StaticMapData : Tag<SStaticMapData>
 
     public void LoadIntoExporterScene(ExporterScene scene)
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             if (_tag.D1StaticMapData is not null)
                 _tag.D1StaticMapData.LoadIntoExporterScene(scene);

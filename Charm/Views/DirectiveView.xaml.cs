@@ -16,7 +16,7 @@ public partial class DirectiveView : UserControl
 
     public void Load(FileHash hash)
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             ListView.ItemsSource = GetDirectiveItemsD1(hash);
         }

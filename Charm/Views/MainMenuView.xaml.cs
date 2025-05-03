@@ -22,7 +22,7 @@ public partial class MainMenuView : UserControl
 
         ApiButton.IsEnabled = ShowAPIButton(Strategy.CurrentStrategy);
         BagsButton.IsEnabled = ShowIfD2(Strategy.CurrentStrategy);
-        WeaponAudioButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy) || ShowIfD1(Strategy.CurrentStrategy);
+        WeaponAudioButton.IsEnabled = ShowAPIButton(Strategy.CurrentStrategy);
         StaticsButton.IsEnabled = ShowIfD2(Strategy.CurrentStrategy);
         SoundBanksButton.Visibility = ShowIfD1(Strategy.CurrentStrategy) ? Visibility.Visible : Visibility.Hidden;
         CollectionsButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy);
@@ -35,8 +35,8 @@ public partial class MainMenuView : UserControl
                 BagsButton.IsEnabled = ShowIfD2(args.Strategy);
                 WeaponAudioButton.IsEnabled = ShowIfLatest(args.Strategy) || ShowIfD1(args.Strategy);
                 StaticsButton.IsEnabled = ShowIfD2(args.Strategy);
-                SoundBanksButton.Visibility = ShowIfD1(Strategy.CurrentStrategy) ? Visibility.Visible : Visibility.Hidden;
-                CollectionsButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy);
+                SoundBanksButton.Visibility = ShowIfD1(args.Strategy) ? Visibility.Visible : Visibility.Hidden;
+                CollectionsButton.IsEnabled = ShowIfLatest(args.Strategy);
             });
         };
     }
@@ -76,17 +76,17 @@ public partial class MainMenuView : UserControl
 
     private bool ShowIfD1(TigerStrategy strategy)
     {
-        return strategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
+        return strategy is TigerStrategy.DESTINY1_RISE_OF_IRON;
     }
 
     private bool ShowIfLatest(TigerStrategy strategy)
     {
-        return Strategy.CurrentStrategy == TigerStrategy.DESTINY2_LATEST;
+        return strategy is TigerStrategy.DESTINY2_LATEST;
     }
 
     private bool ShowAPIButton(TigerStrategy strategy)
     {
-        return strategy is > TigerStrategy.DESTINY2_BEYONDLIGHT_3402 or TigerStrategy.DESTINY1_RISE_OF_IRON;
+        return strategy is TigerStrategy.DESTINY2_LATEST or TigerStrategy.DESTINY1_RISE_OF_IRON;
     }
 
     private void CategoryButton_MouseEnter(object sender, MouseEventArgs e)

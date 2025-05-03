@@ -90,7 +90,7 @@ public partial class DareView : UserControl
             if (ShouldAddToList(item, type))
             {
                 CreateOrnamentItems(item); // D1
-                bool isD1 = Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
+                bool isD1 = Strategy.IsD1();
                 bool isOrnament = type.Contains("Ornament");
                 bool isWeaponOrnament = type.Contains("Weapon Ornament");
                 bool isNameNotEmpty = name != "";
@@ -435,7 +435,7 @@ public class ApiItem
             BitmapImage? overlay = overlayStream != null ? ApiImageUtils.MakeBitmapImage(overlayStream, 96, 96) : null;
             BitmapImage? bg = bgStream != null ? ApiImageUtils.MakeBitmapImage(bgStream, 96, 96) : null;
 
-            if (bgOverlayStream != null && Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (bgOverlayStream != null && Strategy.IsD1())
                 primary = ApiImageUtils.MakeDyedIcon(Item);
 
             // Most if not all legendary armor will use the ornament overlay because of transmog (I assume)

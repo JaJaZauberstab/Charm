@@ -327,7 +327,7 @@ public partial class TagListView : UserControl
     private void LoadPackage(FileHash pkgHash)
     {
         int pkgId = pkgHash.PackageId;
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && pkgId == 0x0180)
+        if (Strategy.IsD1() && pkgId == 0x0180)
             MessageBox.Show($"This pkg contains entries that CAN/WILL cause crashes!!\nNot worth fixing at the moment, sorry. Blame Bungie.", "¯\\_(ツ)_/¯", MessageBoxButton.OK, MessageBoxImage.Warning);
 
         SetBulkGroup(pkgId.ToString("x4"));
@@ -1266,7 +1266,7 @@ public partial class TagListView : UserControl
             names[keyValuePair.Key] = GlobalStrings.Get().GetString(keyValuePair.Value);
         }
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             Dictionary<FileHash, TagClassHash> activities = PackageResourcer.Get().GetD1Activities();
 
@@ -2221,7 +2221,7 @@ public partial class TagListView : UserControl
 
                 if (entry.Unk118.GetValue(reader) is S0A2D8080 or S40238080)
                 {
-                    dynamic resourceUnk118 = Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON ? (S40238080)entry.Unk118.GetValue(reader) : (S0A2D8080)entry.Unk118.GetValue(reader);
+                    dynamic resourceUnk118 = Strategy.IsD1() ? (S40238080)entry.Unk118.GetValue(reader) : (S0A2D8080)entry.Unk118.GetValue(reader);
                     if (resourceUnk118.Unk08 != null)
                         entities.Add(resourceUnk118.Unk08);
                     if (resourceUnk118.Unk20 != null)
@@ -2293,7 +2293,7 @@ public partial class TagListView : UserControl
         {
             foreach (FileHash? resourceHash in entity.TagData.EntityResources.Select(entity.GetReader(), r => r.Resource))
             {
-                if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && resourceHash.GetReferenceHash() != 0x80800861)
+                if (Strategy.IsD1() && resourceHash.GetReferenceHash() != 0x80800861)
                     continue;
 
                 EntityResource e = FileResourcer.Get().GetFile<EntityResource>(resourceHash);

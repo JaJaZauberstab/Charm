@@ -41,7 +41,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
     public byte[] GetDDSBytes(DXGI_FORMAT format)
     {
         byte[] data;
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             if (ReferenceHash.IsValid() && ReferenceHash.GetReferenceHash().IsValid())
                 data = PackageResourcer.Get().GetFileData(ReferenceHash.GetReferenceHash());

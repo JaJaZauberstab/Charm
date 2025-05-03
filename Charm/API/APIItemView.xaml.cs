@@ -909,7 +909,7 @@ public static class ApiImageUtils
         BitmapImage? primary = primaryStream != null ? MakeBitmapImage(primaryStream, 96, 96) : null;
 
         // Icon dyes
-        if (bgOverlayStream != null && Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (bgOverlayStream != null && Strategy.IsD1())
             primary = MakeDyedIcon(item);
 
         BitmapImage? bg = bgStream != null ? MakeBitmapImage(bgStream, 96, 96) : null;

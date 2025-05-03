@@ -46,7 +46,7 @@ public class Entity : Tag<SEntity>
         //Debug.Assert(_tag.FileSize != 0); // Is this really needed?
         foreach (FileHash? resourceHash in _tag.EntityResources.Select(GetReader(), r => r.Resource))
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && resourceHash.GetReferenceHash() != 0x80800861)
+            if (Strategy.IsD1() && resourceHash.GetReferenceHash() != 0x80800861)
                 continue;
             EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(resourceHash);
             switch (resource.TagData.Unk10.GetValue(resource.GetReader()))
@@ -155,7 +155,7 @@ public class Entity : Tag<SEntity>
         if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_SHADOWKEEP_2601 && parentResource.TexturePlates is null)
             return;
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && (parentResource.TexturePlatesROI.Count == 0 || parentResource.TexturePlatesROI[0].TexturePlates is null))
+        if (Strategy.IsD1() && (parentResource.TexturePlatesROI.Count == 0 || parentResource.TexturePlatesROI[0].TexturePlates is null))
             return;
 
         S1C6E8080 rsrc = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
@@ -207,7 +207,7 @@ public class Entity : Tag<SEntity>
         if (EntityChildren is null)
             return entities;
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             foreach (S712B8080 entry in ((S0E848080)EntityChildren.TagData.Unk18.GetValue(EntityChildren.GetReader())).Unk100)
             {

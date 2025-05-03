@@ -192,7 +192,7 @@ public class DialogueD1
 
                                 foreach (FileHash? g2 in g.TagData.EntityResources.Select(g.GetReader(), r => r.Resource))
                                 {
-                                    if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && g2.GetReferenceHash() != 0x80800861)
+                                    if (Strategy.IsD1() && g2.GetReferenceHash() != 0x80800861)
                                         continue;
                                     EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(g2);
                                     if (resource.TagData.Unk10.GetValue(resource.GetReader()) is S79948080)

@@ -28,13 +28,11 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     public ConcurrentDictionary<int, Tag<S9F548080>> InventoryItemStringThings = null;
     private Dictionary<uint, int> _inventoryItemIndexmap = null;
     private Dictionary<uint, Tag<SA36F8080>> _sortedArrangementHashmap = null;
-    // private Dictionary<TigerHash, FileHash> _sortedPatternGlobalTagIdAssignments = null;
     private Tag<S095A8080> _localizedStringsIndexTag = null;
     private Dictionary<int, LocalizedStrings> _localizedStringsIndexMap = null;
     private ConcurrentDictionary<uint, InventoryItem> _inventoryItems = null;
     private ConcurrentDictionary<uint, InventoryItem> _collectableItems = null;
     private Tag<S015A8080> _inventoryItemIconTag = null;
-    // private Tag<S8C978080> _dyeManifestTag = null;
     private Tag<SC2558080> _artDyeReferenceTag = null;
     private Tag<SDyeChannels> _dyeChannelTag = null;
 
@@ -133,10 +131,6 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         }
         else if (_strategy == TigerStrategy.DESTINY1_RISE_OF_IRON) // No need to loop hashes when D1 will never change
         {
-            //_inventoryItemIndexDictTag = FileResourcer.Get().GetSchemaTag<S8C798080>(val); // Unused?
-            //_artArrangementMap = FileResourcer.Get().GetSchemaTag<SF2708080>(val); // Unused?
-            //_inventoryItemIconTag = FileResourcer.Get().GetSchemaTag<S015A8080>(val); // Not in D1, icons are with _inventoryItemStringThing
-
             _inventoryItemMap = FileResourcer.Get().GetSchemaTag<S97798080>(new FileHash("BEFFA580"));
             _entityAssignmentTag = FileResourcer.Get().GetSchemaTag<SCE558080>(new FileHash("A7FFA580"));
             _inventoryItemStringThing = FileResourcer.Get().GetSchemaTag<S99548080>(new FileHash("9CFFA580"));
@@ -215,7 +209,6 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         Task.WaitAll(new[]
         {
             Task.Run(GetInventoryItemDict),
-            //Task.Run(GetCollectableItemDict),
             Task.Run(GetEntityAssignmentDict),
             Task.Run(GetInventoryItemStringThings),
             Task.Run(GetSocketCategoryStrings),
@@ -327,16 +320,10 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     private int GetStatGroupIndex(InventoryItem item)
     {
         Tag<S9F548080>? stringThing = GetItemStrings(item.TagData.InventoryItemHash);
-        if (Strategy.IsLatest()) // Don't like this but oh well
-        {
-            if (stringThing.TagData.Unk78.GetValue(stringThing.GetReader()) is SCA548080 details)
-                return details.StatGroupIndex;
-        }
-        else
-        {
-            if (stringThing.TagData.Unk78.GetValue(stringThing.GetReader()) is SB4548080 details)
-                return details.StatGroupIndex;
-        }
+
+        if (stringThing.TagData.Unk78.GetValue(stringThing.GetReader()) is SCA548080 details)
+            return details.StatGroupIndex;
+
         return -1;
     }
 
@@ -407,7 +394,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetSandboxPerkMap2()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         SandboxPerkMap2 = new();
@@ -430,7 +417,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetObjectiveStrings()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         ObjectiveStrings = new();
@@ -443,7 +430,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetInventoryItemLoreStrings()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         InventoryItemLoreStrings = new();
@@ -456,7 +443,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetSocketCategoryStrings()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         SocketCategoryStringThings = new ConcurrentDictionary<int, S5D4F8080>();
@@ -469,7 +456,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetSandboxPerkStrings()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         SandboxPerkStrings = new();
@@ -482,7 +469,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetStatStrings()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         StatStrings = new();
@@ -495,7 +482,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     private void GetCollectableStrings()
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             return;
 
         CollectableStrings = new();
@@ -546,12 +533,6 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     {
         return _randomizedPlugSetMap.TagData.PlugSetDefinitionEntries.ElementAt(_randomizedPlugSetMap.GetReader(), index).ReusablePlugItems;
     }
-
-    //public S5D4F8080 GetSocketCategoryInfo(int index)
-    //{
-    //    int index2 = GetSocketCategoryIndex(index);
-    //    return _socketCategoryMap.TagData.SocketCategoryEntries.ElementAt(_socketCategoryMap.GetReader(), index2);
-    //}
 
     public Entity.Entity? GetPatternEntityFromHash(TigerHash hash)
     {
@@ -919,7 +900,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
 
     public void ExportShader(InventoryItem item, string savePath, string name, TextureExportFormat outputTextureFormat)
     {
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             Dictionary<string, DyeD1> dyes = new();
             if (item.TagData.Unk90.GetValue(item.GetReader()) is S77738080 translationBlock)
@@ -1060,7 +1041,7 @@ public class InventoryItem : Tag<S9D798080>
                 }
             }
         }
-        else if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && _tag.Unk78.GetValue(GetReader()) is SBD178080 a)
+        else if (Strategy.IsD1() && _tag.Unk78.GetValue(GetReader()) is SBD178080 a)
         {
             Tag<S63198080> talentGrid = Investment.Get().GetTalentGrid(a.TalenGridIndex);
             foreach (S28178080 node in talentGrid.TagData.Nodes)

@@ -169,7 +169,7 @@ public partial class MapView : UserControl
 
         Parallel.ForEach(map.TagData.MapDataTables, data =>
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (Strategy.IsD1())
             {
                 if (data.MapDataTable.TagData.DataEntries[0].DataResource.GetValue(data.MapDataTable.GetReader()) is SMapDataResource staticMapResource)
                 {
@@ -215,7 +215,7 @@ public partial class MapView : UserControl
     private List<MainViewModel.DisplayPart> MakeDisplayParts(StaticMapData staticMap, ExportDetailLevel detailLevel)
     {
         ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             if (staticMap.TagData.D1StaticMapData is not null)
             {
@@ -301,7 +301,7 @@ public partial class MapView : UserControl
         ConcurrentBag<MainViewModel.DisplayPart> displayParts = new();
 
         List<SMapDataEntry> dataEntries = new();
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && hash.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
+        if (Strategy.IsD1() && hash.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
             dataEntries.AddRange(FileResourcer.Get().GetSchemaTag<SF6038080>(hash).TagData.EntityResource.CollapseIntoDataEntry());
         else
             dataEntries.AddRange(FileResourcer.Get().GetSchemaTag<SMapDataTable>(hash).TagData.DataEntries);

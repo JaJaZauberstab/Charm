@@ -57,7 +57,7 @@ public class PackageResourcer : Strategy.StrategistSingleton<PackageResourcer>
         LoadPackageKeys();
         CacheAllActivityNames();
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             CacheAllD1NamedTags();
     }
 

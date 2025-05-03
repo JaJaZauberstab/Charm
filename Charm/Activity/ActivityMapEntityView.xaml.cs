@@ -276,7 +276,7 @@ public partial class ActivityMapEntityView : UserControl
         Parallel.ForEach(dataTables, data =>
         {
             List<SMapDataEntry> dataEntries = new();
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && data.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
+            if (Strategy.IsD1() && data.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
                 dataEntries.AddRange(FileResourcer.Get().GetSchemaTag<SF6038080>(data).TagData.EntityResource.CollapseIntoDataEntry());
             else
                 dataEntries.AddRange(FileResourcer.Get().GetSchemaTag<SMapDataTable>(data).TagData.DataEntries);
@@ -424,7 +424,7 @@ public partial class ActivityMapEntityView : UserControl
 
         Parallel.ForEach(dataTables, data =>
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && data.GetReferenceHash().Hash32 == 0x808003F6)
+            if (Strategy.IsD1() && data.GetReferenceHash().Hash32 == 0x808003F6)
             {
                 List<SMapDataEntry> dataEntries = FileResourcer.Get().GetSchemaTag<SF6038080>(data).TagData.EntityResource.CollapseIntoDataEntry();
                 foreach (SMapDataEntry entry in dataEntries)
@@ -698,7 +698,7 @@ public partial class ActivityMapEntityView : UserControl
                 foreach (FileHash datatable in items)
                 {
                     List<SMapDataEntry> dataEntries = new();
-                    if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON && datatable.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
+                    if (Strategy.IsD1() && datatable.GetReferenceHash().Hash32 == 0x808003F6) //F6038080
                         dataEntries.AddRange(FileResourcer.Get().GetSchemaTag<SF6038080>(datatable).TagData.EntityResource.CollapseIntoDataEntry());
                     else
                         dataEntries.AddRange(FileResourcer.Get().GetSchemaTag<SMapDataTable>(datatable).TagData.DataEntries);

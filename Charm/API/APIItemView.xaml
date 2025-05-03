@@ -568,7 +568,7 @@
                 Grid.ColumnSpan="2"
                 Margin="125,0,0,0"
                 VerticalAlignment="Bottom"
-                Background="#70FF0000">
+                Background="Transparent">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="96" />
                     <RowDefinition Height="96" />
@@ -582,7 +582,7 @@
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Background="#700000FF"
+                    Background="Transparent"
                     Orientation="Horizontal">
                     <Border
                         x:Name="ItemIcon"
