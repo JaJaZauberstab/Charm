@@ -53,6 +53,43 @@
         <Setter Property="Background" Value="{StaticResource BackgroundColour7}" />
     </Style>
 
+    <Style TargetType="Slider">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Track
+                            x:Name="PART_Track"
+                            Grid.Row="0"
+                            VerticalAlignment="Center">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton
+                                    Background="#009BFB"
+                                    Command="Slider.DecreaseLarge"
+                                    IsTabStop="False"
+                                    Style="{x:Null}" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Background="{StaticResource ForegroundColour90}" />
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton
+                                    Background="#222428"
+                                    Command="Slider.IncreaseLarge"
+                                    IsTabStop="False"
+                                    Style="{x:Null}" />
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="GradientBackground" TargetType="Grid">
         <Setter Property="Background">
             <Setter.Value>
@@ -931,7 +968,6 @@
         <Setter Property="Foreground" Value="{StaticResource ForegroundColour80}" />
     </Style>
 
-
     <Style TargetType="{x:Type hx:Viewport3DX}">
         <Setter Property="BackgroundColor" Value="{StaticResource BackgroundColour10C}" />
         <Setter Property="TextBrush" Value="{StaticResource ForegroundColour80}" />
@@ -1545,5 +1581,38 @@
         </Setter>
     </Style>
 
+    <ControlTemplate x:Key="SpinningCircleTemplate" TargetType="ContentControl">
+        <Grid Background="Transparent">
+            <Ellipse
+                Width="80"
+                Height="80"
+                RenderTransformOrigin="0.5,0.5"
+                Stroke="DodgerBlue"
+                StrokeDashArray="2 6"
+                StrokeThickness="10">
+                <Ellipse.RenderTransform>
+                    <RotateTransform x:Name="SpinnerTransform" />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsVisible" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard x:Name="SpinStoryboard">
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation
+                                Storyboard.TargetName="SpinnerTransform"
+                                Storyboard.TargetProperty="Angle"
+                                To="360"
+                                Duration="0:0:1" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <RemoveStoryboard BeginStoryboardName="SpinStoryboard" />
+                </Trigger.ExitActions>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
 
 </ResourceDictionary>

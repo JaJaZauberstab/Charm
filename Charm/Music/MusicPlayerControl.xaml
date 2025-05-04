@@ -91,7 +91,6 @@
                 Minimum="0"
                 PreviewMouseUp="ProgressBar_OnPreviewMouseUp"
                 Thumb.DragCompleted="ProgressBar_OnDragCompleted"
-                ValueChanged="ProgressBar_OnValueChanged"
                 Value="0" />
             <TextBlock
                 x:Name="TotalDuration"

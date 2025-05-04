@@ -138,12 +138,12 @@ public partial class TextureListView : UserControl
             ConcurrentDictionary<int, ConcurrentHashSet<FileHash>> packageIds = new();
             ConcurrentHashSet<FileHash> hashes = PackageResourcer.Get().GetAllHashes<Texture>();
 
-            foreach (FileHash item in hashes)
+            foreach (FileHash hash in hashes)
             {
-                if (packageIds.ContainsKey(item.PackageId))
-                    packageIds[item.PackageId].Add(item);
+                if (packageIds.ContainsKey(hash.PackageId))
+                    packageIds[hash.PackageId].Add(hash);
                 else
-                    packageIds[item.PackageId] = new();
+                    packageIds[hash.PackageId] = new() { hash };
             }
 
             Parallel.ForEach(packageIds, pkgId =>
@@ -484,15 +484,6 @@ public partial class TextureListView : UserControl
         {
             TagImageSource = null;
         }
-    }
-
-    private class PackageItem
-    {
-        public string Name { get; set; }
-        public int ID { get; set; }
-        public int Count { get; set; }
-        public ConcurrentHashSet<FileHash> Hashes { get; set; }
-        public bool IsSelected { get; set; } = false;
     }
 }
 

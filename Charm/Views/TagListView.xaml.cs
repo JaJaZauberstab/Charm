@@ -118,6 +118,10 @@ public enum ETagListType
     Material,
 }
 
+// TODO Start phasing this out for some things (already done for Texture and Audio viewing).
+// Its a nice system for basic things like strings or materials but it's nice to have
+// more control over things / more customization when needed
+
 /// <summary>
 /// The current implementation of Package is limited so you cannot have nested views below a Package.
 /// For future, would be better to split the tag items up so we can cache them based on parents.
@@ -225,9 +229,6 @@ public partial class TagListView : UserControl
                 case ETagListType.Static:
                     LoadStatic(contentValue as FileHash);
                     break;
-                //case ETagListType.TextureList:
-                //    await LoadTextureList();
-                //    break;
                 case ETagListType.Texture:
                     LoadTexture(contentValue as FileHash);
                     break;
@@ -253,15 +254,6 @@ public partial class TagListView : UserControl
                     LoadStrings(contentValue as FileHash);
                     break;
                 case ETagListType.String:
-                    break;
-                case ETagListType.SoundsPackagesList:
-                    await LoadSoundsPackagesList();
-                    break;
-                case ETagListType.SoundsPackage:
-                    LoadSoundsPackage(contentValue as FileHash);
-                    break;
-                case ETagListType.SoundsList:
-                    await LoadSoundsList(contentValue as FileHash);
                     break;
                 case ETagListType.Sound:
                     LoadSound(contentValue as FileHash);
@@ -337,24 +329,7 @@ public partial class TagListView : UserControl
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        // if ((e.Key == Key.Down || e.Key == Key.Right))
-        // {
-        //     // find the selected one
-        //     List<TagItem> tagItems = TagList.Items.OfType<TagItem>().ToList();
-        //     var selected = tagItems.FirstOrDefault(x => x.IsChecked);
-        //     if (selected != null)
-        //     {
-        //         int index = tagItems.IndexOf(selected);
-        //         var z = TagList.ItemContainerGenerator.ContainerFromIndex(index);
-        //         var w = GetChildOfType<ToggleButton>(z);
-        //         w.IsChecked = false;
-        //         var x = TagList.ItemContainerGenerator.ContainerFromIndex(index+1);
-        //         var y = GetChildOfType<ToggleButton>(x);
-        //         y.IsChecked = true;
-        //     }
-        //     var item = TagList.SelectedItem;
-        //     var a = 0;
-        // }
+
     }
 
     private void SetItemListByString(string searchStr, bool bPackageSearchAllOverride = false)
@@ -890,6 +865,7 @@ public partial class TagListView : UserControl
 
     #endregion
 
+    // TODO Entity Viewer 2.0
     #region Entity
 
     private void LoadEntity(FileHash fileHash)
@@ -1211,6 +1187,7 @@ public partial class TagListView : UserControl
 
     #endregion
 
+    // TODO Activity Viewer 2.0?
     #region Activity
 
     /// <summary>
@@ -1320,629 +1297,9 @@ public partial class TagListView : UserControl
         _mainWindow.MakeNewTab(PackageResourcer.Get().GetActivityName(fileHash), activityView);
         activityView.LoadActivity(fileHash);
         _mainWindow.SetNewestTabSelected();
-        // ExportControl.SetExportFunction(ExportActivityMapFull);
-        // ExportControl.SetExportInfo(fileHash);
     }
 
-    private void ExportActivityMapFull(object sender, RoutedEventArgs e)
-    {
-        var btn = sender as Button;
-        ExportInfo info = (ExportInfo)btn.Tag;
-        // ActivityControl.ExportFull();
-    }
-
-    #endregion
-
-    #region Static
-
-    private async Task LoadStaticList()
-    {
-        // If there are packages, we don't want to reload the view as very poor for performance.
-        if (_allTagItems != null)
-            return;
-
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            $"Loading Statics List",
-        });
-
-        await Task.Run(async () =>
-        {
-            _allTagItems = new ConcurrentBag<TagItem>();
-            ConcurrentHashSet<FileHash> eVals = await PackageResourcer.Get().GetAllHashesAsync<SStaticMesh>();
-            Parallel.ForEach(eVals, val =>
-            {
-                FileMetadata metadata = val.GetFileMetadata();
-                _allTagItems.Add(new TagItem
-                {
-                    Hash = val,
-                    Name = $"Static {metadata.FileIndex}",
-                    Subname = $"{Helpers.GetReadableSize(metadata.Size)}",
-                    TagType = ETagListType.Static
-                });
-            });
-
-            MakePackageTagItems();
-        });
-
-        MainWindow.Progress.CompleteStage();
-        RefreshItemList();  // bc of async stuff
-    }
-
-    private void LoadStatic(FileHash fileHash)
-    {
-        TagView viewer = GetViewer();
-        SetViewer(TagView.EViewerType.Static);
-        viewer.StaticControl.LoadStatic(fileHash, ExportDetailLevel.MostDetailed);
-        SetExportFunction(ExportStatic, (int)ExportTypeFlag.Full | (int)ExportTypeFlag.Minimal);
-        viewer.ExportControl.SetExportInfo(fileHash);
-    }
-
-    private void ExportStatic(ExportInfo info)
-    {
-        TagView viewer = GetViewer();
-        StaticView.ExportStatic(info.Hash as FileHash, info.Name, info.ExportType, info.SubPath);
-    }
-
-    #endregion
-
-    #region Texture
-
-    //private async Task LoadTextureList()
-    //{
-    //    // If there are packages, we don't want to reload the view as very poor for performance.
-    //    if (_allTagItems != null)
-    //        return;
-
-    //    MainWindow.Progress.SetProgressStages(new List<string>
-    //    {
-    //        "Caching Textures",
-    //        "Adding Textures to UI",
-    //    });
-
-    //    await Task.Run(() =>
-    //    {
-    //        _allTagItems = new ConcurrentBag<TagItem>();
-    //        var tex = PackageResourcer.Get().GetAllHashes<Texture>();
-    //        MainWindow.Progress.CompleteStage();
-
-    //        // Could use 'BitConverter.ToInt32(val.GetFileData(), 0))' to get the full file size from the header but this takes too long.
-    //        // Just gonna use the reference hash file metadata size...it really doesnt matter showing the file size anyways..
-    //        Parallel.ForEach(tex, val =>
-    //        {
-    //            _allTagItems.Add(new TagItem
-    //            {
-    //                Hash = val,
-    //                Name = $"Texture {val.GetFileMetadata().FileIndex}",
-    //                Subname = $"{Helpers.GetReadableSize(val.GetReferenceHash().GetFileMetadata().Size)}",
-    //                TagType = ETagListType.Texture
-    //            });
-    //        });
-    //        MainWindow.Progress.CompleteStage();
-
-    //        MakePackageTagItems();
-    //    });
-
-    //    RefreshItemList();  // bc of async stuff
-    //}
-
-    /// <summary>
-    /// I could do it tiled, but cba to bother with it when you can just batch export to filesystem.
-    /// </summary>
-    private void LoadTexture(FileHash fileHash)
-    {
-        TagView viewer = GetViewer();
-        Texture textureHeader = FileResourcer.Get().GetFile<Texture>(fileHash);
-        if (textureHeader.IsCubemap())
-        {
-            SetViewer(TagView.EViewerType.TextureCube);
-            viewer.CubemapControl.LoadCubemap(textureHeader);
-        }
-        else
-        {
-            SetViewer(TagView.EViewerType.Texture2D);
-            viewer.TextureControl.LoadTexture(textureHeader);
-        }
-        SetExportFunction(ExportTexture, (int)ExportTypeFlag.Full);
-        viewer.ExportControl.SetExportInfo(fileHash);
-    }
-
-    private void ExportTexture(ExportInfo info)
-    {
-        TextureExtractor.ExportTexture(info.Hash as FileHash);
-    }
-
-    #endregion
-
-    #region Dialogue
-
-    /// <summary>
-    /// We assume all dialogue tables come from activities.
-    /// </summary>
-    private void LoadDialogueList(FileHash fileHash)
-    {
-        _allTagItems = new ConcurrentBag<TagItem>();
-
-        // Dialogue tables can be in the 0x80808948 entries
-        ConcurrentDictionary<string, FileHash> dialogueTables = new();
-        switch (Strategy.CurrentStrategy)
-        {
-            case >= TigerStrategy.DESTINY2_WITCHQUEEN_6307:
-                ActivityWQ activity = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
-                if (activity.TagData.Unk18.GetValue(activity.GetReader()) is S6A988080 entry)
-                {
-                    foreach (SB7978080 dirtable in entry.DialogueTables)
-                    {
-                        if (dirtable.DialogueTable != null)
-                            dialogueTables.TryAdd(dirtable.DialogueTable.Hash, dirtable.DialogueTable.Hash);
-                    }
-                }
-                Parallel.ForEach(activity.TagData.Unk50, val =>
-                {
-                    foreach (S48898080 d2Class48898080 in val.Unk18)
-                    {
-                        dynamic? resource = d2Class48898080.UnkEntityReference.TagData.Unk10.GetValue(d2Class48898080.UnkEntityReference.GetReader());
-                        if (resource is SD5908080 or S44938080 or S45938080 or
-                            S18978080 or S19978080)
-                        {
-                            if (resource.DialogueTable != null)
-                                dialogueTables.TryAdd(resource.DialogueTable.Hash, resource.DialogueTable.Hash);
-                        }
-                    }
-                });
-                break;
-
-            case TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
-                ActivityWQ activityBL = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
-                dynamic? resource = activityBL.TagData.Unk18.GetValue(activityBL.GetReader());
-                //if (resource is SD5908080 || resource is S44938080 || resource is S45938080 ||
-                //    resource is S18978080 || resource is S19978080)
-                if (resource is S19978080)
-                {
-                    if (resource.DialogueTableBL != null)
-                        dialogueTables.TryAdd(resource.DialogueTableBL.Hash, resource.DialogueTableBL.Hash);
-                }
-                break;
-
-            case TigerStrategy.DESTINY2_SHADOWKEEP_2601:
-            case TigerStrategy.DESTINY2_SHADOWKEEP_2999:
-                ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
-                ConcurrentHashSet<FileHash> valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
-                foreach (FileHash val in valsSK)
-                {
-                    Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
-                    string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
-
-                    if (tag.TagData.ActivityDevName.Value.Contains(activityName))
-                    {
-                        foreach (FileHash tableHash in activitySK.GetActivityDialogueTables(val))
-                        {
-                            dialogueTables.TryAdd($"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}", tableHash);
-                        }
-                    }
-                }
-                break;
-
-            case TigerStrategy.DESTINY1_RISE_OF_IRON:
-                ActivityROI activityROI = FileResourcer.Get().GetFile<ActivityROI>(fileHash);
-                Dictionary<FileHash, TagClassHash> valsROI = PackageResourcer.Get().GetD1Activities();
-                foreach (KeyValuePair<FileHash, TagClassHash> val in valsROI)
-                {
-                    if (val.Value == "16068080")
-                    {
-                        Tag<SUnkActivity_ROI> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_ROI>(val.Key);
-
-                        string activityName = PackageResourcer.Get().GetActivityName(activityROI.FileHash).Split(':')[1];
-                        if (tag.TagData.ActivityDevName.Value.Contains(activityName))
-                        {
-                            dialogueTables.TryAdd($"{PackageResourcer.Get().GetActivityName(val.Key).Split(":").First()}", val.Key);
-                        }
-                    }
-                }
-                break;
-        }
-
-
-        Parallel.ForEach(dialogueTables, entry =>
-        {
-            _allTagItems.Add(new TagItem
-            {
-                Name = entry.Key,
-                Hash = entry.Value,
-                TagType = ETagListType.Dialogue
-            });
-        });
-    }
-
-
-    // TODO replace this by deleting DialogueControl and using TagList instead
-    private void LoadDialogue(FileHash fileHash)
-    {
-        TagView viewer = GetViewer();
-        SetViewer(TagView.EViewerType.Dialogue);
-        viewer.DialogueControl.Load(fileHash, viewer);
-    }
-
-    #endregion
-
-    #region Directive
-
-    private void LoadDirectiveList(FileHash fileHash)
-    {
-        _allTagItems = new ConcurrentBag<TagItem>();
-
-        ConcurrentDictionary<string, FileHash> directiveItems = new();
-        switch (Strategy.CurrentStrategy)
-        {
-            case >= TigerStrategy.DESTINY2_WITCHQUEEN_6307:
-                ActivityWQ activityWQ = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
-                if (activityWQ.TagData.Unk18.GetValue(activityWQ.GetReader()) is S6A988080 a988080)
-                {
-                    IEnumerable<FileHash> directiveTables = a988080.DirectiveTables.Select(x => x.DirectiveTable.Hash);
-
-                    Parallel.ForEach(directiveTables, hash =>
-                    {
-                        directiveItems.TryAdd(hash, hash);
-                    });
-                }
-                else if (activityWQ.TagData.Unk18.GetValue(activityWQ.GetReader()) is S20978080 class20978080)
-                {
-                    IEnumerable<FileHash> directiveTables = class20978080.PEDirectiveTables.Select(x => x.DirectiveTable.Hash);
-
-                    Parallel.ForEach(directiveTables, hash =>
-                    {
-                        directiveItems.TryAdd(hash, hash);
-                    });
-                }
-                break;
-
-            case TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
-                ActivityWQ activityBL = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
-                if (activityBL.TagData.Unk18.GetValue(activityBL.GetReader()) is S19978080 resource)
-                {
-                    IEnumerable<FileHash?> directiveTables = resource.DirectiveTables.Where(x => x.DirectiveTable is not null).Select(x => x.DirectiveTable?.Hash);
-
-                    Parallel.ForEach(directiveTables, hash =>
-                    {
-                        directiveItems.TryAdd(hash ?? "", hash);
-                    });
-                }
-                break;
-
-            case TigerStrategy.DESTINY2_SHADOWKEEP_2601:
-            case TigerStrategy.DESTINY2_SHADOWKEEP_2999:
-                ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
-                ConcurrentHashSet<FileHash> valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
-                foreach (FileHash val in valsSK)
-                {
-                    Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
-                    string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
-
-                    if (tag.TagData.ActivityDevName.Value.Contains(activityName))
-                    {
-                        foreach (FileHash tableHash in activitySK.GetActivityDirectiveTables(val))
-                        {
-                            directiveItems.TryAdd($"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}", tableHash);
-                        }
-                    }
-                }
-                break;
-
-
-            case TigerStrategy.DESTINY1_RISE_OF_IRON:
-                ActivityROI activityROI = FileResourcer.Get().GetFile<ActivityROI>(fileHash);
-                Dictionary<FileHash, TagClassHash> valsROI = PackageResourcer.Get().GetD1Activities();
-                foreach (KeyValuePair<FileHash, TagClassHash> val in valsROI)
-                {
-                    if (val.Value == "16068080")
-                    {
-                        Tag<SUnkActivity_ROI> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_ROI>(val.Key);
-                        string activityName = PackageResourcer.Get().GetActivityName(activityROI.FileHash).Split(':')[1];
-                        if (tag.TagData.ActivityDevName.Value.Contains(activityName))
-                        {
-                            directiveItems.TryAdd(PackageResourcer.Get().GetActivityName(val.Key).Split(":").First(), val.Key);
-                        }
-                    }
-                }
-                break;
-        }
-
-        Parallel.ForEach(directiveItems, entry =>
-        {
-            _allTagItems.Add(new TagItem
-            {
-                Name = entry.Key,
-                Hash = entry.Value,
-                TagType = ETagListType.Directive
-            });
-        });
-    }
-
-    // TODO replace with taglist control
-    private void LoadDirective(FileHash fileHash)
-    {
-        SetViewer(TagView.EViewerType.Directive);
-        TagView viewer = GetViewer();
-        viewer.DirectiveControl.Load(fileHash);
-    }
-
-    #endregion
-
-    #region String
-
-    private async Task LoadStringContainersList()
-    {
-        // If there are packages, we don't want to reload the view as very poor for performance.
-        if (_allTagItems != null)
-            return;
-
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            "Caching String Tags",
-            "Loading String List",
-        });
-
-        await Task.Run(async () =>
-        {
-            _allTagItems = new ConcurrentBag<TagItem>();
-            ConcurrentHashSet<FileHash> vals = await PackageResourcer.Get().GetAllHashesAsync<LocalizedStrings>();
-            MainWindow.Progress.CompleteStage();
-
-            Parallel.ForEach(vals, val =>
-            {
-                FileMetadata metadata = val.GetFileMetadata();
-                _allTagItems.Add(new TagItem
-                {
-                    Hash = val,
-                    Name = $"String Container {metadata.FileIndex}",
-                    Subname = $"{Helpers.GetReadableSize(metadata.Size)}",
-                    TagType = ETagListType.StringContainer
-                });
-            });
-            MainWindow.Progress.CompleteStage();
-
-            MakePackageTagItems();
-        });
-
-        RefreshItemList();  // bc of async stuff
-    }
-
-    private void LoadStringContainer(FileHash fileHash)
-    {
-        SetViewer(TagView.EViewerType.TagList);
-        TagView viewer = GetViewer();
-        viewer.TagListControl.LoadContent(ETagListType.Strings, fileHash, true);
-    }
-
-    // Would be nice to do something with colour formatting.
-    private void LoadStrings(FileHash fileHash)
-    {
-        TagView viewer = GetViewer();
-        _allTagItems = new ConcurrentBag<TagItem>();
-        LocalizedStrings localizedStrings = FileResourcer.Get().GetFile<LocalizedStrings>(fileHash);
-
-        localizedStrings.GetAllStringViews().ForEach(view =>
-        {
-            _allTagItems.Add(new TagItem
-            {
-                Name = view.RawString,
-                Hash = view.StringHash,
-                TagType = ETagListType.String
-            });
-        });
-
-        RefreshItemList();
-        SetExportFunction(ExportString, (int)ExportTypeFlag.Full, hideBulkExport: true);
-        viewer.ExportControl.SetExportInfo(fileHash);
-    }
-
-    private void ExportString(ExportInfo info)
-    {
-        LocalizedStrings localizedStrings = FileResourcer.Get().GetFile<LocalizedStrings>(info.Hash);
-        StringBuilder text = new();
-
-        localizedStrings.GetAllStringViews().ForEach(view =>
-        {
-            text.Append($"{view.StringHash} : {view.RawString} \n");
-        });
-
-        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
-        string saveDirectory = config.GetExportSavePath() + $"/Strings/{info.Hash}_{info.Name}/";
-        Directory.CreateDirectory(saveDirectory);
-
-        File.WriteAllText(saveDirectory + "strings.txt", text.ToString());
-
-    }
-
-    #endregion
-
-    #region Sound
-
-    private async Task LoadSoundsPackagesList()
-    {
-        // If there are packages, we don't want to reload the view as very poor for performance.
-        if (_allTagItems != null)
-            return;
-
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            "Caching Sound Tags",
-            "Loading Sound Packages List",
-        });
-
-        await Task.Run(() =>
-        {
-            _allTagItems = new ConcurrentBag<TagItem>();
-            ConcurrentHashSet<FileHash> vals = PackageResourcer.Get().GetAllHashes<Wem>();
-            MainWindow.Progress.CompleteStage();
-
-            ConcurrentHashSet<int> packageIds = new();
-            Parallel.ForEach(vals, wem =>
-            {
-                packageIds.Add(wem.PackageId);
-            });
-
-            Parallel.ForEach(packageIds, pkgId =>
-            {
-                _allTagItems.Add(new TagItem
-                {
-                    Name = string.Join('_', PackageResourcer.Get().PackagePathsCache.GetPackagePathFromId((ushort)pkgId).Split('_').Skip(1).SkipLast(1)),
-                    Hash = new FileHash(pkgId, 0),
-                    TagType = ETagListType.SoundsPackage
-                });
-            });
-        });
-
-        MainWindow.Progress.CompleteStage();
-        RefreshItemList();  // bc of async stuff
-    }
-
-    private void LoadSoundsPackage(FileHash fileHash)
-    {
-        SetViewer(TagView.EViewerType.TagList);
-        TagView viewer = GetViewer();
-        viewer.MusicPlayer.Visibility = Visibility.Visible;
-        viewer.TagListControl.LoadContent(ETagListType.SoundsList, fileHash, true);
-    }
-
-    private async Task LoadSoundsList(FileHash fileHash)
-    {
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            "Loading Sounds",
-        });
-
-        await Task.Run(() =>
-        {
-            HashSet<FileHash> vals = PackageResourcer.Get().GetPackage(fileHash.PackageId).GetAllHashes(typeof(Wem));
-            _allTagItems = new ConcurrentBag<TagItem>();
-            Parallel.ForEach(vals, hash =>
-            {
-                Wem wem = FileResourcer.Get().GetFile<Wem>(hash, false, false);
-                if (wem.GetData(false).Length <= 1)
-                    return;
-
-                FileMetadata metadata = wem.Hash.GetFileMetadata();
-                _allTagItems.Add(new TagItem
-                {
-                    Hash = wem.Hash,
-                    Name = $"WEM {metadata.FileIndex} {(wem.Channels > 2 ? "⚠" : "")}",
-                    Subname = $"{Helpers.GetReadableSize(metadata.Size)} | Duration: {wem.Duration}",
-                    TagType = ETagListType.Sound,
-                    Extra = wem.Seconds
-                });
-            });
-        });
-
-        MainWindow.Progress.CompleteStage();
-        RefreshItemList();
-
-    }
-
-    private async Task LoadBKHDGroupList()
-    {
-        MainWindow.Progress.SetProgressStages(new List<string>
-        {
-            "Loading Sound Banks",
-        });
-
-        await Task.Run(() =>
-        {
-            HashSet<WwiseSound> banks = PackageResourcer.Get().GetAllFiles<WwiseSound>();
-            _allTagItems = new ConcurrentBag<TagItem>();
-
-            Parallel.ForEach(banks, bank =>
-            {
-                if (bank.TagData.Wems.Count > 0)
-                {
-                    string name = bank.TagData.SoundbankBL.GetNameFromBank();
-
-                    _allTagItems.Add(new TagItem
-                    {
-                        Hash = bank.Hash,
-                        Name = name,
-                        Subname = $"{bank.TagData.Wems.Count} Sounds",
-                        TagType = ETagListType.BKHDGroup
-                    });
-                }
-            });
-        });
-
-        MainWindow.Progress.CompleteStage();
-        RefreshItemList();
-    }
-
-    private void LoadBKHDAudioGroup(FileHash hash)
-    {
-        TagView viewer = GetViewer();
-        SetViewer(TagView.EViewerType.TagList);
-        viewer.TagListControl.LoadContent(ETagListType.BKHDAudioList, hash, true);
-        viewer.MusicPlayer.Visibility = Visibility.Visible;
-    }
-
-    private void LoadBKHDAudioList(FileHash hash)
-    {
-        _allTagItems = new ConcurrentBag<TagItem>();
-        WwiseSound bank = FileResourcer.Get().GetFile<WwiseSound>(hash);
-
-        Parallel.ForEach(bank.TagData.Wems, wem =>
-        {
-            if (wem.GetData().Length == 1)
-                return;
-
-            _allTagItems.Add(new TagItem
-            {
-                Name = wem.Hash,
-                Hash = wem.Hash,
-                Subname = wem.Duration,
-                TagType = ETagListType.Sound
-            });
-        });
-
-        RefreshItemList();
-    }
-
-    private void LoadSound(FileHash fileHash)
-    {
-        TagView viewer = GetViewer();
-        if (viewer.MusicPlayer.SetWem(FileResourcer.Get().GetFile<Wem>(fileHash)))
-        {
-            viewer.MusicPlayer.Play();
-            SetExportFunction(ExportWav, (int)ExportTypeFlag.Full, hideBulkExport: true); // TODO make bulk sound exporting work
-            viewer.ExportControl.SetExportInfo(fileHash);
-        }
-    }
-
-    private void ExportWEM(ExportInfo info)
-    {
-        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
-
-        WwiseSound sound = FileResourcer.Get().GetFile<WwiseSound>(info.Hash);
-        string saveDirectory = config.GetExportSavePath() + $"/Sound/{(_weaponItemName == null ? "" : $"{_weaponItemName}/")}{info.Hash}_{info.Name}/";
-        Directory.CreateDirectory(saveDirectory);
-        sound.ExportSound(saveDirectory);
-    }
-
-    private void ExportWav(ExportInfo info)
-    {
-        // exporting while playing the audio causes a hang
-        TagView viewer = GetViewer();
-        Dispatcher.Invoke(() =>
-        {
-            if (viewer.MusicPlayer.IsPlaying())
-                viewer.MusicPlayer.Pause();
-        });
-
-        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
-        Wem wem = FileResourcer.Get().GetFile<Wem>(info.Hash);
-        string saveDirectory = config.GetExportSavePath() + $"/Sound/{info.Hash}_{info.Name}/";
-        Directory.CreateDirectory(saveDirectory);
-        wem.SaveToFile($"{saveDirectory}/{info.Name}.wav");
-    }
-
-    #endregion
-
-    #region Music
+    #region Activity Music
 
     /// <summary>
     /// We assume all music tables come from activities.
@@ -2065,6 +1422,495 @@ public partial class TagListView : UserControl
 
         SetExportFunction(viewer.MusicControl.Export, (int)ExportTypeFlag.Full, true);
         viewer.ExportControl.SetExportInfo(fileHash);
+    }
+
+    #endregion
+
+    #region Activity Dialogue
+
+    /// <summary>
+    /// We assume all dialogue tables come from activities.
+    /// </summary>
+    private void LoadDialogueList(FileHash fileHash)
+    {
+        _allTagItems = new ConcurrentBag<TagItem>();
+
+        // Dialogue tables can be in the 0x80808948 entries
+        ConcurrentDictionary<string, FileHash> dialogueTables = new();
+        switch (Strategy.CurrentStrategy)
+        {
+            case >= TigerStrategy.DESTINY2_WITCHQUEEN_6307:
+                ActivityWQ activity = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
+                if (activity.TagData.Unk18.GetValue(activity.GetReader()) is S6A988080 entry)
+                {
+                    foreach (SB7978080 dirtable in entry.DialogueTables)
+                    {
+                        if (dirtable.DialogueTable != null)
+                            dialogueTables.TryAdd(dirtable.DialogueTable.Hash, dirtable.DialogueTable.Hash);
+                    }
+                }
+                Parallel.ForEach(activity.TagData.Unk50, val =>
+                {
+                    foreach (S48898080 d2Class48898080 in val.Unk18)
+                    {
+                        dynamic? resource = d2Class48898080.UnkEntityReference.TagData.Unk10.GetValue(d2Class48898080.UnkEntityReference.GetReader());
+                        if (resource is SD5908080 or S44938080 or S45938080 or
+                            S18978080 or S19978080)
+                        {
+                            if (resource.DialogueTable != null)
+                                dialogueTables.TryAdd(resource.DialogueTable.Hash, resource.DialogueTable.Hash);
+                        }
+                    }
+                });
+                break;
+
+            case TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
+                ActivityWQ activityBL = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
+                dynamic? resource = activityBL.TagData.Unk18.GetValue(activityBL.GetReader());
+                //if (resource is SD5908080 || resource is S44938080 || resource is S45938080 ||
+                //    resource is S18978080 || resource is S19978080)
+                if (resource is S19978080)
+                {
+                    if (resource.DialogueTableBL != null)
+                        dialogueTables.TryAdd(resource.DialogueTableBL.Hash, resource.DialogueTableBL.Hash);
+                }
+                break;
+
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2601:
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
+                ConcurrentHashSet<FileHash> valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
+                foreach (FileHash val in valsSK)
+                {
+                    Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
+                    string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
+
+                    if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                    {
+                        foreach (FileHash tableHash in activitySK.GetActivityDialogueTables(val))
+                        {
+                            dialogueTables.TryAdd($"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}", tableHash);
+                        }
+                    }
+                }
+                break;
+
+            case TigerStrategy.DESTINY1_RISE_OF_IRON:
+                ActivityROI activityROI = FileResourcer.Get().GetFile<ActivityROI>(fileHash);
+                Dictionary<FileHash, TagClassHash> valsROI = PackageResourcer.Get().GetD1Activities();
+                foreach (KeyValuePair<FileHash, TagClassHash> val in valsROI)
+                {
+                    if (val.Value == "16068080")
+                    {
+                        Tag<SUnkActivity_ROI> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_ROI>(val.Key);
+
+                        string activityName = PackageResourcer.Get().GetActivityName(activityROI.FileHash).Split(':')[1];
+                        if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                        {
+                            dialogueTables.TryAdd($"{PackageResourcer.Get().GetActivityName(val.Key).Split(":").First()}", val.Key);
+                        }
+                    }
+                }
+                break;
+        }
+
+
+        Parallel.ForEach(dialogueTables, entry =>
+        {
+            _allTagItems.Add(new TagItem
+            {
+                Name = entry.Key,
+                Hash = entry.Value,
+                TagType = ETagListType.Dialogue
+            });
+        });
+    }
+
+
+    // TODO replace this by deleting DialogueControl and using TagList instead
+    private void LoadDialogue(FileHash fileHash)
+    {
+        TagView viewer = GetViewer();
+        SetViewer(TagView.EViewerType.Dialogue);
+        viewer.DialogueControl.Load(fileHash, viewer);
+    }
+
+    #endregion
+
+    #region Activity Directives
+
+    private void LoadDirectiveList(FileHash fileHash)
+    {
+        _allTagItems = new ConcurrentBag<TagItem>();
+
+        ConcurrentDictionary<string, FileHash> directiveItems = new();
+        switch (Strategy.CurrentStrategy)
+        {
+            case >= TigerStrategy.DESTINY2_WITCHQUEEN_6307:
+                ActivityWQ activityWQ = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
+                if (activityWQ.TagData.Unk18.GetValue(activityWQ.GetReader()) is S6A988080 a988080)
+                {
+                    IEnumerable<FileHash> directiveTables = a988080.DirectiveTables.Select(x => x.DirectiveTable.Hash);
+
+                    Parallel.ForEach(directiveTables, hash =>
+                    {
+                        directiveItems.TryAdd(hash, hash);
+                    });
+                }
+                else if (activityWQ.TagData.Unk18.GetValue(activityWQ.GetReader()) is S20978080 class20978080)
+                {
+                    IEnumerable<FileHash> directiveTables = class20978080.PEDirectiveTables.Select(x => x.DirectiveTable.Hash);
+
+                    Parallel.ForEach(directiveTables, hash =>
+                    {
+                        directiveItems.TryAdd(hash, hash);
+                    });
+                }
+                break;
+
+            case TigerStrategy.DESTINY2_BEYONDLIGHT_3402:
+                ActivityWQ activityBL = FileResourcer.Get().GetFile<ActivityWQ>(fileHash);
+                if (activityBL.TagData.Unk18.GetValue(activityBL.GetReader()) is S19978080 resource)
+                {
+                    IEnumerable<FileHash?> directiveTables = resource.DirectiveTables.Where(x => x.DirectiveTable is not null).Select(x => x.DirectiveTable?.Hash);
+
+                    Parallel.ForEach(directiveTables, hash =>
+                    {
+                        directiveItems.TryAdd(hash ?? "", hash);
+                    });
+                }
+                break;
+
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2601:
+            case TigerStrategy.DESTINY2_SHADOWKEEP_2999:
+                ActivitySK activitySK = FileResourcer.Get().GetFile<ActivitySK>(fileHash);
+                ConcurrentHashSet<FileHash> valsSK = PackageResourcer.Get().GetAllHashes<SUnkActivity_SK>();
+                foreach (FileHash val in valsSK)
+                {
+                    Tag<SUnkActivity_SK> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_SK>(val);
+                    string activityName = PackageResourcer.Get().GetActivityName(activitySK.FileHash).Split(':')[1];
+
+                    if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                    {
+                        foreach (FileHash tableHash in activitySK.GetActivityDirectiveTables(val))
+                        {
+                            directiveItems.TryAdd($"{PackageResourcer.Get().GetActivityName(val).Split(":").First()}", tableHash);
+                        }
+                    }
+                }
+                break;
+
+
+            case TigerStrategy.DESTINY1_RISE_OF_IRON:
+                ActivityROI activityROI = FileResourcer.Get().GetFile<ActivityROI>(fileHash);
+                Dictionary<FileHash, TagClassHash> valsROI = PackageResourcer.Get().GetD1Activities();
+                foreach (KeyValuePair<FileHash, TagClassHash> val in valsROI)
+                {
+                    if (val.Value == "16068080")
+                    {
+                        Tag<SUnkActivity_ROI> tag = FileResourcer.Get().GetSchemaTag<SUnkActivity_ROI>(val.Key);
+                        string activityName = PackageResourcer.Get().GetActivityName(activityROI.FileHash).Split(':')[1];
+                        if (tag.TagData.ActivityDevName.Value.Contains(activityName))
+                        {
+                            directiveItems.TryAdd(PackageResourcer.Get().GetActivityName(val.Key).Split(":").First(), val.Key);
+                        }
+                    }
+                }
+                break;
+        }
+
+        Parallel.ForEach(directiveItems, entry =>
+        {
+            _allTagItems.Add(new TagItem
+            {
+                Name = entry.Key,
+                Hash = entry.Value,
+                TagType = ETagListType.Directive
+            });
+        });
+    }
+
+    // TODO replace with taglist control
+    private void LoadDirective(FileHash fileHash)
+    {
+        SetViewer(TagView.EViewerType.Directive);
+        TagView viewer = GetViewer();
+        viewer.DirectiveControl.Load(fileHash);
+    }
+
+    #endregion
+
+    #endregion
+
+    #region Static
+
+    private async Task LoadStaticList()
+    {
+        // If there are packages, we don't want to reload the view as very poor for performance.
+        if (_allTagItems != null)
+            return;
+
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            $"Loading Statics List",
+        });
+
+        await Task.Run(async () =>
+        {
+            _allTagItems = new ConcurrentBag<TagItem>();
+            ConcurrentHashSet<FileHash> eVals = await PackageResourcer.Get().GetAllHashesAsync<SStaticMesh>();
+            Parallel.ForEach(eVals, val =>
+            {
+                FileMetadata metadata = val.GetFileMetadata();
+                _allTagItems.Add(new TagItem
+                {
+                    Hash = val,
+                    Name = $"Static {metadata.FileIndex}",
+                    Subname = $"{Helpers.GetReadableSize(metadata.Size)}",
+                    TagType = ETagListType.Static
+                });
+            });
+
+            MakePackageTagItems();
+        });
+
+        MainWindow.Progress.CompleteStage();
+        RefreshItemList();  // bc of async stuff
+    }
+
+    private void LoadStatic(FileHash fileHash)
+    {
+        TagView viewer = GetViewer();
+        SetViewer(TagView.EViewerType.Static);
+        viewer.StaticControl.LoadStatic(fileHash, ExportDetailLevel.MostDetailed);
+        SetExportFunction(ExportStatic, (int)ExportTypeFlag.Full | (int)ExportTypeFlag.Minimal);
+        viewer.ExportControl.SetExportInfo(fileHash);
+    }
+
+    private void ExportStatic(ExportInfo info)
+    {
+        TagView viewer = GetViewer();
+        StaticView.ExportStatic(info.Hash as FileHash, info.Name, info.ExportType, info.SubPath);
+    }
+
+    #endregion
+
+    #region Texture
+
+    private void LoadTexture(FileHash fileHash)
+    {
+        TagView viewer = GetViewer();
+        Texture textureHeader = FileResourcer.Get().GetFile<Texture>(fileHash);
+        if (textureHeader.IsCubemap())
+        {
+            SetViewer(TagView.EViewerType.TextureCube);
+            viewer.CubemapControl.LoadCubemap(textureHeader);
+        }
+        else
+        {
+            SetViewer(TagView.EViewerType.Texture2D);
+            viewer.TextureControl.LoadTexture(textureHeader);
+        }
+        SetExportFunction(ExportTexture, (int)ExportTypeFlag.Full);
+        viewer.ExportControl.SetExportInfo(fileHash);
+    }
+
+    private void ExportTexture(ExportInfo info)
+    {
+        TextureExtractor.ExportTexture(info.Hash as FileHash);
+    }
+
+    #endregion
+
+    #region String
+
+    private async Task LoadStringContainersList()
+    {
+        // If there are packages, we don't want to reload the view as very poor for performance.
+        if (_allTagItems != null)
+            return;
+
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            "Caching String Tags",
+            "Loading String List",
+        });
+
+        await Task.Run(async () =>
+        {
+            _allTagItems = new ConcurrentBag<TagItem>();
+            ConcurrentHashSet<FileHash> vals = await PackageResourcer.Get().GetAllHashesAsync<LocalizedStrings>();
+            MainWindow.Progress.CompleteStage();
+
+            Parallel.ForEach(vals, val =>
+            {
+                FileMetadata metadata = val.GetFileMetadata();
+                _allTagItems.Add(new TagItem
+                {
+                    Hash = val,
+                    Name = $"String Container {metadata.FileIndex}",
+                    Subname = $"{Helpers.GetReadableSize(metadata.Size)}",
+                    TagType = ETagListType.StringContainer
+                });
+            });
+            MainWindow.Progress.CompleteStage();
+
+            MakePackageTagItems();
+        });
+
+        RefreshItemList();  // bc of async stuff
+    }
+
+    private void LoadStringContainer(FileHash fileHash)
+    {
+        SetViewer(TagView.EViewerType.TagList);
+        TagView viewer = GetViewer();
+        viewer.TagListControl.LoadContent(ETagListType.Strings, fileHash, true);
+    }
+
+    // Would be nice to do something with colour formatting.
+    private void LoadStrings(FileHash fileHash)
+    {
+        TagView viewer = GetViewer();
+        _allTagItems = new ConcurrentBag<TagItem>();
+        LocalizedStrings localizedStrings = FileResourcer.Get().GetFile<LocalizedStrings>(fileHash);
+
+        localizedStrings.GetAllStringViews().ForEach(view =>
+        {
+            _allTagItems.Add(new TagItem
+            {
+                Name = view.RawString,
+                Hash = view.StringHash,
+                TagType = ETagListType.String
+            });
+        });
+
+        RefreshItemList();
+        SetExportFunction(ExportString, (int)ExportTypeFlag.Full, hideBulkExport: true);
+        viewer.ExportControl.SetExportInfo(fileHash);
+    }
+
+    private void ExportString(ExportInfo info)
+    {
+        LocalizedStrings localizedStrings = FileResourcer.Get().GetFile<LocalizedStrings>(info.Hash);
+        StringBuilder text = new();
+
+        localizedStrings.GetAllStringViews().ForEach(view =>
+        {
+            text.Append($"{view.StringHash} : {view.RawString} \n");
+        });
+
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
+        string saveDirectory = config.GetExportSavePath() + $"/Strings/{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+
+        File.WriteAllText(saveDirectory + "strings.txt", text.ToString());
+
+    }
+
+    #endregion
+
+    #region Sound
+
+    private async Task LoadBKHDGroupList()
+    {
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            "Loading Sound Banks",
+        });
+
+        await Task.Run(() =>
+        {
+            HashSet<WwiseSound> banks = PackageResourcer.Get().GetAllFiles<WwiseSound>();
+            _allTagItems = new ConcurrentBag<TagItem>();
+
+            Parallel.ForEach(banks, bank =>
+            {
+                if (bank.TagData.Wems.Count > 0)
+                {
+                    string name = bank.TagData.SoundbankBL.GetNameFromBank();
+
+                    _allTagItems.Add(new TagItem
+                    {
+                        Hash = bank.Hash,
+                        Name = name,
+                        Subname = $"{bank.TagData.Wems.Count} Sounds",
+                        TagType = ETagListType.BKHDGroup
+                    });
+                }
+            });
+        });
+
+        MainWindow.Progress.CompleteStage();
+        RefreshItemList();
+    }
+
+    private void LoadBKHDAudioGroup(FileHash hash)
+    {
+        TagView viewer = GetViewer();
+        SetViewer(TagView.EViewerType.TagList);
+        viewer.TagListControl.LoadContent(ETagListType.BKHDAudioList, hash, true);
+        viewer.MusicPlayer.Visibility = Visibility.Visible;
+    }
+
+    private void LoadBKHDAudioList(FileHash hash)
+    {
+        _allTagItems = new ConcurrentBag<TagItem>();
+        WwiseSound bank = FileResourcer.Get().GetFile<WwiseSound>(hash);
+
+        Parallel.ForEach(bank.TagData.Wems, wem =>
+        {
+            if (wem.GetData().Length == 1)
+                return;
+
+            _allTagItems.Add(new TagItem
+            {
+                Name = wem.Hash,
+                Hash = wem.Hash,
+                Subname = wem.Duration,
+                TagType = ETagListType.Sound
+            });
+        });
+
+        RefreshItemList();
+    }
+
+    private void LoadSound(FileHash fileHash)
+    {
+        TagView viewer = GetViewer();
+        if (viewer.MusicPlayer.SetWem(FileResourcer.Get().GetFile<Wem>(fileHash)))
+        {
+            viewer.MusicPlayer.Play();
+            SetExportFunction(ExportWav, (int)ExportTypeFlag.Full, hideBulkExport: true); // TODO make bulk sound exporting work
+            viewer.ExportControl.SetExportInfo(fileHash);
+        }
+    }
+
+    private void ExportWEM(ExportInfo info)
+    {
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
+
+        WwiseSound sound = FileResourcer.Get().GetFile<WwiseSound>(info.Hash);
+        string saveDirectory = config.GetExportSavePath() + $"/Sound/{(_weaponItemName == null ? "" : $"{_weaponItemName}/")}{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+        sound.ExportSound(saveDirectory);
+    }
+
+    private void ExportWav(ExportInfo info)
+    {
+        // exporting while playing the audio causes a hang
+        TagView viewer = GetViewer();
+        Dispatcher.Invoke(() =>
+        {
+            if (viewer.MusicPlayer.IsPlaying())
+                viewer.MusicPlayer.Pause();
+        });
+
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
+        Wem wem = FileResourcer.Get().GetFile<Wem>(info.Hash);
+        string saveDirectory = config.GetExportSavePath() + $"/Sound/{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+        wem.SaveToFile($"{saveDirectory}/{info.Name}.wav");
     }
 
     #endregion
@@ -2506,4 +2352,13 @@ public class TagItem : INotifyPropertyChanged
     {
         TagImageSource = null;
     }
+}
+
+public class PackageItem
+{
+    public string Name { get; set; }
+    public int ID { get; set; }
+    public int Count { get; set; }
+    public ConcurrentHashSet<FileHash> Hashes { get; set; }
+    public bool IsSelected { get; set; } = false;
 }

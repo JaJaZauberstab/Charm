@@ -116,7 +116,7 @@ public partial class MainMenuView : UserControl
 
         DareView apiView = new();
         apiView.LoadContent();
-        _mainWindow.MakeNewTab("api", apiView);
+        _mainWindow.MakeNewTab("API", apiView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -134,7 +134,7 @@ public partial class MainMenuView : UserControl
     {
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.DestinationGlobalTagBagList);
-        _mainWindow.MakeNewTab("destination global tag bag", tagListView);
+        _mainWindow.MakeNewTab("Destination Global Tag Bag", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -142,7 +142,7 @@ public partial class MainMenuView : UserControl
     {
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.EntityList);
-        _mainWindow.MakeNewTab("dynamics", tagListView);
+        _mainWindow.MakeNewTab("Dynamics", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -150,7 +150,7 @@ public partial class MainMenuView : UserControl
     {
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.ActivityList);
-        _mainWindow.MakeNewTab("activities", tagListView);
+        _mainWindow.MakeNewTab("Activities", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -158,7 +158,7 @@ public partial class MainMenuView : UserControl
     {
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.StaticsList);
-        _mainWindow.MakeNewTab("statics", tagListView);
+        _mainWindow.MakeNewTab("Statics", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -168,15 +168,15 @@ public partial class MainMenuView : UserControl
 
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.WeaponAudioGroupList);
-        _mainWindow.MakeNewTab("weapon audio", tagListView);
+        _mainWindow.MakeNewTab("Weapon Audio", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllAudioViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new();
-        tagListView.LoadContent(ETagListType.SoundsPackagesList);
-        _mainWindow.MakeNewTab("sounds", tagListView);
+        AudioListView audioListView = new();
+        audioListView.LoadContent();
+        _mainWindow.MakeNewTab("Sounds", audioListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -184,7 +184,7 @@ public partial class MainMenuView : UserControl
     {
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.BKHDGroupList);
-        _mainWindow.MakeNewTab("sound banks", tagListView);
+        _mainWindow.MakeNewTab("Sound Banks", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -196,19 +196,11 @@ public partial class MainMenuView : UserControl
         _mainWindow.SetNewestTabSelected();
     }
 
-    //private void AllTexturesViewButton_OnClick(object sender, RoutedEventArgs e)
-    //{
-    //    TagListViewerView tagListView = new TagListViewerView();
-    //    tagListView.LoadContent(ETagListType.TextureList);
-    //    _mainWindow.MakeNewTab("textures", tagListView);
-    //    _mainWindow.SetNewestTabSelected();
-    //}
-
     private void AllTexturesView2Button_OnClick(object sender, RoutedEventArgs e)
     {
         TextureListView textureListView = new();
         textureListView.LoadContent();
-        _mainWindow.MakeNewTab("textures", textureListView);
+        _mainWindow.MakeNewTab("Textures", textureListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -216,7 +208,7 @@ public partial class MainMenuView : UserControl
     {
         TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.MaterialList);
-        _mainWindow.MakeNewTab("materials", tagListView);
+        _mainWindow.MakeNewTab("Materials", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 

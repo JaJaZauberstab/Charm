@@ -32,6 +32,7 @@
       <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
       <PackageReference Include="NAudio" Version="2.2.1" />
       <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+      <PackageReference Include="Restless.WaveForm" Version="1.1.0" />
       <PackageReference Include="VersionChecker" Version="1.1.0" />
       <PackageReference Include="VirtualizingWrapPanel" Version="2.1.1" />
     </ItemGroup>
@@ -133,6 +134,12 @@
       <Content Include="Shaders\Spinner.hlsl">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\AudioListView.xaml.cs">
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
 </Project>

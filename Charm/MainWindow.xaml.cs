@@ -411,6 +411,10 @@ public partial class MainWindow
             {
                 av.Dispose();
             }
+            else if (content is AudioListView audioView)
+            {
+                audioView.MusicPlayer.Dispose();
+            }
         }
     }
 

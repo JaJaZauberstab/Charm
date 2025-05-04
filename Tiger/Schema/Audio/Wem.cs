@@ -1,5 +1,4 @@
 ﻿using Arithmic;
-using DataTool.ConvertLogic;
 using NAudio.Vorbis;
 using NAudio.Wave;
 using Tiger.Schema.Audio.ThirdParty;
@@ -17,17 +16,48 @@ namespace Tiger.Schema.Audio;
 public class Wem : TigerFile
 {
     private MemoryStream _wemStream = null;
-    private WaveStream _wemReader = null;
-    private bool _bDisposed = false;
-    private OWSound.WwiseRIFFVorbis WemData = null;
 
-    private int _channels;
+    private WaveStream _wemReader = null;
+    public WaveStream WemReaderClone = null;
+
+    private bool _bDisposed = false;
+    //private OWSound.WwiseRIFFVorbis WemData = null;
+    public WEMMetadata? WemData = null;
+
     public int Channels
     {
         get
         {
             GetWEMData();
-            return WemData.Channels;
+            return WemData.Value.Channels;
+        }
+    }
+
+    public string Duration
+    {
+        get
+        {
+            GetWEMData();
+            float duration = GetDuration();
+            return GetDurationString(duration);
+        }
+    }
+
+    public float Seconds
+    {
+        get
+        {
+            GetWEMData();
+            return GetDuration();
+        }
+    }
+
+    public int SampleRate
+    {
+        get
+        {
+            GetWEMData();
+            return WemData.Value.SampleRate;
         }
     }
 
@@ -44,11 +74,11 @@ public class Wem : TigerFile
         _bDisposed = false;
         _wemStream = GetWemStream();
         _wemReader = new VorbisWaveReader(_wemStream);
-        _channels = _wemReader.WaveFormat.Channels;
+        WemReaderClone = Clone();
 
         try
         {
-            if (_wemReader.WaveFormat.Channels > 2) // this sucks I hate this so much
+            if (Channels > 2) // this sucks I hate this so much
                 _wemReader = DownmixToStereo(_wemReader);
         }
         catch (Exception e)
@@ -59,7 +89,8 @@ public class Wem : TigerFile
 
     private void GetWEMData()
     {
-        WemData ??= WemConverter.GetWwiseRIFFVorbis(GetStream());
+        if (WemData is null)
+            WemData = GetWEMMetadata(); //WemConverter.GetWwiseRIFFVorbis(GetStream());
     }
 
     private void CheckLoaded()
@@ -91,33 +122,24 @@ public class Wem : TigerFile
         }
     }
 
-    public TimeSpan GetDuration()
+    public float GetDuration()
     {
-        GetWEMData();
-        return TimeSpan.FromSeconds(GetStream().Length / (double)WemData.AvgBytesPerSecond);
+        return (float)WemData.Value.DataSize / (float)WemData.Value.AvgBytesPerSecond;
     }
 
-    public static string GetDurationString(TimeSpan timespan)
+    public static string GetDurationString(float duration)
     {
-        return $"{(int)timespan.TotalMinutes}:{timespan.Seconds:00}";
-    }
-
-    public string Duration
-    {
-        get
+        if (duration > 60.0f)
         {
-            GetWEMData();
-            TimeSpan timespan = GetDuration();
-            return GetDurationString(timespan);
+            int minutes = (int)Math.Floor(duration / 60.0f);
+            int seconds = (int)(duration % 60.0f);
+            return $"{minutes:0}:{seconds:00}";
         }
-    }
-
-    public int Seconds
-    {
-        get
+        else
         {
-            GetWEMData();
-            return GetDuration().Seconds;
+            int wholeSeconds = (int)duration;
+            int milliseconds = (int)(duration * 1000.0f) % 1000;
+            return $"{wholeSeconds:0}.{milliseconds:00}s";
         }
     }
 
@@ -125,6 +147,7 @@ public class Wem : TigerFile
     {
         _wemReader?.Dispose();
         _wemStream?.Dispose();
+        WemReaderClone?.Dispose();
         _bDisposed = true;
     }
 
@@ -137,7 +160,8 @@ public class Wem : TigerFile
         if (_wemReader.WaveFormat.Channels > 2)
             _wemReader = new VorbisWaveReader(_wemStream);
 
-        WaveFileWriter.CreateWaveFile(savePath, _wemReader);
+        // Saves as 16 bit instead of 32 bit, halves file size with no quality loss (afaik)
+        WaveFileWriter.CreateWaveFile16(savePath, (ISampleProvider)_wemReader);
     }
 
     // This is no where near perfect but it's good enough for preview audio...
@@ -203,5 +227,64 @@ public class Wem : TigerFile
         writer.Flush();
         output.Position = 0;
         return new WaveFileReader(output);
+    }
+
+    // Slightly faster than getting it from OWSound.WwiseRIFFVorbis. Not by much, but its something
+    private WEMMetadata GetWEMMetadata()
+    {
+        using var reader = GetReader();
+
+        byte[] magic = reader.ReadBytes(4);
+        uint dataSize = 0;
+        uint channels = 0;
+        uint sampleRate = 0;
+        uint bytesPerSecond = 0;
+
+        if (magic.SequenceEqual(new byte[] { (byte)'R', (byte)'I', (byte)'F', (byte)'F' })) // RIFF = little endian
+        {
+            reader.Seek(0x4, SeekOrigin.Begin);
+            dataSize = reader.ReadUInt32();
+
+            reader.Seek(0x16, SeekOrigin.Begin);
+            channels = reader.ReadUInt16();
+            sampleRate = reader.ReadUInt32();
+            bytesPerSecond = reader.ReadUInt32();
+        }
+        else if (magic.SequenceEqual(new byte[] { (byte)'R', (byte)'I', (byte)'F', (byte)'X' })) // RIFX = big endian
+        {
+            reader.Seek(0x4, SeekOrigin.Begin);
+            dataSize = Endian.SwapU32(reader.ReadUInt32());
+
+            reader.Seek(0x16, SeekOrigin.Begin);
+            channels = Endian.SwapU32(reader.ReadUInt16());
+            sampleRate = Endian.SwapU32(reader.ReadUInt32());
+            bytesPerSecond = Endian.SwapU32(reader.ReadUInt32());
+        }
+
+        return new WEMMetadata
+        {
+            DataSize = (int)dataSize,
+            Channels = (int)channels,
+            SampleRate = (int)sampleRate,
+            AvgBytesPerSecond = (int)bytesPerSecond
+        };
+    }
+
+    public WaveStream Clone()
+    {
+        var memory = new MemoryStream();
+        _wemStream.Position = 0;
+        _wemStream.CopyTo(memory);
+        memory.Position = 0;
+
+        return new VorbisWaveReader(memory);
+    }
+
+    public struct WEMMetadata
+    {
+        public int DataSize;
+        public int Channels;
+        public int SampleRate;
+        public int AvgBytesPerSecond;
     }
 }

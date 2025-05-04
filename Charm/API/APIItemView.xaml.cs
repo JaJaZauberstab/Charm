@@ -894,6 +894,19 @@ public static class ApiImageUtils
         return bitmapImage;
     }
 
+    public static BitmapImage MakeBitmapImage(MemoryStream ms, int width, int height)
+    {
+        BitmapImage bitmapImage = new();
+        bitmapImage.BeginInit();
+        bitmapImage.StreamSource = ms;
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.DecodePixelWidth = width;
+        bitmapImage.DecodePixelHeight = height;
+        bitmapImage.EndInit();
+        bitmapImage.Freeze();
+        return bitmapImage;
+    }
+
     public static Dictionary<DrawingImage, ImageBrush> MakeIcon(InventoryItem item)
     {
         Dictionary<DrawingImage, ImageBrush> icon = new();
