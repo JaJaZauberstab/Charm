@@ -530,43 +530,6 @@ public partial class TagListView : UserControl
         LoadContent(tagItem.TagType, tigerHash, fullTag: tagItem);
     }
 
-    public static T GetChildOfType<T>(DependencyObject depObj)
-        where T : DependencyObject
-    {
-        if (depObj == null) return null;
-
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-        {
-            DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-
-            T result = (child as T) ?? GetChildOfType<T>(child);
-            if (result != null) return result;
-        }
-        return null;
-    }
-
-    public static List<T> GetChildrenOfType<T>(DependencyObject depObj)
-        where T : DependencyObject
-    {
-        var children = new List<T>();
-        if (depObj == null) return children;
-
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-        {
-            DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-
-            if (child is T)
-            {
-                children.Add(child as T);
-            }
-            else
-            {
-                children.AddRange(GetChildrenOfType<T>(child));
-            }
-        }
-        return children;
-    }
-
     /// <summary>
     /// Use the ParentInfo to go back to previous tag data.
     /// </summary>
@@ -622,11 +585,11 @@ public partial class TagListView : UserControl
             return;
         if (TagList.SelectedIndex > _selectedIndex)
         {
-            ToggleButton currentButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex));
+            ToggleButton currentButton = UIHelper.GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex));
             if (currentButton == null)
                 return;
             currentButton.IsChecked = false;
-            ToggleButton nextButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex + 1));
+            ToggleButton nextButton = UIHelper.GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex + 1));
             if (nextButton == null)
                 return;
             nextButton.IsChecked = true;
@@ -636,11 +599,11 @@ public partial class TagListView : UserControl
 
         else if (TagList.SelectedIndex < _selectedIndex)
         {
-            ToggleButton currentButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex));
+            ToggleButton currentButton = UIHelper.GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex));
             if (currentButton == null)
                 return;
             currentButton.IsChecked = false;
-            ToggleButton nextButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex - 1));
+            ToggleButton nextButton = UIHelper.GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex - 1));
             if (nextButton == null)
                 return;
             nextButton.IsChecked = true;

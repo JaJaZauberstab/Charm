@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,8 @@ using static Charm.APIItemView;
 using static Charm.PackageList;
 
 namespace Charm;
+
+// TODO? Forward and Back buttons for playback, arrow keys are good enough for now
 
 public partial class AudioListView : UserControl
 {
@@ -316,6 +319,36 @@ public partial class AudioListView : UserControl
     {
         ToolTip.ClearTooltip();
         ToolTip.ActiveItem = null;
+    }
+
+
+    private CancellationTokenSource _audioSelectionCts;
+    private async void AudioList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _audioSelectionCts?.Cancel();
+        _audioSelectionCts = new CancellationTokenSource();
+        var token = _audioSelectionCts.Token;
+
+        try
+        {
+            await Task.Delay(100, token); // Debounce time
+            if (token.IsCancellationRequested)
+                return;
+
+            Dispatcher.Invoke(() =>
+            {
+                if (AudioList.SelectedIndex >= 0)
+                {
+                    var container = AudioList.ItemContainerGenerator.ContainerFromIndex(AudioList.SelectedIndex);
+                    RadioButton currentButton = UIHelper.GetChildOfType<RadioButton>(container);
+                    if (currentButton != null)
+                        currentButton.IsChecked = true;
+                }
+            });
+        }
+        catch (TaskCanceledException)
+        {
+        }
     }
 
     private async void DrawWaveform()

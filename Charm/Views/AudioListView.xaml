@@ -19,8 +19,7 @@
                 Margin="0,0,0,0"
                 HorizontalAlignment="Left"
                 local:StyleHelper.BorderThickness="1"
-                Click="Audio_OnClick"
-                Focusable="False"
+                Checked="Audio_OnClick"
                 GroupName="AudioItem"
                 Loaded="Tag_Loaded"
                 Style="{DynamicResource D2StyleRadioButton}"
@@ -185,6 +184,7 @@
                     BorderBrush="{StaticResource ForegroundColour70}"
                     BorderThickness="0,0,1,0"
                     ItemTemplate="{StaticResource AudioTemplate}"
+                    SelectionChanged="AudioList_SelectionChanged"
                     Style="{DynamicResource AudioListViewItem}"
                     VirtualizingPanel.IsContainerVirtualizable="True"
                     VirtualizingPanel.ScrollUnit="Pixel">

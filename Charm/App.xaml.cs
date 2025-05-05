@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -153,6 +154,41 @@ namespace Charm
                 }
             }
             return null;
+        }
+
+        public static T GetChildOfType<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+
+                T result = (child as T) ?? GetChildOfType<T>(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        public static List<T> GetChildrenOfType<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            var children = new List<T>();
+            if (depObj == null) return children;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+
+                if (child is T)
+                {
+                    children.Add(child as T);
+                }
+                else
+                {
+                    children.AddRange(GetChildrenOfType<T>(child));
+                }
+            }
+            return children;
         }
     }
 }
