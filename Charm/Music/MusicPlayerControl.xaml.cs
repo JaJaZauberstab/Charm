@@ -241,6 +241,7 @@ public partial class MusicPlayerControl : UserControl
     {
         if (_wem == null && _sound == null)
             return;
+        bool isAlreadyPaused = _output.PlaybackState == PlaybackState.Paused;
 
         Pause();
 
@@ -262,7 +263,8 @@ public partial class MusicPlayerControl : UserControl
         _waveProvider.Position = alignedPosition;
 
         SetSliderPosition(targetPosition);
-        Play();
+        if (!isAlreadyPaused)
+            Play();
     }
 
     private void SetSliderPosition(long bytePosition, bool forceUpdate = false)

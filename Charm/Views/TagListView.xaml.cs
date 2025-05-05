@@ -2353,12 +2353,3 @@ public class TagItem : INotifyPropertyChanged
         TagImageSource = null;
     }
 }
-
-public class PackageItem
-{
-    public string Name { get; set; }
-    public int ID { get; set; }
-    public int Count { get; set; }
-    public ConcurrentHashSet<FileHash> Hashes { get; set; }
-    public bool IsSelected { get; set; } = false;
-}

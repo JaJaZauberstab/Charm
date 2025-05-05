@@ -10,15 +10,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using ConcurrentCollections;
-using NAudio.Wave;
 using Restless.WaveForm.Renderer;
 using Restless.WaveForm.Settings;
 using Tiger;
 using Tiger.Schema.Audio;
 using static Charm.APIItemView;
+using static Charm.PackageList;
 
 namespace Charm;
 
@@ -29,7 +27,6 @@ public partial class AudioListView : UserControl
     private ConfigSubsystem Config = TigerInstance.GetSubsystem<ConfigSubsystem>();
     private APITooltip ToolTip;
 
-    private ConcurrentBag<PackageItem> PackageItems;
     private ConcurrentBag<AudioItem> Sounds = new();
 
     private int SortByIndex = 4;
@@ -42,6 +39,11 @@ public partial class AudioListView : UserControl
         // I can't be asked to fix these seemingly harmless but lag inducing xaml binding errors
         PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Critical;
 #endif
+
+        PackageList.PackageItemChecked += async (s, item) =>
+        {
+            await LoadAudioList(item);
+        };
     }
 
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -72,7 +74,7 @@ public partial class AudioListView : UserControl
         {
             "Creating Audio List",
         });
-        await MakePackageItems();
+        await PackageList.MakePackageItems<Wem>();
         MainWindow.Progress.CompleteStage();
 
         CreateFilterOptions();
@@ -100,57 +102,6 @@ public partial class AudioListView : UserControl
         FilterOptions.Children.Add(sortBy);
     }
 
-    private async Task MakePackageItems()
-    {
-        if (PackageItems != null)
-            return;
-
-        await Task.Run(() =>
-        {
-            PackageItems = new();
-            ConcurrentDictionary<int, ConcurrentHashSet<FileHash>> packageIds = new();
-            ConcurrentHashSet<FileHash> hashes = PackageResourcer.Get().GetAllHashes<Wem>();
-
-            foreach (FileHash hash in hashes)
-            {
-                if (hash.GetReferenceHash().IsInvalid())
-                    continue;
-
-                if (packageIds.ContainsKey(hash.PackageId))
-                    packageIds[hash.PackageId].Add(hash);
-                else
-                    packageIds[hash.PackageId] = new() { hash };
-            }
-
-            Parallel.ForEach(packageIds, pkgId =>
-            {
-                if (pkgId.Value.Count == 0)
-                    return;
-
-                string name = string.Join('_', PackageResourcer.Get().GetPackage((ushort)pkgId.Key).GetPackageMetadata().Name.Split('_').Skip(1).SkipLast(1));
-                PackageItems.Add(new PackageItem
-                {
-                    Name = name,
-                    ID = pkgId.Key,
-                    Count = pkgId.Value.Count,
-                    Hashes = pkgId.Value
-                });
-            });
-        });
-
-        //PackageList.ItemsSource = PackageItems.OrderBy(x => x.Name);
-        RefreshPackageList();
-    }
-
-    private async void PackageItem_Checked(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ToggleButton btn)
-            return;
-
-        PackageItem item = ((ToggleButton)sender).DataContext as PackageItem;
-        await LoadAudioList(item);
-    }
-
     private async Task LoadAudioList(PackageItem item)
     {
         if (Sounds.Count != 0)
@@ -170,42 +121,6 @@ public partial class AudioListView : UserControl
 
         //AudioList.ItemsSource = Sounds.OrderBy(x => x.Hash);
         RefreshSoundList();
-    }
-
-    private void RefreshPackageList()
-    {
-        if (PackageItems == null)
-            return;
-        if (PackageItems.IsEmpty)
-            return;
-
-        string searchStr = SearchBox.Text;
-
-        uint parsedHash = 0;
-        bool isHash = Helpers.ParseHash(searchStr, out parsedHash);
-
-        var displayItems = new ConcurrentBag<PackageItem>();
-        Parallel.ForEach(PackageItems, pkg =>
-        {
-            if (isHash && pkg.Hashes.Any(x => x.Hash32 == parsedHash)) // hacky but eh
-            {
-                IEnumerable<FileHash> hashes = pkg.Hashes.Where(x => x.Hash32 == parsedHash);
-                displayItems.Add(new PackageItem
-                {
-                    Name = pkg.Name,
-                    ID = pkg.ID,
-                    Count = hashes.Count(),
-                    Hashes = new(hashes)
-                });
-            }
-            else if (pkg.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase))
-            {
-                displayItems.Add(pkg);
-            }
-        });
-
-        List<PackageItem> items = displayItems.OrderBy(x => x.Name).ToList();
-        PackageList.ItemsSource = items;
     }
 
     private void RefreshSoundList()
@@ -270,11 +185,6 @@ public partial class AudioListView : UserControl
 
         ExportButton.IsEnabled = true;
         ExportWaveform.IsEnabled = true;
-    }
-
-    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        RefreshPackageList();
     }
 
     private void AudioSearchBox_TextChanged(object sender, TextChangedEventArgs e)
