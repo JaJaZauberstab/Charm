@@ -109,6 +109,9 @@ public partial class AudioListView : UserControl
 
         await Task.Run(() => Parallel.ForEachAsync(item.Hashes, async (hash, ct) =>
         {
+            if (hash.GetReferenceHash().IsInvalid())
+                return;
+
             AudioItem item = new()
             {
                 Hash = hash,
@@ -119,7 +122,6 @@ public partial class AudioListView : UserControl
             Sounds.Add(item);
         }));
 
-        //AudioList.ItemsSource = Sounds.OrderBy(x => x.Hash);
         RefreshSoundList();
     }
 
@@ -142,10 +144,6 @@ public partial class AudioListView : UserControl
             {
                 displayItems.Add(tex);
             }
-            //else
-            //{
-            //    displayItems.Add(tex);
-            //}
         });
 
         List<AudioItem> items = displayItems.ToList();

@@ -48,10 +48,6 @@ public enum ETagListType
     Entity,
     [Description("BACK")]
     Back,
-    [Description("Api List")]
-    ApiList,
-    [Description("Api Entity [Final]")]
-    ApiEntity,
     [Description("Entity List [Packages]")]
     EntityList,
     [Description("Package")]
@@ -2282,8 +2278,6 @@ public class TagItem : INotifyPropertyChanged
         {
             if (Name == "BACK")
                 return "";
-            if (TagType == ETagListType.ApiEntity)
-                return $"[{Hash}]";
             if (TagType == ETagListType.Package)
                 return $"[{(Hash as FileHash).PackageId:X4}]";
             return $"[{Hash:X8}]";
