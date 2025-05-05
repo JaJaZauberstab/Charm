@@ -157,7 +157,7 @@ public class Wem : TigerFile
         _wemReader.Position = 0;
 
         // Remake the reader so none of the downmix stuff gets exported, though idk if that really matters or not at this point
-        if (_wemReader.WaveFormat.Channels > 2)
+        if (Channels > 2)
             _wemReader = new VorbisWaveReader(_wemStream);
 
         // Saves as 16 bit instead of 32 bit, halves file size with no quality loss (afaik)
