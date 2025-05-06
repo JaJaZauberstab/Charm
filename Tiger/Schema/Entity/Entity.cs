@@ -98,7 +98,7 @@ public class Entity : Tag<SEntity>
                         EntityName = GlobalStrings.Get().GetString(specificName);
                     break;
 
-                case S79948080 when Strategy.IsPreBL(): // No idea if this is SK only
+                case S79948080:
                     if (EntityChildren2 is null)
                         EntityChildren2 = new();
 
@@ -201,7 +201,7 @@ public class Entity : Tag<SEntity>
         }
 
         List<Entity> entities = new();
-        if (Strategy.IsPreBL() && EntityChildren2 is not null)
+        if (EntityChildren2 is not null)
             entities.AddRange(GetEntityChildren2());
 
         if (EntityChildren is null)
@@ -275,9 +275,7 @@ public class Entity : Tag<SEntity>
                     {
                         if (entry2.Entity is null)
                             continue;
-#if DEBUG
-                        Console.WriteLine($"GetEntityChildren2: {resource.Hash} : {entry2.Entity.Hash}");
-#endif
+
                         Entity entity = FileResourcer.Get().GetFile<Entity>(entry2.Entity.Hash);
                         if (!entities.Contains(entity) && entity.HasGeometry())
                         {

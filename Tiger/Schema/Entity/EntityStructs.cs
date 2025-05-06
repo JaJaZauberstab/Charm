@@ -542,9 +542,11 @@ public struct S07008080
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "81888080", 0xEC)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "85848080", 0xE0)]
 public struct S81888080
 {
-    [SchemaField(0x74)]
+    [SchemaField(0x74, TigerStrategy.DESTINY2_SHADOWKEEP_2601)]
+    [SchemaField(0x68, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     public Tag Entity;
 }
 
@@ -952,27 +954,29 @@ public struct S40668080
     public WwiseSound Sound;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "B9678080", 0x110)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "B9678080", 0x110)]
 public struct SB9678080
 {
     [SchemaField(0x28)]
     public DynamicArray<SBB678080> Unk28;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "BB678080", 0x18)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "BB678080", 0x18)]
 public struct SBB678080
 {
     [SchemaField(0x10)]
     public Tag<S20698080> FXContainer;
 }
 
-[SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "20698080", 0x40)]
+[SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "20698080", 0x40)]
 public struct S20698080
 {
-    public FileHash Unk00;
-    [SchemaField(0x18)] // idfk why not having the above FileHash makes this read at 0x0??
+    [SchemaField(0x14, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
+    [SchemaField(0x18, TigerStrategy.DESTINY2_LATEST)]
     public Material UnkMat;
-    [SchemaField(0x20, Tag64 = true)]
+
+    [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
+    [SchemaField(0x20, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public Tag<S29698080> ModelContainer;
 }
 
@@ -980,7 +984,7 @@ public struct S20698080
 public struct S29698080
 {
     [SchemaField(0x10)]
-    public DynamicArray<S066F8080> Models;
+    public DynamicArrayUnloaded<S066F8080> Models;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY2_WITCHQUEEN_6307, "066F8080", 4)]

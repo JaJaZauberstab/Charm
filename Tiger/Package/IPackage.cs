@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Arithmic;
 using ConcurrentCollections;
 
@@ -611,13 +612,13 @@ public abstract class Package : IPackage
         // return packageHandle;
     }
 
-    // This only supports patchIds that are from 0-9.
     private string GetSpecificPackagePatchPath(ushort patchId)
     {
-        string packagePatchAndExtension = "0.pkg";
-        string pathWithNoPatchAndExtension = PackagePath.Substring(0, PackagePath.Length - packagePatchAndExtension.Length);
-
-        return Path.Combine(pathWithNoPatchAndExtension + patchId.ToString("D") + ".pkg");
+        string pkgName = Path.GetFileNameWithoutExtension(PackagePath);
+        string directory = Path.GetDirectoryName(PackagePath)!;
+        string basePkg = Regex.Replace(pkgName, @"\d+$", "");
+        string fullPkg = basePkg + patchId.ToString() + ".pkg";
+        return Path.Combine(directory, fullPkg);
     }
 
     private byte[] ReadBlockBuffer(TigerReader packageHandle, D2BlockEntry blockEntry)
