@@ -914,7 +914,28 @@ public struct S0E5A8080
     [SchemaField(0x10, TigerStrategy.DESTINY1_RISE_OF_IRON), NoLoad]
     [SchemaField(0x8, TigerStrategy.DESTINY2_LATEST, Tag64 = true), NoLoad]
     public LocalizedStrings LocalizedStrings;
+
+    [SchemaField(0x18, TigerStrategy.DESTINY2_LATEST)]
+    public short Index; // Index into 26BA8080 container is LocalizedStrings is null
+    public short Unk1A;
 }
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "26BA8080", 0x18)]
+public struct S26BA8080
+{
+    public long FileSize;
+    public DynamicArray<S2CBA8080> LocalizedStrings;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "2CBA8080", 0x20)]
+public struct S2CBA8080
+{
+    public TigerHash BankFnvHash;  // some kind of name for the bank
+
+    [SchemaField(0x10, TigerStrategy.DESTINY2_LATEST, Tag64 = true), NoLoad]
+    public LocalizedStrings LocalizedStrings;
+}
+
 
 [SchemaStruct(TigerStrategy.DESTINY2_LATEST, "CF508080", 0x18)]
 public struct SCF508080

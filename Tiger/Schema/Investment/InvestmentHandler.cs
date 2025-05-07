@@ -26,6 +26,7 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
     private Dictionary<uint, int> _inventoryItemIndexmap = null;
     private Dictionary<uint, Tag<SA36F8080>> _sortedArrangementHashmap = null;
     private Tag<S095A8080> _localizedStringsIndexTag = null;
+    public Tag<S26BA8080> _localizedStringsIndexTag2 = null;
     private Dictionary<int, LocalizedStrings> _localizedStringsIndexMap = null;
     private ConcurrentDictionary<uint, InventoryItem> _inventoryItems = null;
     private ConcurrentDictionary<uint, InventoryItem> _collectableItems = null;
@@ -122,6 +123,9 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
                         break;
                     case 0x808051f2:  // shadowkeep is 0x80805bde
                         _dyeChannelTag = FileResourcer.Get().GetSchemaTag<SDyeChannels>(val);
+                        break;
+                    case 0x8080BA26:
+                        _localizedStringsIndexTag2 = FileResourcer.Get().GetSchemaTag<S26BA8080>(val);
                         break;
                 }
             });
@@ -508,6 +512,17 @@ public class Investment : Strategy.LazyStrategistSingleton<Investment>
         {
             ls.Load();
             return ls;
+        }
+        else // idfk why bungie is doing this...
+        {
+            using TigerReader reader = _localizedStringsIndexTag.GetReader();
+            int otherIndex = _localizedStringsIndexTag.TagData.StringContainerMap[reader, index].Index;
+            ls = _localizedStringsIndexTag2.TagData.LocalizedStrings[otherIndex].LocalizedStrings;
+            if (ls is not null)
+            {
+                ls.Load();
+                return ls;
+            }
         }
         return null;
     }
