@@ -215,9 +215,9 @@ public struct S8A6D8080
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "DD818080", 0x100)]
 public struct SDD818080
 {
-    [SchemaField(0x30)]
-    public DynamicArray<SDC818080> Unk30;
-    public DynamicArray<S40868080> Unk40;
+    //[SchemaField(0x30)]
+    //public DynamicArray<SDC818080> Unk30;
+    //public DynamicArray<S40868080> Unk40;
 }
 
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "2B058080", 0xA0)]

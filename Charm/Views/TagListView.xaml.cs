@@ -826,62 +826,6 @@ public partial class TagListView : UserControl
 
     // TODO Entity Viewer 2.0
     #region Entity
-
-    private void LoadEntity(FileHash fileHash)
-    {
-        TagView viewer = GetViewer();
-        SetViewer(TagView.EViewerType.Entity);
-        bool bLoadedSuccessfully = viewer.EntityControl.LoadEntity(fileHash);
-        if (!bLoadedSuccessfully)
-        {
-            Log.Error($"UI failed to load entity for hash {fileHash}. You can still try to export the full model instead.");
-            _mainWindow.SetLoggerSelected();
-        }
-        SetExportFunction(ExportEntity, (int)ExportTypeFlag.Full | (int)ExportTypeFlag.Minimal);
-        viewer.ExportControl.ExportChildrenBox.Visibility = Visibility.Visible;
-        viewer.ExportControl.SetExportInfo(fileHash);
-        viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadEntity(fileHash));
-    }
-
-    private void ExportEntity(ExportInfo info)
-    {
-        TagView viewer = GetViewer();
-        Entity entity = FileResourcer.Get().GetFile<Entity>(info.Hash);
-        List<Entity> entities = new() { entity };
-        Dispatcher.Invoke(() =>
-        {
-            if (viewer.ExportControl.ExportChildrenBox.Visibility == Visibility.Visible && viewer.ExportControl.ExportChildrenBox.IsChecked.Value == true)
-                entities.AddRange(entity.GetEntityChildren());
-            viewer.EntityControl.ModelView.Visibility = Visibility.Hidden;
-        });
-        EntityView.Export(entities, info.Name, info.ExportType);
-
-        Dispatcher.Invoke(() =>
-        {
-            NotificationBanner notify = new()
-            {
-                Icon = "☑️",
-                Title = "Export Complete",
-                Description = $"Exported Entity {info.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}\\{info.Name}\\\"",
-                Style = NotificationBanner.PopupStyle.Information
-            };
-            notify.OnProgressComplete += () => Dispatcher.Invoke(() => viewer.EntityControl.ModelView.Visibility = Visibility.Visible);
-            notify.Show();
-        });
-    }
-
-    /// <summary>
-    /// We load all of them including no names, but add an option to only show names.
-    /// Named: destination global tag bags 0x80808930, budget sets 0x80809eed
-    /// All others: reference 0x80809ad8
-    /// They're sorted into packages first.
-    /// To check they have a model, I take an approach that means processing 40k entities happens quickly.
-    /// To do so, I can't use the tag parser as this is way too slow. Instead, I check
-    /// 1. at least 2 resources
-    /// 2. the first or second resource contains a Unk0x10 == S8A6D8080
-    /// If someone wants to make this list work for entities with other things like skeletons etc, this is easy to
-    /// customise to desired system.
-    /// </summary>
     private async Task LoadEntityList()
     {
         // If there are packages, we don't want to reload the view as very poor for performance.
@@ -903,10 +847,11 @@ public partial class TagListView : UserControl
             ConcurrentDictionary<string, List<string>> NamedEntities = TryGetEntityNames().Result;
             MainWindow.Progress.CompleteStage();
 
-            HashSet<Entity> eVals = PackageResourcer.Get().GetAllFiles<Entity>();
+            var eVals = PackageResourcer.Get().GetAllHashes<Entity>();
             ConcurrentHashSet<uint> existingEntities = new();
-            Parallel.ForEach(eVals, entity =>
+            Parallel.ForEach(eVals, hash =>
             {
+                var entity = FileResourcer.Get().GetFile<Entity>(hash);
                 if (entity.HasGeometry())
                 {
                     string entityName = entity.EntityName != null ? entity.EntityName : entity.Hash;
@@ -950,6 +895,49 @@ public partial class TagListView : UserControl
         });
 
         RefreshItemList();  // bc of async stuff
+    }
+
+    private void LoadEntity(FileHash fileHash)
+    {
+        TagView viewer = GetViewer();
+        SetViewer(TagView.EViewerType.Entity);
+        bool bLoadedSuccessfully = viewer.EntityControl.LoadEntity(fileHash);
+        if (!bLoadedSuccessfully)
+        {
+            Log.Error($"UI failed to load entity for hash {fileHash}. You can still try to export the full model instead.");
+            _mainWindow.SetLoggerSelected();
+        }
+        SetExportFunction(ExportEntity, (int)ExportTypeFlag.Full | (int)ExportTypeFlag.Minimal);
+        viewer.ExportControl.ExportChildrenBox.Visibility = Visibility.Visible;
+        viewer.ExportControl.SetExportInfo(fileHash);
+        viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadEntity(fileHash));
+    }
+
+    private void ExportEntity(ExportInfo info)
+    {
+        TagView viewer = GetViewer();
+        Entity entity = FileResourcer.Get().GetFile<Entity>(info.Hash);
+        List<Entity> entities = new() { entity };
+        Dispatcher.Invoke(() =>
+        {
+            if (viewer.ExportControl.ExportChildrenBox.Visibility == Visibility.Visible && viewer.ExportControl.ExportChildrenBox.IsChecked.Value == true)
+                entities.AddRange(entity.GetEntityChildren());
+            viewer.EntityControl.ModelView.Visibility = Visibility.Hidden;
+        });
+        EntityView.Export(entities, info.Name, info.ExportType);
+
+        Dispatcher.Invoke(() =>
+        {
+            NotificationBanner notify = new()
+            {
+                Icon = "☑️",
+                Title = "Export Complete",
+                Description = $"Exported Entity {info.Name} to \"{ConfigSubsystem.Get().GetExportSavePath()}\\{info.Name}\\\"",
+                Style = NotificationBanner.PopupStyle.Information
+            };
+            notify.OnProgressComplete += () => Dispatcher.Invoke(() => viewer.EntityControl.ModelView.Visibility = Visibility.Visible);
+            notify.Show();
+        });
     }
 
     private async Task<ConcurrentDictionary<string, List<String>>> TryGetEntityNames()

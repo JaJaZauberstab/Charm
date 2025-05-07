@@ -295,7 +295,7 @@ public class ExporterScene
         if (_addedEntities.TryAdd(entity.Hash, true)) // Dont want duplicate entities being added
         {
             ExporterMesh mesh = new(dynamicResource.Entity.Hash);
-            List<DynamicMeshPart> parts = entity.Model.Load(ExportDetailLevel.MostDetailed, entity.ModelParentResource);
+            List<DynamicMeshPart> parts = entity.Load(ExportDetailLevel.MostDetailed);
             for (int i = 0; i < parts.Count; i++)
             {
                 DynamicMeshPart part = parts[i];

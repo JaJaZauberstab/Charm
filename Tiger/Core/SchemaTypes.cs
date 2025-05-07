@@ -467,7 +467,7 @@ public class ResourcePointer : RelativePointer
 
     // not ideal, but it stops the recursive deserialization. in future should make some kind of ref system
     // and use that instead
-    public dynamic? GetValue(TigerReader reader)
+    public dynamic? GetValue(TigerReader reader, bool deserialize = true)
     {
         try
         {
@@ -477,8 +477,13 @@ public class ResourcePointer : RelativePointer
             }
             if (SchemaDeserializer.Get().TryGetSchemaType(ResourceClassHash, out Type schemaType))
             {
-                reader.Seek(AbsoluteOffset, SeekOrigin.Begin);
-                return reader.ReadSchemaStruct(schemaType);
+                if (deserialize)
+                {
+                    reader.Seek(AbsoluteOffset, SeekOrigin.Begin);
+                    return reader.ReadSchemaStruct(schemaType);
+                }
+                else
+                    return Activator.CreateInstance(schemaType);
             }
             else
             {
@@ -492,6 +497,33 @@ public class ResourcePointer : RelativePointer
         }
     }
 
+    ///// <summary>
+    ///// Gets just the type of this ResourcePointer, instead of deserializing.
+    ///// </summary>
+    ///// <param name="reader"></param>
+    ///// <returns></returns>
+    ///// <exception cref="Exception"></exception>
+    //public Type? GetType(TigerReader reader)
+    //{
+    //    try
+    //    {
+    //        if (ResourceClassHash == TigerHash.InvalidHash32)
+    //        {
+    //            return null;
+    //        }
+    //        else if (SchemaDeserializer.Get().TryGetSchemaType(ResourceClassHash, out Type schemaType))
+    //        {
+    //            return schemaType;
+    //        }
+
+    //        return null;
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        throw new Exception($"[{reader.Hash:X2}] Failed to read at position {reader.BaseStream.Position:X}. Stream length: {reader.BaseStream.Length}", ex);
+    //    }
+    //}
+
     public uint GetValueRaw(TigerReader reader)
     {
         return ResourceClassHash;
@@ -504,17 +536,12 @@ public class ResourcePointer : RelativePointer
             base.Deserialize(reader);
 
             if (_relativeOffset == 0)
-            {
                 return;
-            }
 
             reader.Seek(AbsoluteOffset - 4, SeekOrigin.Begin);
             ResourceClassHash = reader.ReadUInt32();
             if (ResourceClassHash == 0)
-            {
-                // Debug.Fail("Resource class hash is 0");
                 ResourceClassHash = TigerHash.InvalidHash32;
-            }
         }
         catch (Exception ex)
         {

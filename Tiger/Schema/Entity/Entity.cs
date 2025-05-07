@@ -7,18 +7,19 @@ public class Entity : Tag<SEntity>
     public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.DynamicObjects;
     // Entity features, todo clean this up
     public EntitySkeleton? Skeleton { get; set; }
-    public EntityModel? Model { get; private set; }
-    public EntityResource? ModelParentResource { get; private set; }
-    public EntityModel? PhysicsModel { get; private set; }
-    public EntityPhysicsModelParent? PhysicsModelParentResource { get; private set; }
+    public EntityModelParent? ModelParent { get; private set; }
+    public EntityPhysicsModelParent? PhysicsModelParent { get; private set; }
     public EntityResource? PatternAudio { get; private set; }
     public EntityResource? PatternAudioUnnamed { get; private set; }
     public EntityControlRig? ControlRig { get; private set; }
     public EntityResource? EntityChildren { get; private set; }
+    public List<EntityResource>? EntityChildren2 { get; private set; } // Some weird collection of entities
+
+    public EntityModel? Model => ModelParent?.GetModel();
+    public EntityModel? PhysicsModel => PhysicsModelParent?.GetModel();
+
     public string? EntityName { get; set; } // Usually just the generic name (Ogre, Vandal, etc)
     public DestinyGenderDefinition Gender { get; set; } = DestinyGenderDefinition.None; // Only used for player armor
-
-    public List<EntityResource>? EntityChildren2 { get; private set; } // Some weird collection of entities thats only in Pre-BL?
 
     private bool _loaded = false;
 
@@ -30,35 +31,35 @@ public class Entity : Tag<SEntity>
     public Entity(FileHash hash, bool shouldParse = true) : base(hash, shouldParse)
     {
         if (shouldParse)
-        {
             Load();
-        }
     }
 
 
-    // TODO: Figure out a way to make Dynamics view not take 10gb of ram and almost a minute to load.
-    // Tried setting most things to NoLoad but it made little difference. I'm not entirely sure what's being the
-    // resource hog. Thought it was EntityModel but I guess not.
+    // TODO: Try to speed up a little more.
+    // TagListView LoadEntityList currently down to ~33 seconds with roughly 4.5 - 5gb of ram usage
     public void Load()
     {
         Deserialize();
+        if (_tag.FileSize == 0)
+            return;
+
         _loaded = true;
         //Debug.Assert(_tag.FileSize != 0); // Is this really needed?
+
         foreach (FileHash? resourceHash in _tag.EntityResources.Select(GetReader(), r => r.Resource))
         {
             if (Strategy.IsD1() && resourceHash.GetReferenceHash() != 0x80800861)
                 continue;
+
             EntityResource resource = FileResourcer.Get().GetFile<EntityResource>(resourceHash);
-            switch (resource.TagData.Unk10.GetValue(resource.GetReader()))
+            switch (resource.TagData.Unk10.GetValue(resource.GetReader(), false))
             {
                 case S8A6D8080:  // Entity model
-                    Model = ((S8F6D8080)resource.TagData.Unk18.GetValue(resource.GetReader())).Model;
-                    ModelParentResource = resource;
+                    ModelParent = FileResourcer.Get().GetFile<EntityModelParent>(resource.Hash);
                     break;
 
                 case S5B6D8080:  // Entity physics model
-                    PhysicsModel = ((S6C6D8080)resource.TagData.Unk18.GetValue(resource.GetReader())).PhysicsModel;
-                    PhysicsModelParentResource = FileResourcer.Get().GetFile<EntityPhysicsModelParent>(resource.Hash);
+                    PhysicsModelParent = FileResourcer.Get().GetFile<EntityPhysicsModelParent>(resource.Hash);
                     break;
 
                 case SD5818080:
@@ -126,11 +127,11 @@ public class Entity : Tag<SEntity>
         var dynamicParts = new List<DynamicMeshPart>();
         if (Model != null)
         {
-            dynamicParts = dynamicParts.Concat(Model.Load(detailLevel, ModelParentResource, hasSkeleton: Skeleton != null)).ToList();
+            dynamicParts = dynamicParts.Concat(Model.Load(detailLevel, ModelParent, hasSkeleton: Skeleton != null)).ToList();
         }
         if (PhysicsModel != null)
         {
-            dynamicParts = dynamicParts.Concat(PhysicsModel.Load(detailLevel, PhysicsModelParentResource, hasSkeleton: Skeleton != null)).ToList();
+            dynamicParts = dynamicParts.Concat(PhysicsModel.Load(detailLevel, PhysicsModelParent, hasSkeleton: Skeleton != null)).ToList();
         }
         return dynamicParts;
     }
@@ -146,11 +147,11 @@ public class Entity : Tag<SEntity>
 
     public void SaveTexturePlates(string saveDirectory)
     {
-        if (ModelParentResource is null)
+        if (ModelParent is null)
             return;
 
         Directory.CreateDirectory($"{saveDirectory}/Textures/");
-        var parentResource = (S8F6D8080)ModelParentResource.TagData.Unk18.GetValue(ModelParentResource.GetReader());
+        var parentResource = (S8F6D8080)ModelParent.TagData.Unk18.GetValue(ModelParent.GetReader());
 
         if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_SHADOWKEEP_2601 && parentResource.TexturePlates is null)
             return;
@@ -158,9 +159,7 @@ public class Entity : Tag<SEntity>
         if (Strategy.IsD1() && (parentResource.TexturePlatesROI.Count == 0 || parentResource.TexturePlatesROI[0].TexturePlates is null))
             return;
 
-        S1C6E8080 rsrc = Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
-            ? parentResource.TexturePlates.TagData : parentResource.TexturePlatesROI[0].TexturePlates.TagData;
-
+        S1C6E8080 rsrc = Strategy.IsD1() ? parentResource.TexturePlatesROI[0].TexturePlates.TagData : parentResource.TexturePlates.TagData;
 
         rsrc.AlbedoPlate?.SavePlatedTexture($"{saveDirectory}/Textures/{Hash}_albedo");
         rsrc.NormalPlate?.SavePlatedTexture($"{saveDirectory}/Textures/{Hash}_normal");
@@ -174,20 +173,10 @@ public class Entity : Tag<SEntity>
         lock (_lock)
         {
             if (!_loaded)
-            {
                 Load();
-            }
         }
-        return Model != null;
 
-        //// saves about 10 seconds when loading dynamics list, but its not really worth it since
-        //// the entity will need to be fully loaded after anyways, which adds time
-        //foreach (var resourceHash in _tag.EntityResources.Select(GetReader(), r => r.Resource))
-        //{
-        //    if (resourceHash.ContainsHash(0x80806D8A)) // 8A6D8080
-        //        return true;
-        //}
-        //return false;
+        return ModelParent != null;
     }
 
     public List<Entity> GetEntityChildren()
