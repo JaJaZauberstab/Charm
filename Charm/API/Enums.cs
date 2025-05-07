@@ -16,22 +16,22 @@ public static class DestinyDamageType
             case -1:
                 return DestinyDamageTypeEnum.None;
 
-            case 1473:
+            case 1492:
                 return DestinyDamageTypeEnum.Kinetic;
 
-            case 1474:
+            case 1493:
                 return DestinyDamageTypeEnum.Arc;
 
-            case 1475:
+            case 1494:
                 return DestinyDamageTypeEnum.Solar;
 
-            case 1476:
+            case 1495:
                 return DestinyDamageTypeEnum.Void;
 
-            case 1477:
+            case 1496:
                 return DestinyDamageTypeEnum.Stasis;
 
-            case 1478:
+            case 1497:
                 return DestinyDamageTypeEnum.Strand;
 
             default:

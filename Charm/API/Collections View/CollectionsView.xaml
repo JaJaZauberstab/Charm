@@ -404,12 +404,10 @@
                 Opacity="1" />
         </Grid>
 
-        <Viewbox
-            Margin="75"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center">
+        <Viewbox HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid
                 x:Name="MainContainer"
+                Margin="125"
                 Background="Transparent"
                 RenderTransformOrigin="0.5,0.5">
 
