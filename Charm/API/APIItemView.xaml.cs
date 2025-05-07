@@ -41,7 +41,7 @@ public partial class APIItemView : UserControl
         type ??= "";
 
         SC3598080? source = Investment.Get().GetCollectibleStringsFromItemIndex(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
-        string sourceString = source.Value.SourceName.Value ?? "";
+        string sourceString = source is not null ? source.Value.SourceName.Value : "";
 
         ImageSource foundryBanner = type != "EMBLEM" ? ApiImageUtils.MakeFoundryBanner(item) : null;
         Dictionary<DrawingImage, ImageBrush> image = ApiImageUtils.MakeIcon(item);

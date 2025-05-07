@@ -1252,3 +1252,55 @@ public struct S93278080
     public Vector4 Rotation;
     public Vector4 Translation;
 }
+
+// TODO: Other versions
+// Entity carried weapon resource?
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "E9318080", 0x490)] // Entity Resource 0x10
+public struct SE9318080
+{
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "EA318080", 0x330)] // Entity Resource 0x18
+public struct SEA318080
+{
+    [SchemaField(0x38)]
+    public DynamicArray<SF79A8080> Unk38;
+
+    [SchemaField(0x1C0)]
+    public DynamicArray<SF2318080> Unk1C0;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "F2318080", 0x40)]
+public struct SF2318080
+{
+    [SchemaField(0x8)]
+    public int Unk08;
+    [SchemaField(0x10)]
+    public int Unk10;
+    [SchemaField(0x28)]
+    public float Unk28;
+    [SchemaField(0x30)]
+    public DynamicArray<SF8318080> Unk30;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "F8318080", 0x18)]
+public struct SF8318080
+{
+    [SchemaField(0x8, Tag64 = true), NoLoad]
+    public Entity Entity;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "F79A8080", 0x18)]
+public struct SF79A8080
+{
+    public int Unk00;
+    [SchemaField(0x8)]
+    public DynamicArray<SFB9A8080> Unk8;
+}
+
+[SchemaStruct(TigerStrategy.DESTINY2_LATEST, "FB9A8080", 0x8)]
+public struct SFB9A8080
+{
+    public TigerHash Unk00; // weapon_type
+    public TigerHash Unk04; // weapon name
+}
