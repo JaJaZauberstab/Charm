@@ -14,8 +14,8 @@ public class Dye : Tag<SScope>
         //TigerFile tag = FileResourcer.Get().GetFile(_tag.DyeInfoHeader.GetReferenceHash());
         //return tag.GetData().ToType<DyeInfo>();
 
-        var values = _tag.CBufferData;
-        DyeInfo dyeInfo = new DyeInfo();
+        DynamicArray<Vec4> values = _tag.CBufferData;
+        DyeInfo dyeInfo = new();
 
         dyeInfo.DetailDiffuseTransform = values[0].Vec;
         dyeInfo.DetailNormalTransform = values[1].Vec;
@@ -69,9 +69,9 @@ public class Dye : Tag<SScope>
     public void ExportTextures(string savePath, TextureExportFormat outputTextureFormat)
     {
         TextureExtractor.SetTextureFormat(outputTextureFormat);
-        foreach (var entry in _tag.Textures)
+        foreach (STextureTag entry in _tag.Textures)
         {
-            TextureExtractor.SaveTextureToFile($"{savePath}/{entry.GetTexture().Hash}", entry.GetTexture().GetScratchImage());
+            TextureExtractor.SaveTextureToFile($"{savePath}/{entry.Texture.Hash}", entry.Texture.GetScratchImage());
         }
     }
 }
@@ -134,7 +134,7 @@ public struct SScope
     public DynamicArray<STextureTag> Textures;
     public TigerHash Unk58;
     public TigerHash Unk5C;
-    public DynamicArray<D2Class_09008080> Bytecode;
+    public DynamicArray<S09008080> Bytecode;
     public DynamicArray<Vec4> BytecodeConstants;
 
     [SchemaField(0x90)]

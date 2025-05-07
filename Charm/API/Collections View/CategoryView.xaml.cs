@@ -31,8 +31,8 @@ public partial class CategoryView : UserControl
 
     private List<SubcategoryChild> _subcategoriesChildren;
 
-    public Tag<D2Class_D7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
-    public Tag<D2Class_03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
+    public Tag<SD7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
+    public Tag<S03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
 
     private const int ItemsPerPage = 21;
     private const int ItemSetsPerPage = 7;
@@ -67,7 +67,7 @@ public partial class CategoryView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -79,15 +79,15 @@ public partial class CategoryView : UserControl
 
     public void LoadSubcategories(CollectionsView.ItemCategory itemCategory)
     {
-        var nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-        var strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
-        List<Subcategory> items = new List<Subcategory>();
+        List<Subcategory> items = new();
         for (int i = 0; i < nodes[itemCategory.ItemCategoryIndex].PresentationNodes.Count; i++)
         {
-            var node = nodes[itemCategory.ItemCategoryIndex].PresentationNodes[i];
-            var curNode = nodes[node.PresentationNodeIndex];
-            var curNodeStrings = strings[node.PresentationNodeIndex];
+            SED788080 node = nodes[itemCategory.ItemCategoryIndex].PresentationNodes[i];
+            SDB788080 curNode = nodes[node.PresentationNodeIndex];
+            S07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
             Subcategory subcategory = new()
             {
@@ -177,13 +177,13 @@ public partial class CategoryView : UserControl
     {
         Dictionary<int, InventoryItem> inventoryItems = GetInventoryItems(categoryIndex);
 
-        foreach (var item in inventoryItems)
+        foreach (KeyValuePair<int, InventoryItem> item in inventoryItems)
         {
             string name = Investment.Get().GetItemName(item.Value);
-            var itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
+            S9F548080 itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
 
             TigerHash plugCategoryHash = null;
-            if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is D2Class_A1738080 plug)
+            if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is SA1738080 plug)
                 plugCategoryHash = plug.PlugCategoryHash;
 
             var newItem = new ApiItem
@@ -202,20 +202,20 @@ public partial class CategoryView : UserControl
             };
             if (newItem.ItemDamageType == DestinyDamageTypeEnum.None)
             {
-                if (newItem.Item.TagData.Unk70.GetValue(newItem.Item.GetReader()) is D2Class_C0778080 sockets)
+                if (newItem.Item.TagData.Unk70.GetValue(newItem.Item.GetReader()) is SC0778080 sockets)
                 {
                     sockets.SocketEntries.ForEach(entry =>
                     {
                         if (entry.SocketTypeIndex == -1 || entry.SingleInitialItemIndex == -1)
                             return;
-                        var socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
-                        foreach (var a in socket.PlugWhitelists)
+                        SBA768080 socket = Investment.Get().GetSocketType(entry.SocketTypeIndex);
+                        foreach (SC5768080 a in socket.PlugWhitelists)
                         {
                             if (a.PlugCategoryHash.Hash32 == 1466776700) // 'v300.weapon.damage_type.energy', Y1 weapon that uses a damage type mod from ye olden days
                             {
-                                var item = Investment.Get().GetInventoryItem(entry.SingleInitialItemIndex);
+                                InventoryItem item = Investment.Get().GetInventoryItem(entry.SingleInitialItemIndex);
                                 item.Load(true); // idk why the item sometimes isnt fully loaded
-                                var index = item.GetItemDamageTypeIndex();
+                                int index = item.GetItemDamageTypeIndex();
                                 newItem.ItemDamageType = DestinyDamageType.GetDamageType(index);
                             }
                         }
@@ -223,7 +223,7 @@ public partial class CategoryView : UserControl
                 }
             }
 
-            PlugItem plugItem = new PlugItem
+            PlugItem plugItem = new()
             {
                 Item = newItem.Item,
                 Hash = newItem.Item.TagData.InventoryItemHash,
@@ -249,12 +249,12 @@ public partial class CategoryView : UserControl
 
     private void LoadItemSets(int categoryIndex)
     {
-        var node = PresentationNodes.TagData.PresentationNodeDefinitions[categoryIndex];
-        var strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        SDB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[categoryIndex];
+        DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
         for (int i = 0; i < node.PresentationNodes.Count; i++)
         {
-            var CurNode = node.PresentationNodes[i];
+            SED788080 CurNode = node.PresentationNodes[i];
             Dictionary<int, InventoryItem> inventoryItems = GetInventoryItems(CurNode.PresentationNodeIndex);
 
             CollectableSet collectableSet = new()
@@ -265,13 +265,13 @@ public partial class CategoryView : UserControl
                 Index = i
             };
 
-            foreach (var item in inventoryItems)
+            foreach (KeyValuePair<int, InventoryItem> item in inventoryItems)
             {
                 string name = Investment.Get().GetItemName(item.Value);
-                var itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
+                S9F548080 itemStrings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.Value.TagData.InventoryItemHash)).TagData;
 
                 TigerHash plugCategoryHash = null;
-                if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is D2Class_A1738080 plug)
+                if (item.Value.TagData.Unk48.GetValue(item.Value.GetReader()) is SA1738080 plug)
                     plugCategoryHash = plug.PlugCategoryHash;
 
                 var newItem = new ApiItem
@@ -287,7 +287,7 @@ public partial class CategoryView : UserControl
                     Weight = item.Key,
                     CollectableIndex = item.Key,
                 };
-                PlugItem plugItem = new PlugItem
+                PlugItem plugItem = new()
                 {
                     Item = newItem.Item,
                     Hash = newItem.Item.TagData.InventoryItemHash,
@@ -322,11 +322,11 @@ public partial class CategoryView : UserControl
     public Dictionary<int, InventoryItem> GetInventoryItems(int index)
     {
         Dictionary<int, InventoryItem> inventoryItems = new();
-        var nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
 
         for (int i = 0; i < nodes[index].Collectables.Count; i++)
         {
-            var item = nodes[index].Collectables[i];
+            SEA788080 item = nodes[index].Collectables[i];
             InventoryItem invItem = Investment.Get().GetInventoryItem(Investment.Get().GetCollectible(item.CollectableIndex).Value.InventoryItemIndex);
             inventoryItems.Add(item.CollectableIndex, invItem);
         }
@@ -345,15 +345,15 @@ public partial class CategoryView : UserControl
             Subcategory item = ((RadioButton)sender).DataContext as Subcategory;
             CurrentSubcategory = item;
 
-            var nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-            var strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+            DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+            DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
             _subcategoriesChildren = new();
             for (int i = 0; i < nodes[item.ItemCategoryIndex].PresentationNodes.Count; i++)
             {
-                var node = nodes[item.ItemCategoryIndex].PresentationNodes[i];
-                var curNode = nodes[node.PresentationNodeIndex];
-                var curNodeStrings = strings[node.PresentationNodeIndex];
+                SED788080 node = nodes[item.ItemCategoryIndex].PresentationNodes[i];
+                SDB788080 curNode = nodes[node.PresentationNodeIndex];
+                S07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
                 SubcategoryChild subcategory = new()
                 {
@@ -507,11 +507,11 @@ public partial class CategoryView : UserControl
 
     public void UnselectAllRadioButtons(ItemsControl itemsControl)
     {
-        foreach (var item in itemsControl.Items)
+        foreach (object? item in itemsControl.Items)
         {
             if (itemsControl.ItemContainerGenerator.ContainerFromItem(item) is ContentPresenter contentPresenter)
             {
-                var radioButton = UIHelper.FindVisualChild<RadioButton>(contentPresenter);
+                RadioButton radioButton = UIHelper.FindVisualChild<RadioButton>(contentPresenter);
                 if (radioButton != null)
                 {
                     radioButton.IsChecked = false;
@@ -527,10 +527,10 @@ public partial class CategoryView : UserControl
             if (index < 0 || index >= itemsControl.Items.Count)
                 return;
 
-            var item = itemsControl.Items[index];
+            object item = itemsControl.Items[index];
             if (itemsControl.ItemContainerGenerator.ContainerFromItem(item) is ContentPresenter contentPresenter)
             {
-                var radioButton = UIHelper.FindVisualChild<RadioButton>(contentPresenter);
+                RadioButton radioButton = UIHelper.FindVisualChild<RadioButton>(contentPresenter);
                 if (radioButton != null)
                 {
                     radioButton.IsChecked = true;
@@ -550,7 +550,7 @@ public partial class CategoryView : UserControl
         e.Handled = true;
         ApiItem item = (sender as Button).DataContext as ApiItem;
 
-        APIItemView apiItemView = new APIItemView(item);
+        APIItemView apiItemView = new(item);
         _mainWindow.MakeNewTab(item.ItemName, apiItemView);
         _mainWindow.SetNewestTabSelected();
     }
@@ -562,7 +562,7 @@ public partial class CategoryView : UserControl
 
         if (item.ItemFlavorText != null && item.ItemFlavorText != string.Empty)
         {
-            PlugItem flavorText = new PlugItem
+            PlugItem flavorText = new()
             {
                 PlugOrderIndex = 0, // Flavor text is always first
                 Description = item.ItemFlavorText,
@@ -570,10 +570,10 @@ public partial class CategoryView : UserControl
             ToolTip.AddToTooltip(flavorText, APITooltip.TooltipType.TextBlockItalic);
         }
 
-        var sourceString = Investment.Get().GetCollectibleStrings(item.CollectableIndex).Value.SourceName.Value;
+        Tiger.Schema.Strings.TigerString? sourceString = Investment.Get().GetCollectibleStrings(item.CollectableIndex).Value.SourceName.Value;
         if (sourceString != null && sourceString != string.Empty)
         {
-            PlugItem source = new PlugItem
+            PlugItem source = new()
             {
                 PlugOrderIndex = 3,
                 Description = $"{sourceString}",
@@ -585,7 +585,7 @@ public partial class CategoryView : UserControl
 
         if (DareView.ShouldAddToList(item.Item, item.ItemType))
         {
-            PlugItem inputItem2 = new PlugItem
+            PlugItem inputItem2 = new()
             {
                 PlugOrderIndex = 1,
                 Name = $"", // Key glyph
@@ -629,7 +629,7 @@ public partial class CategoryView : UserControl
 
     private async void Button_KeyDown(object sender, KeyEventArgs e)
     {
-        if (ToolTip.ActiveItem == null || ToolTip.ActiveItem is not Button)
+        if (ToolTip.ActiveItem is null or not Button)
             return;
 
         e.Handled = true;
@@ -642,7 +642,7 @@ public partial class CategoryView : UserControl
             MainWindow.Progress.SetProgressStages(new() { $"Exporting {item.ItemName}" });
             await Task.Run(() =>
             {
-                if ((item.ItemType == "Artifact" || item.ItemType == "Seasonal Artifact") && item.Item.TagData.Unk28.GetValue(item.Item.GetReader()) is D2Class_C5738080 gearSet)
+                if ((item.ItemType == "Artifact" || item.ItemType == "Seasonal Artifact") && item.Item.TagData.Unk28.GetValue(item.Item.GetReader()) is SC5738080 gearSet)
                 {
                     if (gearSet.ItemList.Count != 0)
                         item.Item = Investment.Get().GetInventoryItem(gearSet.ItemList.First().ItemIndex);
@@ -655,7 +655,7 @@ public partial class CategoryView : UserControl
                 else
                 {
                     // shader
-                    ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+                    ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
                     string savePath = config.GetExportSavePath();
                     string itemName = Helpers.SanitizeString(item.ItemName);
                     savePath += $"/{itemName}";
@@ -713,8 +713,7 @@ public class ItemTemplateSelector : DataTemplateSelector
 
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
-        var itemObj = item as ApiItem;
-        return itemObj != null && itemObj.IsPlaceholder ? PlaceholderTemplate : NormalItemTemplate;
+        return item is ApiItem itemObj && itemObj.IsPlaceholder ? PlaceholderTemplate : NormalItemTemplate;
     }
 }
 
@@ -725,8 +724,7 @@ public class ItemSetTemplateSelector : DataTemplateSelector
 
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
-        var itemObj = item as CollectableSet;
-        return itemObj != null && itemObj.IsPlaceholder ? PlaceholderTemplate : NormalItemTemplate;
+        return item is CollectableSet itemObj && itemObj.IsPlaceholder ? PlaceholderTemplate : NormalItemTemplate;
     }
 }
 
@@ -737,8 +735,7 @@ public class SubcategoryChildItemTemplateSelector : DataTemplateSelector
 
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
-        var itemObj = item as SubcategoryChild;
-        return itemObj != null && itemObj.IsPlaceholder ? PlaceholderTemplate : NormalItemTemplate;
+        return item is SubcategoryChild itemObj && itemObj.IsPlaceholder ? PlaceholderTemplate : NormalItemTemplate;
     }
 }
 

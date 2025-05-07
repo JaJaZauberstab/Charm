@@ -6,5 +6,10 @@ public class EntityModelParent : EntityResource
     {
     }
 
+    public EntityModel GetModel()
+    {
+        return ((S8F6D8080)TagData.Unk18.GetValue(GetReader())).Model;
+    }
+
     // TODO: Fill this out with model resource related methods? 
 }

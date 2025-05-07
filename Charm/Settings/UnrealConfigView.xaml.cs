@@ -9,7 +9,7 @@ public partial class UnrealConfigView : UserControl
     public UnrealConfigView()
     {
         InitializeComponent();
-        _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        _config = TigerInstance.GetSubsystem<ConfigSubsystem>();
     }
 
     private ConfigSubsystem _config;
@@ -30,15 +30,15 @@ public partial class UnrealConfigView : UserControl
         //UnrealConfigPanel.Children.Add(header);
 
         // Unreal interop path
-        ConfigSettingControl cui = new ConfigSettingControl();
+        ConfigSettingControl cui = new();
         cui.SettingName = "Unreal Content Path";
-        var val = _config.GetUnrealInteropPath();
+        string val = _config.GetUnrealInteropPath();
         cui.SettingValue = val == "" ? "Not set" : val;
         cui.ChangeButton.Click += UnrealInteropPath_OnClick;
         UnrealConfigPanel.Children.Add(cui);
 
         // Enable UE5 interop
-        ConfigSettingToggleControl cii = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl cii = new();
         cii.SettingName = "Generate Unreal Engine Importing Files";
         bool bval = _config.GetUnrealInteropEnabled();
         cii.SettingValue = bval.ToString();

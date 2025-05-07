@@ -21,8 +21,8 @@ public partial class MainMenuView : UserControl
         InitializeComponent();
 
         ApiButton.IsEnabled = ShowAPIButton(Strategy.CurrentStrategy);
-        BagsButton.IsEnabled = ShowWQButtons(Strategy.CurrentStrategy);
-        WeaponAudioButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy) || ShowIfD1(Strategy.CurrentStrategy);
+        BagsButton.IsEnabled = ShowIfD2(Strategy.CurrentStrategy);
+        WeaponAudioButton.IsEnabled = ShowAPIButton(Strategy.CurrentStrategy);
         StaticsButton.IsEnabled = ShowIfD2(Strategy.CurrentStrategy);
         SoundBanksButton.Visibility = ShowIfD1(Strategy.CurrentStrategy) ? Visibility.Visible : Visibility.Hidden;
         CollectionsButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy);
@@ -32,11 +32,11 @@ public partial class MainMenuView : UserControl
             Dispatcher.Invoke(() =>
             {
                 ApiButton.IsEnabled = ShowAPIButton(args.Strategy);
-                BagsButton.IsEnabled = ShowWQButtons(args.Strategy);
+                BagsButton.IsEnabled = ShowIfD2(args.Strategy);
                 WeaponAudioButton.IsEnabled = ShowIfLatest(args.Strategy) || ShowIfD1(args.Strategy);
                 StaticsButton.IsEnabled = ShowIfD2(args.Strategy);
-                SoundBanksButton.Visibility = ShowIfD1(Strategy.CurrentStrategy) ? Visibility.Visible : Visibility.Hidden;
-                CollectionsButton.IsEnabled = ShowIfLatest(Strategy.CurrentStrategy);
+                SoundBanksButton.Visibility = ShowIfD1(args.Strategy) ? Visibility.Visible : Visibility.Hidden;
+                CollectionsButton.IsEnabled = ShowIfLatest(args.Strategy);
             });
         };
     }
@@ -53,7 +53,7 @@ public partial class MainMenuView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -76,17 +76,17 @@ public partial class MainMenuView : UserControl
 
     private bool ShowIfD1(TigerStrategy strategy)
     {
-        return strategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
+        return strategy is TigerStrategy.DESTINY1_RISE_OF_IRON;
     }
 
     private bool ShowIfLatest(TigerStrategy strategy)
     {
-        return Strategy.CurrentStrategy == TigerStrategy.DESTINY2_LATEST;
+        return strategy is TigerStrategy.DESTINY2_LATEST;
     }
 
     private bool ShowAPIButton(TigerStrategy strategy)
     {
-        return strategy > TigerStrategy.DESTINY2_BEYONDLIGHT_3402 || strategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
+        return strategy is TigerStrategy.DESTINY2_LATEST or TigerStrategy.DESTINY1_RISE_OF_IRON;
     }
 
     private void CategoryButton_MouseEnter(object sender, MouseEventArgs e)
@@ -114,9 +114,9 @@ public partial class MainMenuView : UserControl
     {
         await LoadInvestment();
 
-        DareView apiView = new DareView();
+        DareView apiView = new();
         apiView.LoadContent();
-        _mainWindow.MakeNewTab("api", apiView);
+        _mainWindow.MakeNewTab("API", apiView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -124,7 +124,7 @@ public partial class MainMenuView : UserControl
     {
         await LoadInvestment();
 
-        CollectionsView apiView2 = new CollectionsView();
+        CollectionsView apiView2 = new();
         apiView2.LoadContent();
         _mainWindow.MakeNewTab("Collections", apiView2);
         _mainWindow.SetNewestTabSelected();
@@ -132,33 +132,33 @@ public partial class MainMenuView : UserControl
 
     private void NamedEntitiesBagsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.DestinationGlobalTagBagList);
-        _mainWindow.MakeNewTab("destination global tag bag", tagListView);
+        _mainWindow.MakeNewTab("Destination Global Tag Bag", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllEntitiesViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.EntityList);
-        _mainWindow.MakeNewTab("dynamics", tagListView);
+        _mainWindow.MakeNewTab("Dynamics", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void ActivitiesViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.ActivityList);
-        _mainWindow.MakeNewTab("activities", tagListView);
+        _mainWindow.MakeNewTab("Activities", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllStaticsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.StaticsList);
-        _mainWindow.MakeNewTab("statics", tagListView);
+        _mainWindow.MakeNewTab("Statics", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -166,49 +166,49 @@ public partial class MainMenuView : UserControl
     {
         await LoadInvestment();
 
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.WeaponAudioGroupList);
-        _mainWindow.MakeNewTab("weapon audio", tagListView);
+        _mainWindow.MakeNewTab("Weapon Audio", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllAudioViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
-        tagListView.LoadContent(ETagListType.SoundsPackagesList);
-        _mainWindow.MakeNewTab("sounds", tagListView);
+        AudioListView audioListView = new();
+        audioListView.LoadContent();
+        _mainWindow.MakeNewTab("Sounds", audioListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllBKHDViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.BKHDGroupList);
-        _mainWindow.MakeNewTab("sound banks", tagListView);
+        _mainWindow.MakeNewTab("Sound Banks", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllStringsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.StringContainersList);
         _mainWindow.MakeNewTab("strings", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
-    private void AllTexturesViewButton_OnClick(object sender, RoutedEventArgs e)
+    private void AllTexturesView2Button_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
-        tagListView.LoadContent(ETagListType.TextureList);
-        _mainWindow.MakeNewTab("textures", tagListView);
+        TextureListView textureListView = new();
+        textureListView.LoadContent();
+        _mainWindow.MakeNewTab("Textures", textureListView);
         _mainWindow.SetNewestTabSelected();
     }
 
     private void AllMaterialsViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        TagListViewerView tagListView = new TagListViewerView();
+        TagListViewerView tagListView = new();
         tagListView.LoadContent(ETagListType.MaterialList);
-        _mainWindow.MakeNewTab("materials", tagListView);
+        _mainWindow.MakeNewTab("Materials", tagListView);
         _mainWindow.SetNewestTabSelected();
     }
 
@@ -234,20 +234,23 @@ public partial class MainMenuView : UserControl
 
     private void AboutButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PopupBanner about = new();
-        about.DarkenBackground = true;
-        about.Icon = "💠";
-        //about.IconImage = MainWindow.GetBitmapSource(System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location));
-        about.Title = $"CHARM {App.CurrentVersion.Id}";
-        about.Subtitle = "Charm was created by Montague";
-        about.Description = "Additional help/development from:\n" +
+        PopupBanner about = new()
+        {
+            DarkenBackground = true,
+            Icon = "",
+            //about.IconImage = MainWindow.GetBitmapSource(System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location));
+            Title = $"CHARM {App.CurrentVersion.Id}",
+            Subtitle = "Charm was created by Montague",
+            Description =
+            "Charm was developed for 3D artists, to preserve vaulted content as much as possible, and for learning how the Tiger engine works in general!\n\n" +
+            "Additional help/development from:\n" +
             "• Delta\n" +
             "• nblock\n" +
             "• Cohae\n" +
             "• BIOS\n" +
-            "• HighRTT\n" +
-            "\nCharm was developed for 3D artists, to preserve vaulted content as much as possible, and for learning how the Tiger engine works in general!";
-        about.Style = PopupBanner.PopupStyle.Information;
+            "• HighRTT\n",
+            Style = PopupBanner.PopupStyle.Information
+        };
         about.Show();
     }
 }

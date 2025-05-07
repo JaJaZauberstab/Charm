@@ -16,6 +16,9 @@ namespace Tiger.Schema.Shaders
         {
         }
 
+        // Currently used for shader/material conversion purposes
+        public TfxRenderStage RenderStage { get; set; } = TfxRenderStage.GenerateGbuffer;
+
         public StateSelection RenderStates => _tag.RenderStates;
 
         public SMaterialShader Pixel => _tag.Pixel.Value;
@@ -37,11 +40,11 @@ namespace Tiger.Schema.Shaders
             }
         }
 
-        private static ConfigSubsystem _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        private static ConfigSubsystem _config = TigerInstance.GetSubsystem<ConfigSubsystem>();
 
         public void SavePixelShader(string saveDirectory, bool isTerrain = false)
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (Strategy.IsD1())
                 return;
 
             if (Pixel.Shader != null && Pixel.Shader.Hash.IsValid())
@@ -65,7 +68,7 @@ namespace Tiger.Schema.Shaders
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Source2");
                         Directory.CreateDirectory($"{saveDirectory}/Shaders/Source2/materials");
 
-                        var hash = Pixel.GetBytecode().CanInlineBytecode() ? Hash : Pixel.Shader.Hash;
+                        FileHash hash = (Pixel.GetBytecode().CanInlineBytecode() || RenderStage == TfxRenderStage.WaterReflection) ? Hash : Pixel.Shader.Hash;
                         File.WriteAllText($"{saveDirectory}/Shaders/Source2/PS_{hash}.shader", vfx);
                         if (!isTerrain)
                             Source2Handler.SaveVMAT(saveDirectory, Hash, this);
@@ -81,7 +84,7 @@ namespace Tiger.Schema.Shaders
         // TODO: do this properly
         public void SaveVertexShader(string saveDirectory)
         {
-            if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (Strategy.IsD1())
                 return;
 
             if (Vertex.Shader != null && Vertex.Shader.Hash.IsValid())
@@ -90,7 +93,7 @@ namespace Tiger.Schema.Shaders
                 {
                     string vertex = Vertex.Shader.Decompile($"vs{Vertex.Shader.Hash}");
                     Directory.CreateDirectory($"{saveDirectory}/HLSL");
-                    File.WriteAllText($"{saveDirectory}/HLSL/VS_{Hash}.hlsl", vertex);
+                    File.WriteAllText($"{saveDirectory}/HLSL/VS_{Vertex.Shader.Hash}.hlsl", vertex);
                 }
                 catch (IOException e)  // threading error
                 {
@@ -118,24 +121,24 @@ namespace Tiger.Schema.Shaders
             {
                 SavePixelShader($"{saveDirectory}");
 
-                ShaderDetails psCB = new ShaderDetails();
+                ShaderDetails psCB = new();
                 psCB.Hash = Pixel.Shader.Hash;
                 psCB.CBuffers = Pixel.GetCBuffer0();
                 psCB.Bytecode = Pixel.TFX_Bytecode.Select(x => x.Value).ToList();
                 psCB.Constants = Pixel.TFX_Bytecode_Constants.Select(x => x.Vec).ToList();
 
                 psCB.Textures = new();
-                foreach (var texture in Pixel.EnumerateTextures())
+                foreach (STextureTag texture in Pixel.EnumerateTextures())
                 {
-                    if (texture.GetTexture() is null)
+                    if (texture.Texture is null)
                         continue;
 
                     psCB.Textures.TryAdd((int)texture.TextureIndex, new()
                     {
-                        Hash = texture.GetTexture().Hash,
-                        Colorspace = texture.GetTexture().IsSrgb() ? "Srgb" : "Non-Color",
-                        Dimension = texture.GetTexture().GetDimension().GetEnumDescription(),
-                        Format = texture.GetTexture().TagData.GetFormat().ToString()
+                        Hash = texture.Texture.Hash,
+                        Colorspace = texture.Texture.IsSrgb() ? "sRGB" : "Non-Color",
+                        Dimension = texture.Texture.GetDimension().GetEnumDescription(),
+                        Format = texture.Texture.TagData.GetFormat().ToString()
                     });
                 }
 
@@ -143,13 +146,13 @@ namespace Tiger.Schema.Shaders
                 psCB.Samplers = new();
                 foreach (var item in Pixel.Samplers.Select((sampler, index) => new { sampler, index }))
                 {
-                    var sampler = item.sampler.GetSampler();
+                    DirectXSampler? sampler = item.sampler.GetSampler();
                     if (sampler is null)
                         continue;
 
                     if (sampler.Hash.GetFileMetadata().Type != 34)
                     {
-                        var tex = FileResourcer.Get().GetFile<Texture>(sampler.Hash);
+                        Texture? tex = FileResourcer.Get().GetFile<Texture>(sampler.Hash);
                         if (tex is null)
                             continue;
 
@@ -177,24 +180,24 @@ namespace Tiger.Schema.Shaders
             {
                 SaveVertexShader($"{saveDirectory}/Shaders/");
 
-                ShaderDetails vsCB = new ShaderDetails();
+                ShaderDetails vsCB = new();
                 vsCB.Hash = Vertex.Shader.Hash;
                 vsCB.CBuffers = Vertex.GetCBuffer0();
                 vsCB.Bytecode = Vertex.TFX_Bytecode.Select(x => x.Value).ToList();
                 vsCB.Constants = Vertex.TFX_Bytecode_Constants.Select(x => x.Vec).ToList();
 
                 vsCB.Textures = new();
-                foreach (var texture in Vertex.EnumerateTextures())
+                foreach (STextureTag texture in Vertex.EnumerateTextures())
                 {
-                    if (texture.GetTexture() is null)
+                    if (texture.Texture is null)
                         continue;
 
                     vsCB.Textures.TryAdd((int)texture.TextureIndex, new()
                     {
-                        Hash = texture.GetTexture().Hash,
-                        Colorspace = texture.GetTexture().IsSrgb() ? "Srgb" : "Non-Color",
-                        Dimension = texture.GetTexture().GetDimension().GetEnumDescription(),
-                        Format = texture.GetTexture().TagData.GetFormat().ToString()
+                        Hash = texture.Texture.Hash,
+                        Colorspace = texture.Texture.IsSrgb() ? "Srgb" : "Non-Color",
+                        Dimension = texture.Texture.GetDimension().GetEnumDescription(),
+                        Format = texture.Texture.TagData.GetFormat().ToString()
                     });
                 }
 
@@ -203,17 +206,17 @@ namespace Tiger.Schema.Shaders
 
             foreach (STextureTag texture in Vertex.EnumerateTextures())
             {
-                if (texture.GetTexture() == null || File.Exists($"{saveDirectory}/Textures/{texture.GetTexture().Hash}.{_config.GetOutputTextureFormat()}"))
+                if (texture.Texture == null || File.Exists($"{saveDirectory}/Textures/{texture.Texture.Hash}.{_config.GetOutputTextureFormat()}"))
                     continue;
 
-                texture.GetTexture().SavetoFile($"{saveDirectory}/Textures/{texture.GetTexture().Hash}");
+                texture.Texture.SavetoFile($"{saveDirectory}/Textures/{texture.Texture.Hash}");
             }
             foreach (STextureTag texture in Pixel.EnumerateTextures())
             {
-                if (texture.GetTexture() == null || File.Exists($"{saveDirectory}/Textures/{texture.GetTexture().Hash}.{_config.GetOutputTextureFormat()}"))
+                if (texture.Texture == null || File.Exists($"{saveDirectory}/Textures/{texture.Texture.Hash}.{_config.GetOutputTextureFormat()}"))
                     continue;
 
-                texture.GetTexture().SavetoFile($"{saveDirectory}/Textures/{texture.GetTexture().Hash}");
+                texture.Texture.SavetoFile($"{saveDirectory}/Textures/{texture.Texture.Hash}");
             }
 
 
@@ -227,11 +230,11 @@ namespace Tiger.Schema.Shaders
 
         public List<TfxExtern> GetExterns()
         {
-            var opcodes = Pixel.GetBytecode().Opcodes;
+            List<TfxData> opcodes = Pixel.GetBytecode().Opcodes;
             opcodes.AddRange(Vertex.GetBytecode().Opcodes);
 
             var list = new List<TfxExtern>();
-            foreach (var op in opcodes.Where(x => x.op.ToString().Contains("Extern")))
+            foreach (TfxData op in opcodes.Where(x => x.op.ToString().Contains("Extern")))
             {
                 if (!list.Contains(op.data.extern_))
                     list.Add(op.data.extern_);
@@ -349,22 +352,22 @@ public struct StateSelection
         StringBuilder states = new();
         if (BlendState() != -1)
         {
-            var blendState = RenderStates.BlendStates[BlendState()];
+            BungieBlendDesc blendState = RenderStates.BlendStates[BlendState()];
             states.AppendLine($"Blend State {BlendState()}:\n {blendState.ToString()}");
         }
         if (DepthStencilState() != -1)
         {
-            var dsState = RenderStates.DepthStencilStates[DepthStencilState()];
+            BungieDepthStencilDesc dsState = RenderStates.DepthStencilStates[DepthStencilState()];
             states.AppendLine($"Depth Stencil State {DepthStencilState()}:\n {dsState.ToString()}");
         }
         if (RasterizerState() != -1)
         {
-            var rasterizer = RenderStates.RasterizerStates[RasterizerState()];
+            BungieRasterizerDesc rasterizer = RenderStates.RasterizerStates[RasterizerState()];
             states.AppendLine($"Rasterizer State {RasterizerState()}:\n {rasterizer.ToString()}");
         }
         if (DepthBiasState() != -1)
         {
-            var depthBias = RenderStates.DepthBiasStates[DepthBiasState()];
+            BungieDepthBiasDesc depthBias = RenderStates.DepthBiasStates[DepthBiasState()];
             states.AppendLine($"Depth Bias State {DepthBiasState()}:\n {depthBias.ToString()}");
         }
 

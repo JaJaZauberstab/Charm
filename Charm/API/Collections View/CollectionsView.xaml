@@ -437,7 +437,10 @@
                                 x:Name="ItemsTextTab"
                                 Margin="0"
                                 d:FontFamily="Haas Grot Text 55 Roman"
-                                FontSize="18" />
+                                FontSize="18">
+                                <Run Text="ITEMS - " />
+                                <Run Text="{Binding TotalItemAmount}" />
+                            </TextBlock>
                         </Grid>
                     </Border>
                     <UniformGrid

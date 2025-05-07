@@ -20,11 +20,11 @@ public static class Source2Handler
                 File.Copy("Exporters/sbox_model_template.vmdl", $"{savePath}/{name}.vmdl", true);
                 string text = File.ReadAllText($"{savePath}/{name}.vmdl");
 
-                StringBuilder mats = new StringBuilder();
+                StringBuilder mats = new();
                 StringBuilder exceptions = new();
 
                 int i = 0;
-                foreach (var part in parts)
+                foreach (MeshPart part in parts)
                 {
                     mats.AppendLine("{");
                     if (part.Material == null)
@@ -83,54 +83,54 @@ public static class Source2Handler
         string path = $"{savePath}/Shaders/Source2/Materials";
 
         Directory.CreateDirectory(path);
-        StringBuilder vmat = new StringBuilder();
-        StringBuilder expressions = new StringBuilder();
+        StringBuilder vmat = new();
+        StringBuilder expressions = new();
 
         vmat.AppendLine("Layer0\n{");
 
         //Material parameters
-        var name = material.Pixel.GetBytecode().CanInlineBytecode() ? material.Hash : material.Pixel.Shader.Hash;
+        FileHash name = (material.Pixel.GetBytecode().CanInlineBytecode() || material.RenderStage == TfxRenderStage.WaterReflection) ? material.Hash : material.Pixel.Shader.Hash;
         vmat.AppendLine($"\tshader \"Shaders/Source2/ps_{name}.shader\"");
 
         if ((material.EnumerateScopes().Contains(TfxScope.TRANSPARENT) || material.EnumerateScopes().Contains(TfxScope.TRANSPARENT_ADVANCED)) && material.RenderStates.BlendState() == -1)
             vmat.AppendLine($"\tF_ADDITIVE_BLEND 1");
 
         //Textures
-        foreach (var e in material.Pixel.EnumerateTextures())
+        foreach (STextureTag e in material.Pixel.EnumerateTextures())
         {
-            if (e.GetTexture() == null)
+            if (e.Texture == null)
                 continue;
 
-            vmat.AppendLine($"\tPS_TextureT{e.TextureIndex} \"Textures/{e.GetTexture().Hash}.png\"");
+            vmat.AppendLine($"\tPS_TextureT{e.TextureIndex} \"Textures/{e.Texture.Hash}.png\"");
         }
 
         if (material.Vertex.Unk64 != 0) // Vertex animation?
         {
-            foreach (var e in material.Vertex.EnumerateTextures())
+            foreach (STextureTag e in material.Vertex.EnumerateTextures())
             {
-                if (e.GetTexture() == null)
+                if (e.Texture == null)
                     continue;
 
-                vmat.AppendLine($"\tVS_TextureT{e.TextureIndex} \"Textures/{e.GetTexture().Hash}.png\"");
+                vmat.AppendLine($"\tVS_TextureT{e.TextureIndex} \"Textures/{e.Texture.Hash}.png\"");
             }
         }
 
-        var opcodes = material.Pixel.GetBytecode().Opcodes;
-        foreach ((int i, var op) in opcodes.Select((value, index) => (index, value)))
+        List<TfxData> opcodes = material.Pixel.GetBytecode().Opcodes;
+        foreach ((int i, TfxData op) in opcodes.Select((value, index) => (index, value)))
         {
             switch (op.op)
             {
                 case TfxBytecode.PushExternInputTextureView:
                     var data = (PushExternInputTextureViewData)op.data;
-                    var slot = ((SetShaderTextureData)opcodes[i + 1].data).value & 0x1F;
-                    var index = data.element * 8;
+                    int slot = ((SetShaderTextureData)opcodes[i + 1].data).value & 0x1F;
+                    int index = data.element * 8;
                     switch (data.extern_)
                     {
                         case TfxExtern.Frame:
                             switch (index)
                             {
                                 case 0xB8: // SGlobalTextures SpecularTintLookup
-                                    var specTint = Globals.Get().RenderGlobals.TagData.Textures.TagData.SpecularTintLookup;
+                                    Texture specTint = Globals.Get().RenderGlobals.TagData.Textures.TagData.SpecularTintLookup;
                                     specTint.SavetoFile($"{savePath}/Textures/{specTint.Hash}");
 
                                     vmat.AppendLine($"\tPS_tSpecularTintLookup \"Textures/{specTint.Hash}.png\"");
@@ -170,7 +170,7 @@ public static class Source2Handler
             }
         }
 
-        vmat.AppendLine(PopulateCBuffers(material).ToString()); // sPS
+        vmat.AppendLine(PopulateCBuffers(material).ToString()); // PS
         vmat.AppendLine(PopulateCBuffers(material, true).ToString()); // VS
 
         // PS Dynamic expressions
@@ -180,16 +180,16 @@ public static class Source2Handler
 
         if (!bytecode.CanInlineBytecode())
         {
-            var bytecode_hlsl = bytecode.Evaluate(material.Pixel.TFX_Bytecode_Constants, false, material);
+            Dictionary<int, string> bytecode_hlsl = bytecode.Evaluate(material.Pixel.TFX_Bytecode_Constants, false, material);
             string temp_time_fix = $"CurTime = exists(CurrentTime) ? CurrentTime : Time;";
-            foreach (var entry in bytecode_hlsl)
+            foreach (KeyValuePair<int, string> entry in bytecode_hlsl)
             {
-                var expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
+                string expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
                 vmat.AppendLine($"\t\tcb0_{entry.Key} \"{expression}\"");
             }
         }
 
-        foreach (var scope in material.EnumerateScopes())
+        foreach (TfxScope scope in material.EnumerateScopes())
         {
             switch (scope)
             {
@@ -201,7 +201,7 @@ public static class Source2Handler
             }
         }
 
-        foreach (var resource in material.Pixel.Shader.Resources)
+        foreach (DXBCShaderResource resource in material.Pixel.Shader.Resources)
         {
             if (resource.ResourceType == Schema.ResourceType.CBuffer)
             {
@@ -256,6 +256,7 @@ public static class Source2Handler
                         vmat.AppendLine($"\t\tcb13_0 \"float4(Time, Time, 0.05, 0.016)\"");
                         vmat.AppendLine($"\t\tcb13_1 \"float4(0.65,16,0.65,1.5)\"");
                         vmat.AppendLine($"\t\tcb13_2 \"float4((Time + 33.75) * 1.258699, (Time + 60.0) * 0.9583125, (Time + 60.0) * 8.789123, (Time + 33.75) * 2.311535)\"");
+                        vmat.AppendLine($"\t\tcb13_3 \"float4(0.5,0.5,0,0)\"");
                         vmat.AppendLine($"\t\tcb13_4 \"float4(1,1,0,1)\"");
                         vmat.AppendLine($"\t\tcb13_5 \"float4(0,0,512,0)\"");
                         vmat.AppendLine($"\t\tcb13_6 \"float4(0,1,sin(Time * 6.0) * 0.5 + 0.5,0)\"");
@@ -270,16 +271,16 @@ public static class Source2Handler
             bytecode = new(TfxBytecodeOp.ParseAll(material.Vertex.TFX_Bytecode));
             if (!bytecode.CanInlineBytecode())
             {
-                var bytecode_hlsl = bytecode.Evaluate(material.Vertex.TFX_Bytecode_Constants, false, material);
+                Dictionary<int, string> bytecode_hlsl = bytecode.Evaluate(material.Vertex.TFX_Bytecode_Constants, false, material);
                 string temp_time_fix = $"CurTime = exists(CurrentTime) ? CurrentTime : Time;";
-                foreach (var entry in bytecode_hlsl)
+                foreach (KeyValuePair<int, string> entry in bytecode_hlsl)
                 {
-                    var expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
+                    string expression = entry.Value.Contains("Time") ? $"{temp_time_fix} return {entry.Value.Replace("Time", "CurTime")};" : entry.Value;
                     vmat.AppendLine($"\t\tvs_cb0_{entry.Key} \"{expression}\"");
                 }
             }
 
-            foreach (var resource in material.Vertex.Shader.Resources)
+            foreach (DXBCShaderResource resource in material.Vertex.Shader.Resources)
             {
                 if (resource.ResourceType == Schema.ResourceType.CBuffer)
                 {
@@ -300,7 +301,7 @@ public static class Source2Handler
         vmat.AppendLine("}");
 
         if (terrainDyemaps is not null)
-            foreach (var tex in terrainDyemaps)
+            foreach (Texture tex in terrainDyemaps)
             {
                 SaveVTEX(tex, $"{savePath}/Textures");
             }
@@ -344,7 +345,7 @@ public static class Source2Handler
             Directory.CreateDirectory(savePath);
 
         var file = VTEX.Create(tex, tex.GetDimension(), vtexPath);
-        var json = JsonConvert.SerializeObject(file, Formatting.Indented);
+        string json = JsonConvert.SerializeObject(file, Formatting.Indented);
         try
         {
             File.WriteAllText($"{savePath}/{tex.Hash}.vtex", json);
@@ -362,10 +363,10 @@ public static class Source2Handler
         string[] components = { "X", "Y", "Z", "W" };
 
         int dyeIndex = 1;
-        foreach (var dye in dyes)
+        foreach (Dye dye in dyes)
         {
-            var dyeInfo = dye.GetDyeInfo();
-            foreach (var fieldInfo in dyeInfo.GetType().GetFields())
+            DyeInfo dyeInfo = dye.GetDyeInfo();
+            foreach (System.Reflection.FieldInfo fieldInfo in dyeInfo.GetType().GetFields())
             {
                 Vector4 value = (Vector4)fieldInfo.GetValue(dyeInfo);
                 if (!fieldInfo.CustomAttributes.Any())
@@ -377,10 +378,10 @@ public static class Source2Handler
                 }
             }
 
-            var diff = dye.TagData.Textures[0];
-            text = text.Replace($"DiffMap{dyeIndex}", $"{diff.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
-            var norm = dye.TagData.Textures[1];
-            text = text.Replace($"NormMap{dyeIndex}", $"{norm.GetTexture().Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
+            STextureTag diff = dye.TagData.Textures[0];
+            text = text.Replace($"DiffMap{dyeIndex}", $"{diff.Texture.Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
+            STextureTag norm = dye.TagData.Textures[1];
+            text = text.Replace($"NormMap{dyeIndex}", $"{norm.Texture.Hash}.{TextureExtractor.GetExtension(outputTextureFormat)}");
             dyeIndex++;
         }
 
@@ -406,13 +407,61 @@ public class VTEX
     {
         if (vtexPath != "" && !vtexPath.EndsWith('/'))
             vtexPath = $"{vtexPath}/";
+
+        ImageFormatType outputFormat = ImageFormatType.RGBA8888;
+        GammaType inColorSpace = texture.IsSrgb() ? GammaType.SRGB : GammaType.Linear;
+        GammaType outColorSpace = inColorSpace;
+
+        switch (texture.TagData.GetFormat())
+        {
+            case DirectXTexNet.DXGI_FORMAT.R32G32B32A32_FLOAT:
+                outputFormat = ImageFormatType.RGBA32323232F;
+                inColorSpace = GammaType.SRGB;
+                outColorSpace = GammaType.Linear;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.R16G16B16A16_FLOAT:
+            case DirectXTexNet.DXGI_FORMAT.R16G16B16A16_TYPELESS:
+                outputFormat = ImageFormatType.RGBA16161616F;
+                inColorSpace = GammaType.SRGB;
+                outColorSpace = GammaType.Linear;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.R16G16B16A16_UNORM:
+                outputFormat = ImageFormatType.RGBA16161616;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.R32_TYPELESS:
+            case DirectXTexNet.DXGI_FORMAT.R32_FLOAT:
+                outputFormat = ImageFormatType.R32F;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC7_TYPELESS:
+            case DirectXTexNet.DXGI_FORMAT.BC7_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC7_UNORM_SRGB:
+                outputFormat = ImageFormatType.BC7;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC6H_TYPELESS:
+            case DirectXTexNet.DXGI_FORMAT.BC6H_SF16:
+            case DirectXTexNet.DXGI_FORMAT.BC6H_UF16:
+                outputFormat = ImageFormatType.BC6H;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC1_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC1_TYPELESS:
+                outputFormat = ImageFormatType.DXT1;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC3_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC3_TYPELESS:
+                outputFormat = ImageFormatType.DXT5;
+                break;
+            case DirectXTexNet.DXGI_FORMAT.BC2_UNORM:
+            case DirectXTexNet.DXGI_FORMAT.BC2_TYPELESS:
+                outputFormat = ImageFormatType.DXT3;
+                break;
+        }
+
         return new VTEX
         {
             Images = new List<string> { $"textures/{vtexPath}{texture.Hash}.png" },
-            OutputFormat = dimension == TextureDimension.CUBE
-            ? ImageFormatType.BC6H.ToString() : ImageFormatType.RGBA8888.ToString(),
-            OutputColorSpace = (texture.IsSrgb() ? GammaType.SRGB : GammaType.Linear).ToString(),
-            InputColorSpace = (texture.IsSrgb() ? GammaType.SRGB : GammaType.Linear).ToString(),
+            OutputFormat = outputFormat.ToString(),
+            OutputColorSpace = outColorSpace.ToString(),
+            InputColorSpace = inColorSpace.ToString(),
             OutputTypeString = dimension == TextureDimension.CUBE ? "CUBE" : "2D"
         };
     }
@@ -427,10 +476,13 @@ public enum GammaType
 public enum ImageFormatType
 {
     DXT5,
+    DXT3,
     DXT1,
     RGBA8888,
     RGBA16161616,
     RGBA16161616F,
+    RGBA32323232F,
+    R32F,
     BC7,
     BC6H,
 }

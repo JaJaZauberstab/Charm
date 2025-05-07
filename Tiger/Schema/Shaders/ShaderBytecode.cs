@@ -90,13 +90,13 @@ public class ShaderBytecode : TigerReferenceFile<SShaderBytecode>
         return reader.ReadBytes((int)_tag.BytecodeSize);
     }
 
-    private static object _lock = new object();
+    private static object _lock = new();
     public string Decompile(string name, string savePath = "hlsl_temp")
     {
         if (_decompiled is not null)
             return _decompiled;
 
-        var shaderBytecode = GetBytecode();
+        byte[] shaderBytecode = GetBytecode();
         if (Strategy.IsD1() || shaderBytecode.Length == 0)
             return "";
 
@@ -118,7 +118,7 @@ public class ShaderBytecode : TigerReferenceFile<SShaderBytecode>
 
         if (!File.Exists(hlslPath))
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
+            ProcessStartInfo startInfo = new();
             startInfo.CreateNoWindow = false;
             startInfo.UseShellExecute = false;
             startInfo.FileName = "ThirdParty/3dmigoto_shader_decomp.exe";
@@ -286,10 +286,10 @@ public class ShaderBytecode : TigerReferenceFile<SShaderBytecode>
                 type = (ResourceType)reader.ReadUInt32();
 
             }
-            while (type != ResourceType.None
-                    && type != ResourceType.Output
-                    && type != ResourceType.PSInput
-                    && type != ResourceType.VSInput);
+            while (type is not ResourceType.None
+                    and not ResourceType.Output
+                    and not ResourceType.PSInput
+                    and not ResourceType.VSInput);
         }
         catch (Exception ex)
         {
@@ -348,55 +348,25 @@ public struct DXBCIOSignature
         long offset = reader.Position;
         reader.Seek(chunkStart + inputSignature.SemanticNameOffset, SeekOrigin.Begin);
         string semanticName = reader.ReadNullTerminatedString();
-        switch (semanticName)
+        Semantic = semanticName switch
         {
-            case "POSITION":
-                Semantic = DXBCSemantic.Position;
-                break;
-            case "TEXCOORD":
-                Semantic = DXBCSemantic.Texcoord;
-                break;
-            case "NORMAL":
-                Semantic = DXBCSemantic.Normal;
-                break;
-            case "BINORMAL":
-                Semantic = DXBCSemantic.Binormal;
-                break;
-            case "TANGENT":
-                Semantic = DXBCSemantic.Tangent;
-                break;
-            case "BLENDINDICES":
-                Semantic = DXBCSemantic.BlendIndices;
-                break;
-            case "BLENDWEIGHT":
-                Semantic = DXBCSemantic.BlendWeight;
-                break;
-            case "COLOR":
-                Semantic = DXBCSemantic.Colour;
-                break;
-
+            "POSITION" => DXBCSemantic.Position,
+            "TEXCOORD" => DXBCSemantic.Texcoord,
+            "NORMAL" => DXBCSemantic.Normal,
+            "BINORMAL" => DXBCSemantic.Binormal,
+            "TANGENT" => DXBCSemantic.Tangent,
+            "BLENDINDICES" => DXBCSemantic.BlendIndices,
+            "BLENDWEIGHT" => DXBCSemantic.BlendWeight,
+            "COLOR" => DXBCSemantic.Colour,
             //System
-            case "SV_POSITION":
-                Semantic = DXBCSemantic.SystemPosition;
-                break;
-            case "SV_isFrontFace":
-                Semantic = DXBCSemantic.SystemIsFrontFace;
-                break;
-            case "SV_VertexID": //Does case matter here?
-            case "SV_VERTEXID":
-                Semantic = DXBCSemantic.SystemVertexId;
-                break;
-            case "SV_InstanceID":
-                Semantic = DXBCSemantic.SystemInstanceId;
-                break;
-            case "SV_Target":
-            case "SV_TARGET":
-                Semantic = DXBCSemantic.SystemTarget;
-                break;
-            default:
-                throw new NotImplementedException($"Unknown semantic {semanticName}");
-        }
-
+            "SV_POSITION" => DXBCSemantic.SystemPosition,
+            "SV_isFrontFace" => DXBCSemantic.SystemIsFrontFace,
+            //Does case matter here?
+            "SV_VertexID" or "SV_VERTEXID" => DXBCSemantic.SystemVertexId,
+            "SV_InstanceID" => DXBCSemantic.SystemInstanceId,
+            "SV_Target" or "SV_TARGET" => DXBCSemantic.SystemTarget,
+            _ => throw new NotImplementedException($"Unknown semantic {semanticName}"),
+        };
         reader.Seek(offset, SeekOrigin.Begin);
     }
 
@@ -417,55 +387,35 @@ public struct DXBCIOSignature
 
     public string GetMaskType()
     {
-        switch (GetNumberOfComponents())
+        return GetNumberOfComponents() switch
         {
-            case 1:
-                return "uint";
-            case 2:
-                return "float2";
-            case 3:
-                return "float3";
-            case 4:
-                return "float4";
-            default:
-                return "float4";
-        }
+            1 => "uint",
+            2 => "float2",
+            3 => "float3",
+            4 => "float4",
+            _ => "float4",
+        };
     }
 
     public override string ToString()
     {
-        switch (Semantic)
+        return Semantic switch
         {
-            case DXBCSemantic.Position:
-                return "POSITION";
-            case DXBCSemantic.Texcoord:
-                return "TEXCOORD";
-            case DXBCSemantic.Normal:
-                return "NORMAL";
-            case DXBCSemantic.Binormal:
-                return "BINORMAL";
-            case DXBCSemantic.Tangent:
-                return "TANGENT";
-            case DXBCSemantic.BlendIndices:
-                return "BLENDINDICES";
-            case DXBCSemantic.BlendWeight:
-                return "BLENDWEIGHT";
-            case DXBCSemantic.Colour:
-                return "COLOR";
-
-            case DXBCSemantic.SystemPosition:
-                return "SV_POSITION";
-            case DXBCSemantic.SystemIsFrontFace:
-                return "SV_ISFRONTFACE";
-            case DXBCSemantic.SystemVertexId:
-                return "SV_VERTEXID";
-            case DXBCSemantic.SystemInstanceId:
-                return "SV_INSTANCEID";
-            case DXBCSemantic.SystemTarget:
-                return "SV_TARGET";
-            default:
-                throw new NotImplementedException($"Unknown Semantic {Semantic}");
-        }
+            DXBCSemantic.Position => "POSITION",
+            DXBCSemantic.Texcoord => "TEXCOORD",
+            DXBCSemantic.Normal => "NORMAL",
+            DXBCSemantic.Binormal => "BINORMAL",
+            DXBCSemantic.Tangent => "TANGENT",
+            DXBCSemantic.BlendIndices => "BLENDINDICES",
+            DXBCSemantic.BlendWeight => "BLENDWEIGHT",
+            DXBCSemantic.Colour => "COLOR",
+            DXBCSemantic.SystemPosition => "SV_POSITION",
+            DXBCSemantic.SystemIsFrontFace => "SV_ISFRONTFACE",
+            DXBCSemantic.SystemVertexId => "SV_VERTEXID",
+            DXBCSemantic.SystemInstanceId => "SV_INSTANCEID",
+            DXBCSemantic.SystemTarget => "SV_TARGET",
+            _ => throw new NotImplementedException($"Unknown Semantic {Semantic}"),
+        };
     }
 }
 

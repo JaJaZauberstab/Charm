@@ -43,7 +43,7 @@ public class Hash64Map : Strategy.StrategistSingleton<Hash64Map>
 
     public string GetHash64(uint tag32)
     {
-        var x = _map.Where(x => x.Value == tag32);
+        IEnumerable<KeyValuePair<ulong, uint>> x = _map.Where(x => x.Value == tag32);
         return x.Any() ? Endian.U64ToString(x.First().Key) : "";
     }
 

@@ -54,7 +54,7 @@ public partial class APIItemRecoilStat : UserControl
         double xSpreadLess = Math.Sin(direction - spread);
         double ySpreadLess = Math.Cos(direction - spread);
 
-        var d = $"M1,1 L{1 + xSpreadMore},{1 - ySpreadMore} A1,1 0 0,{(direction <= 0 ? '1' : '0')} {1 + xSpreadLess}, {1 - ySpreadLess} Z";
+        string d = $"M1,1 L{1 + xSpreadMore},{1 - ySpreadMore} A1,1 0 0,{(direction <= 0 ? '1' : '0')} {1 + xSpreadLess}, {1 - ySpreadLess} Z";
         //Console.WriteLine($"{Value} {direction} {d} {(float)direction < 0}");
         if (Value < 95)
         {

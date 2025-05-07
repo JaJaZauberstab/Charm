@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:Charm"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="400"
-    d:DesignWidth="1080"
+    d:DesignWidth="1920"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -67,18 +67,21 @@
     <Grid
         x:Name="MainGrid"
         Panel.ZIndex="100"
+        d:Background="#7F7F7F"
         Background="Transparent">
-        <Grid.Effect>
-            <DropShadowEffect BlurRadius="100" ShadowDepth="0" />
-        </Grid.Effect>
 
         <Border
             x:Name="ElementStack"
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="100" ShadowDepth="0" />
+            </Border.Effect>
+
             <StackPanel Orientation="Vertical">
                 <Grid
                     Name="Expanders"
+                    d:Opacity="1"
                     Background="Transparent"
                     Opacity="0">
                     <!--  Left Piece (Expands Left)  -->
@@ -89,6 +92,8 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Top"
                         Panel.ZIndex="15"
+                        d:Fill="#88007490"
+                        d:Width="1920"
                         Fill="{Binding ExpanderColor}" />
 
                     <!--  Right Piece (Expands Right)  -->
@@ -99,24 +104,29 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Top"
                         Panel.ZIndex="15"
+                        d:Fill="#88007490"
+                        d:Width="1920"
                         Fill="{Binding ExpanderColor}" />
                 </Grid>
 
                 <Grid
                     Name="Info"
-                    Background="#75000000"
+                    d:Opacity="1"
+                    Background="#80131313"
                     Opacity="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="35*" />
                         <ColumnDefinition Width="70*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="Transparent">
+                    <Border Grid.Column="0" Background="#4D000000">
                         <TextBlock
                             Margin="25"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             d:FontFamily="Haas Grot Text 55 Roman"
+                            d:Foreground="#C90092B6"
+                            d:Text="✅"
                             FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
                             FontSize="100"
                             FontWeight="Bold"
@@ -137,10 +147,12 @@
                         <Border
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
+                            d:Background="#4B007490"
                             Background="{Binding BodyColor}">
                             <TextBlock
                                 Margin="20"
                                 d:FontFamily="Haas Grot Text 55 Roman"
+                                d:Text="H E L L O"
                                 FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
                                 FontSize="36"
                                 FontWeight="Bold"
@@ -158,13 +170,14 @@
                                     FontWeight="Bold"
                                     Foreground="{StaticResource ForegroundColour90}"
                                     TextWrapping="WrapWithOverflow">
-                                    <Run Text="{Binding Subtitle}" />
+                                    <Run d:Text="Subtitle" Text="{Binding Subtitle}" />
                                     <Run Text="&#x0a;" />
                                 </TextBlock>
 
                                 <TextBlock
                                     x:Name="DescriptionText"
                                     d:FontFamily="Haas Grot Text 55 Roman"
+                                    d:Text="Description"
                                     FontFamily="{DynamicResource Haas Grot Text 55 Roman Keys}"
                                     FontSize="24"
                                     Text="{Binding Description}"
@@ -306,7 +319,6 @@
             <EventTrigger RoutedEvent="Loaded">
                 <BeginStoryboard>
                     <Storyboard>
-
                         <DoubleAnimation
                             Storyboard.TargetName="Expanders"
                             Storyboard.TargetProperty="Opacity"
@@ -320,7 +332,7 @@
                             Storyboard.TargetName="LeftPiece"
                             Storyboard.TargetProperty="Width"
                             From="0"
-                            To="2000"
+                            To="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                             Duration="0:0:0.35" />
 
 
@@ -330,7 +342,7 @@
                             Storyboard.TargetName="RightPiece"
                             Storyboard.TargetProperty="Width"
                             From="0"
-                            To="2000"
+                            To="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                             Duration="0:0:0.35" />
 
                         <!--  Defaults  -->

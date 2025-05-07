@@ -4,7 +4,6 @@ using Tiger.Schema;
 using Tiger.Schema.Entity;
 using Tiger.Schema.Shaders;
 using Tiger.Schema.Static;
-using static Tiger.Schema.Lights;
 using static Tiger.Schema.StaticMapData_D1;
 
 namespace Tiger.Exporters;
@@ -37,9 +36,9 @@ public class Exporter : Subsystem<Exporter>
         return true;
     }
 
-    public ExporterScene CreateScene(string name, ExportType type)
+    public ExporterScene CreateScene(string name, ExportType type, DataExportType dataType = DataExportType.Individual)
     {
-        var scene = new ExporterScene { Name = name, Type = type };
+        var scene = new ExporterScene { Name = name, Type = type, DataType = dataType };
         _scenes.Add(scene);
         return scene;
     }
@@ -48,7 +47,7 @@ public class Exporter : Subsystem<Exporter>
     /// Gets or creates a Global Exporter scene. 
     /// A Global scene can be used to store anything that needs to be accessed across other scenes.
     /// Map Vertex AO for Terrain being one example. (Map AO and Terrain are stored in different data tables)
-    /// The Global Scene gets reset with each full export, and does not actually export anything itself.
+    /// The Global Scene gets reset with each full export, and anything added to can be exported if implemented in GlobalExporter
     /// </summary>
     /// <returns>The Global Scene</returns>
     public GlobalExporterScene GetOrCreateGlobalScene()
@@ -74,6 +73,7 @@ public class Exporter : Subsystem<Exporter>
     public void Reset()
     {
         _scenes.Clear();
+        _globalScene?.Clear();
         _globalScene = null;
     }
 
@@ -85,51 +85,93 @@ public class Exporter : Subsystem<Exporter>
     {
         bool aggregateOutput = outputDirectory is not null;
         if (outputDirectory is null)
-            outputDirectory = CharmInstance.GetSubsystem<ConfigSubsystem>().GetExportSavePath();
+            outputDirectory = TigerInstance.GetSubsystem<ConfigSubsystem>().GetExportSavePath();
 
         ExportEvent(new ExportEventArgs(_scenes, outputDirectory, aggregateOutput));
         Reset();
     }
 }
 
-public struct ExportMaterial
+public class GlobalExporterScene : ExporterScene
 {
-    public readonly Material Material;
-    public readonly bool IsTerrain;
+    private ConcurrentBag<dynamic> _objects = new();
 
-    public ExportMaterial(Material material, bool isTerrain = false)
+    public GlobalExporterScene()
     {
-        Material = material;
-        IsTerrain = isTerrain;
+        Name = "Global";
+        Type = ExportType.Global;
     }
 
-    public override int GetHashCode()
+    /// <summary>
+    /// Adds an item to the Global Scene's objects.
+    /// </summary>
+    /// <param name="item">The dynamic item to add.</param>
+    /// <param name="isUnique">Should only one of this item exist?</param>
+    public void AddToGlobalScene(dynamic item, bool isUnique = false)
     {
-        return (int)Material.Hash.Hash32;
+        if (_objects == null)
+            _objects = new ConcurrentBag<dynamic>();
+
+        // Check if an item of the same type already exists (if there should only be one)
+        dynamic type = item.GetType();
+        if (isUnique && _objects.Any(existing => existing.GetType() == type))
+            throw new InvalidOperationException($"A unique item of type {type.Name} already exists in the Global Scene.");
+
+        _objects.Add(item);
     }
 
-    public override bool Equals(object? obj)
+    /// <summary>
+    /// Attempts to get an item of a specific type from the Global Scene's objects.
+    /// </summary>
+    /// <typeparam name="T">The type of the item to retrieve.</typeparam>
+    /// <param name="item">The retrieved item if found.</param>
+    /// <returns>True if an item of the specified type was found; otherwise, false.</returns>
+    public bool TryGetItem<T>(out T item)
     {
-        return obj is ExportMaterial material && material.Material.Hash == Material.Hash;
+        item = default;
+
+        foreach (dynamic existing in _objects)
+        {
+            if (existing is T)
+            {
+                item = (T)existing; // Safely cast to T
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public IEnumerable<T> GetAllOfType<T>()
+    {
+        return _objects.OfType<T>();
+    }
+
+    public bool Any<T>()
+    {
+        return _objects.Any(item => item is T);
+    }
+
+    public void Clear()
+    {
+        _objects.Clear();
     }
 }
 
 public class ExporterScene
 {
     public string Name { get; set; }
+    public DataExportType DataType { get; set; }
     public ExportType Type { get; set; }
+
     public ConcurrentBag<ExporterMesh> TerrainMeshes = new();
     public ConcurrentBag<ExporterMesh> StaticMeshes = new();
     public ConcurrentBag<ExporterEntity> Entities = new();
     public ConcurrentDictionary<string, List<Transform>> StaticMeshInstances = new();
     public ConcurrentDictionary<string, List<Transform>> ArrangedStaticMeshInstances = new();
     public ConcurrentDictionary<string, List<Transform>> EntityInstances = new();
-    public ConcurrentBag<MaterialTexture> ExternalMaterialTextures = new();
     public ConcurrentBag<SMapDataEntry> EntityPoints = new();
-    public ConcurrentBag<SMapCubemapResource> Cubemaps = new();
-    public ConcurrentBag<LightData> MapLights = new();
-    public ConcurrentBag<SMapDecalsResource> Decals = new();
-    public ConcurrentHashSet<Texture> Textures = new();
+    public ConcurrentHashSet<Texture> ExternalTextures = new();
     public ConcurrentHashSet<ExportMaterial> Materials = new();
     public ConcurrentDictionary<string, List<FileHash>> TerrainDyemaps = new();
     private ConcurrentDictionary<string, bool> _addedEntities = new();
@@ -228,11 +270,6 @@ public class ExporterScene
         });
     }
 
-    public void AddTextureToMaterial(string material, int index, Texture texture)
-    {
-        ExternalMaterialTextures.Add(new MaterialTexture { Material = material, Index = index, Texture = texture });
-    }
-
     public void AddEntityPoints(SMapDataEntry points)
     {
         EntityPoints.Add(points);
@@ -257,40 +294,40 @@ public class ExporterScene
     {
         if (_addedEntities.TryAdd(entity.Hash, true)) // Dont want duplicate entities being added
         {
-            ExporterMesh mesh = new(dynamicResource.GetEntityHash());
-            var parts = entity.Model.Load(ExportDetailLevel.MostDetailed, entity.ModelParentResource);
+            ExporterMesh mesh = new(dynamicResource.Entity.Hash);
+            List<DynamicMeshPart> parts = entity.Load(ExportDetailLevel.MostDetailed);
             for (int i = 0; i < parts.Count; i++)
             {
                 DynamicMeshPart part = parts[i];
                 if (part.Material == null)
                     continue;
 
-                mesh.AddPart(dynamicResource.GetEntityHash(), part, i);
+                mesh.AddPart(dynamicResource.Entity.Hash, part, i);
             }
             Entities.Add(new ExporterEntity { Mesh = mesh, BoneNodes = entity.Skeleton?.GetBoneNodes() });
         }
 
-        EntityInstances.TryAdd(dynamicResource.GetEntityHash(), new());
+        EntityInstances.TryAdd(dynamicResource.Entity.Hash, new());
         if (transform is null)
         {
             transform = new Transform
             {
-                Position = dynamicResource.Translation.ToVec3(),
-                Rotation = Vector4.QuaternionToEulerAngles(dynamicResource.Rotation),
-                Quaternion = dynamicResource.Rotation,
-                Scale = new Vector3(dynamicResource.Translation.W, dynamicResource.Translation.W, dynamicResource.Translation.W)
+                Position = dynamicResource.Transfrom.Translation.ToVec3(),
+                Rotation = Vector4.QuaternionToEulerAngles(dynamicResource.Transfrom.Rotation),
+                Quaternion = dynamicResource.Transfrom.Rotation,
+                Scale = new Vector3(dynamicResource.Transfrom.Translation.W, dynamicResource.Transfrom.Translation.W, dynamicResource.Transfrom.Translation.W)
             };
         }
-        EntityInstances[dynamicResource.GetEntityHash()].Add((Transform)transform);
+        EntityInstances[dynamicResource.Entity.Hash].Add((Transform)transform);
     }
 
-    public void AddMapModel(EntityModel model, Vector4 translation, Vector4 rotation, Vector3 scale, bool transparentsOnly = false)
+    public void AddMapModel(EntityModel model, Transform transform, bool transparentsOnly = false)
     {
         ExporterMesh mesh = new(model.Hash);
 
         if (_addedEntities.TryAdd(model.Hash, true)) // Dont want duplicate entities being added
         {
-            var parts = model.Load(ExportDetailLevel.MostDetailed, null, transparentsOnly);
+            List<DynamicMeshPart> parts = model.Load(ExportDetailLevel.MostDetailed, null, transparentsOnly);
             for (int i = 0; i < parts.Count; i++)
             {
                 DynamicMeshPart part = parts[i];
@@ -300,40 +337,19 @@ public class ExporterScene
         }
 
         EntityInstances.TryAdd(model.Hash, new());
-        EntityInstances[model.Hash].Add(new Transform
-        {
-            Position = translation.ToVec3(),
-            Rotation = Vector4.QuaternionToEulerAngles(rotation),
-            Quaternion = rotation,
-            Scale = scale
-        });
+        EntityInstances[model.Hash].Add(transform);
     }
 
     public void AddModel(EntityModel model)
     {
         ExporterMesh mesh = new(model.Hash);
-        var parts = model.Load(ExportDetailLevel.MostDetailed, null);
+        List<DynamicMeshPart> parts = model.Load(ExportDetailLevel.MostDetailed, null);
         for (int i = 0; i < parts.Count; i++)
         {
             DynamicMeshPart part = parts[i];
             mesh.AddPart(model.Hash, part, i);
         }
         Entities.Add(new ExporterEntity { Mesh = mesh, BoneNodes = null });
-    }
-
-    public void AddCubemap(SMapCubemapResource cubemap)
-    {
-        Cubemaps.Add(cubemap);
-    }
-
-    public void AddMapLight(LightData light) // Point
-    {
-        MapLights.Add(light);
-    }
-
-    public void AddDecals(SMapDecalsResource decal)
-    {
-        Decals.Add(decal);
     }
 
     public void AddTerrainDyemap(FileHash modelHash, FileHash dyemapHash)
@@ -391,57 +407,6 @@ public class ExporterScene
     }
 }
 
-public class GlobalExporterScene : ExporterScene
-{
-    private ConcurrentBag<dynamic> _objects = new();
-
-    public GlobalExporterScene()
-    {
-        Name = "Global";
-        Type = ExportType.Global;
-    }
-
-    /// <summary>
-    /// Adds an item to the Global Scene's objects.
-    /// Ensures only one of each type exists in the bag.
-    /// </summary>
-    /// <param name="item">The dynamic item to add.</param>
-    public void AddToGlobalScene(dynamic item)
-    {
-        if (_objects == null)
-            _objects = new ConcurrentBag<dynamic>();
-
-        // Check if an item of the same type already exists
-        var type = item.GetType();
-        if (_objects.Any(existing => existing.GetType() == type))
-            throw new InvalidOperationException($"An item of type {type.Name} already exists in the Global Scene.");
-
-        _objects.Add(item);
-    }
-
-    /// <summary>
-    /// Attempts to get an item of a specific type from the Global Scene's objects.
-    /// </summary>
-    /// <typeparam name="T">The type of the item to retrieve.</typeparam>
-    /// <param name="item">The retrieved item if found.</param>
-    /// <returns>True if an item of the specified type was found; otherwise, false.</returns>
-    public bool TryGetItem<T>(out T item)
-    {
-        item = default;
-
-        foreach (var existing in _objects)
-        {
-            if (existing is T)
-            {
-                item = (T)existing; // Safely cast to T
-                return true;
-            }
-        }
-
-        return false;
-    }
-}
-
 public class ExporterEntity
 {
     public ExporterMesh Mesh { get; set; }
@@ -496,12 +461,35 @@ public class ExporterPart
     }
 }
 
+public struct ExportMaterial
+{
+    public readonly Material Material;
+    public readonly bool IsTerrain;
+
+    public ExportMaterial(Material material, bool isTerrain = false)
+    {
+        Material = material;
+        IsTerrain = isTerrain;
+    }
+
+    public override int GetHashCode()
+    {
+        return (int)Material.Hash.Hash32;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is ExportMaterial material && material.Material.Hash == Material.Hash;
+    }
+}
+
 public struct Transform
 {
     public Vector3 Position { get; set; }
     public Vector3 Rotation { get; set; }
     public Vector4 Quaternion { get; set; }
     public Vector3 Scale { get; set; }
+    public float Order { get; set; }
 }
 
 public struct MaterialTexture
@@ -511,16 +499,26 @@ public struct MaterialTexture
     public Texture Texture;
 }
 
+// Used for metadata exporter
+public enum DataExportType
+{
+    Individual,
+    Map
+}
+
 public enum ExportType
 {
-    Global,
-    Static,
-    Entity,
     Map,
+    Global,
+    Statics,
+    Entities,
     Terrain,
+    SkyObjects,
+    RoadDecals,
+    Decorators,
+    WaterDecals,
+
     EntityPoints,
-    StaticInMap,
-    EntityInMap,
     API,
     D1API
 }

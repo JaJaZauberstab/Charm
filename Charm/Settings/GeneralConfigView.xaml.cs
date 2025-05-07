@@ -20,7 +20,7 @@ public partial class GeneralConfigView : UserControl
     public GeneralConfigView()
     {
         InitializeComponent();
-        _config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        _config = TigerInstance.GetSubsystem<ConfigSubsystem>();
     }
 
     public void OnControlLoaded(object sender, RoutedEventArgs e)
@@ -38,7 +38,7 @@ public partial class GeneralConfigView : UserControl
         GeneralConfigPanel.Children.Clear();
 
         // Strategy
-        ConfigSettingComboControl cs = new ConfigSettingComboControl();
+        ConfigSettingComboControl cs = new();
         cs.SettingName = "Game Version";
         TigerStrategy csval = _config.GetCurrentStrategy();
         cs.SettingsCombobox.ItemsSource = MakeEnumComboBoxItems<TigerStrategy>(); //MakeEnumComboBoxItems((TigerStrategy val) => Strategy.HasConfiguration(val));
@@ -58,7 +58,7 @@ public partial class GeneralConfigView : UserControl
             _packagePathStrategy = _config.GetCurrentStrategy();
         }
 
-        ConfigSettingControl cpp = new ConfigSettingControl();
+        ConfigSettingControl cpp = new();
         // cpp.Settings.Children.Add(_packagePathStrategyComboBox);
         cpp.SettingName = "Packages Path";
         if (_packagePathStrategy == TigerStrategy.NONE)
@@ -68,7 +68,7 @@ public partial class GeneralConfigView : UserControl
         }
         else
         {
-            var packagesPath = _config.GetPackagesPath(_packagePathStrategy);
+            string packagesPath = _config.GetPackagesPath(_packagePathStrategy);
             cpp.SettingValue = packagesPath == "" ? "Not Set (Required)" : packagesPath;
             cpp.ChangeButton.Click += PackagesPath_OnClick;
         }
@@ -76,24 +76,15 @@ public partial class GeneralConfigView : UserControl
 
 
         // Save path
-        ConfigSettingControl csp = new ConfigSettingControl();
+        ConfigSettingControl csp = new();
         csp.SettingName = "Export Save Path";
         string exportSavePath = _config.GetExportSavePath();
         csp.SettingValue = exportSavePath == "" ? "Not Set (Required)" : exportSavePath;
         csp.ChangeButton.Click += ExportSavePath_OnClick;
         GeneralConfigPanel.Children.Add(csp);
 
-        // Don't really see the point of this anymore, just export to 'Maps/(name)'
-        // Enable combined extraction folder for maps 
-        //ConfigSettingToggleControl cef = new ConfigSettingToggleControl();
-        //cef.SettingName = "Single Folder Extraction For Maps";
-        //var bval = _config.GetSingleFolderMapsEnabled();
-        //cef.SettingValue = bval.ToString();
-        //cef.ChangeButton.Click += SingleFolderMapsEnabled_OnClick;
-        //GeneralConfigPanel.Children.Add(cef);
-
         // Output texture format
-        ConfigSettingComboControl ctf = new ConfigSettingComboControl();
+        ConfigSettingComboControl ctf = new();
         ctf.SettingName = "Output Texture Format";
         ctf.SettingLabel = "(Use PNG or TGA in Blender)";
         TextureExportFormat etfval = _config.GetOutputTextureFormat();
@@ -106,26 +97,21 @@ public partial class GeneralConfigView : UserControl
         // ---- Misc settings panel ----
         MiscConfigPanel.Children.Clear();
 
-        // Enable individual static extraction with maps
-        ConfigSettingToggleControl cfe = new ConfigSettingToggleControl();
-        cfe.SettingName = "Export Individual Models With Maps";
-        var bval = _config.GetIndvidualStaticsEnabled();
-        cfe.SettingValue = bval.ToString();
-        cfe.ChangeButton.Click += IndvidualStaticsEnabled_OnClick;
+        // Store all exported map assets in a single "Maps/Assets/" folder  
+        // instead of "ExportPath/(MapName)/".
+        ConfigSettingToggleControl cfe = new();
+        cfe.SettingName = "Unified Map Asset Exports";
+        cfe.SettingLabel = "Export all map assets to a single \"Maps/Assets/\" folder";
+        bool eval = _config.GetSingleFolderMapAssetsEnabled();
+        cfe.SettingValue = eval.ToString();
+        cfe.ChangeButton.Click += SingleFolderMapAssetsEnabled_OnClick;
         MiscConfigPanel.Children.Add(cfe);
 
-        // Enable full material data exporting
-        ConfigSettingToggleControl exportMaterials = new ConfigSettingToggleControl();
-        exportMaterials.SettingName = "Export Full Material Data";
-        var bhlsl = _config.GetExportMaterials();
-        exportMaterials.SettingValue = bhlsl.ToString();
-        exportMaterials.ChangeButton.Click += ExportMaterials_OnClick;
-        MiscConfigPanel.Children.Add(exportMaterials);
 
-        ConfigSettingToggleControl disBg = new ConfigSettingToggleControl();
+        ConfigSettingToggleControl disBg = new();
         disBg.SettingName = "Animated Background";
         disBg.SettingLabel = "(Requires Restart)";
-        bval = _config.GetAnimatedBackground();
+        bool bval = _config.GetAnimatedBackground();
         disBg.SettingValue = bval.ToString();
         disBg.ChangeButton.Click += AnimatedBackground_OnClick;
         MiscConfigPanel.Children.Add(disBg);
@@ -148,12 +134,12 @@ public partial class GeneralConfigView : UserControl
 
     private List<ComboBoxItem> MakeEnumComboBoxItems<T>(Func<T, bool> filterAction) where T : Enum
     {
-        List<ComboBoxItem> items = new List<ComboBoxItem>();
+        List<ComboBoxItem> items = new();
         foreach (T val in Enum.GetValues(typeof(T)))
         {
             if (filterAction(val))
             {
-                items.Add(new ComboBoxItem { Content = TagItem.GetEnumDescription(val), Tag = val });
+                items.Add(new ComboBoxItem { Content = EnumExtensions.GetEnumDescription(val).ToUpper(), Tag = val });
             }
         }
         return items;
@@ -238,6 +224,11 @@ public partial class GeneralConfigView : UserControl
                         MessageBox.Show("You cannot export to the same directory as the executable.");
                         continue;
                     }
+                    if (dialog.SelectedPath.Contains("."))
+                    {
+                        MessageBox.Show("Export path can not contain a period, this currently breaks texture exporting.");
+                        continue;
+                    }
 
                     success = _config.TrySetExportSavePath(dialog.SelectedPath);
                 }
@@ -264,21 +255,21 @@ public partial class GeneralConfigView : UserControl
         PopulateConfigPanel();
     }
 
-    private void SingleFolderMapsEnabled_OnClick(object sender, RoutedEventArgs e)
+    private void SingleFolderMapAssetsEnabled_OnClick(object sender, RoutedEventArgs e)
     {
-        _config.SetSingleFolderMapsEnabled(!_config.GetSingleFolderMapsEnabled());
+        _config.SetSingleFolderMapAssetsEnabled(!_config.GetSingleFolderMapAssetsEnabled());
         PopulateConfigPanel();
     }
 
-    private void IndvidualStaticsEnabled_OnClick(object sender, RoutedEventArgs e)
-    {
-        _config.SetIndvidualStaticsEnabled(!_config.GetIndvidualStaticsEnabled());
-        PopulateConfigPanel();
-    }
+    //private void IndvidualStaticsEnabled_OnClick(object sender, RoutedEventArgs e)
+    //{
+    //    _config.SetIndvidualStaticsEnabled(!_config.GetIndvidualStaticsEnabled());
+    //    PopulateConfigPanel();
+    //}
 
     private void OutputTextureFormat_OnSelectionChanged(object sender, RoutedEventArgs e)
     {
-        var index = ((sender as ComboBox).DataContext as ConfigSettingComboControl).SettingsCombobox.SelectedIndex;
+        int index = ((sender as ComboBox).DataContext as ConfigSettingComboControl).SettingsCombobox.SelectedIndex;
         _config.SetOutputTextureFormat((TextureExportFormat)index);
         TextureExtractor.SetTextureFormat(_config.GetOutputTextureFormat());
         PopulateConfigPanel();
@@ -306,12 +297,6 @@ public partial class GeneralConfigView : UserControl
     private void AnimatedBackground_OnClick(object sender, RoutedEventArgs e)
     {
         _config.SetAnimatedBackground(!_config.GetAnimatedBackground());
-        PopulateConfigPanel();
-    }
-
-    private void ExportMaterials_OnClick(object sender, RoutedEventArgs e)
-    {
-        _config.SetExportMaterials(!_config.GetExportMaterials());
         PopulateConfigPanel();
     }
 }

@@ -26,8 +26,11 @@ public partial class APITooltip : UserControl
 
     public async void MakeTooltip(PlugItem item)
     {
+        if (ActiveItem is null)
+            return;
+
         item.Name = item.Name.ToUpper();
-        var itemStrings = item.Item?.GetItemStrings();
+        Tag<S9F548080>? itemStrings = item.Item?.GetItemStrings();
 
         // TODO: Make this better, it sucks
         if (itemStrings is not null &&
@@ -48,9 +51,9 @@ public partial class APITooltip : UserControl
                 InfoBox.DataContext = item;
             });
 
-            if (itemStrings?.TagData.Unk38.GetValue(itemStrings.GetReader()) is D2Class_D8548080 warning)
+            if (itemStrings?.TagData.Unk38.GetValue(itemStrings.GetReader()) is SD8548080 warning)
             {
-                foreach (var rule in warning.InsertionRules)
+                foreach (SDC548080 rule in warning.InsertionRules)
                 {
                     if (rule.FailureMessage.Value is null || rule.FailureMessage.Value.Value == "Requires Mod Item")
                         continue;
@@ -68,7 +71,7 @@ public partial class APITooltip : UserControl
             //    AddToTooltip(item, TooltipType.Element);
             //}
 
-            if (itemStrings?.TagData.Unk40.GetValue(itemStrings.GetReader()) is D2Class_D7548080 preview)
+            if (itemStrings?.TagData.Unk40.GetValue(itemStrings.GetReader()) is SD7548080 preview)
             {
                 if (preview.ScreenStyle == DestinyScreenStyle.Emblem)
                 {
@@ -79,7 +82,7 @@ public partial class APITooltip : UserControl
                     }, TooltipType.Emblem);
                 }
 
-                PlugItem inputItem = new PlugItem
+                PlugItem inputItem = new()
                 {
                     PlugOrderIndex = 0,
                     Name = $"", // Key glyph
@@ -89,7 +92,7 @@ public partial class APITooltip : UserControl
                 AddToTooltip(inputItem, TooltipType.Input);
             }
 
-            if (item.Description is not null && item.Description != "")
+            if (item.Description is not null and not "")
             {
                 item.PlugOrderIndex = 2;
                 AddToTooltip(item, TooltipType.TextBlock);
@@ -97,15 +100,15 @@ public partial class APITooltip : UserControl
 
             if (item.Item is not null)
             {
-                if (item.Item.TagData.Unk38.GetValue(item.Item.GetReader()) is D2Class_B0738080 objectives)
+                if (item.Item.TagData.Unk38.GetValue(item.Item.GetReader()) is SB0738080 objectives)
                 {
-                    foreach (var objective in objectives.Objectives)
+                    foreach (S15908080 objective in objectives.Objectives)
                     {
-                        var obj = Investment.Get().GetObjective(objective.ObjectiveIndex);
+                        S50588080? obj = Investment.Get().GetObjective(objective.ObjectiveIndex);
                         if (obj is null)
                             continue;
 
-                        PlugItem objItem = new PlugItem
+                        PlugItem objItem = new()
                         {
                             PlugOrderIndex = 4,
                             Description = obj.Value.ProgressDescription.Value,
@@ -132,19 +135,19 @@ public partial class APITooltip : UserControl
                     }
                 }
 
-                if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is D2Class_81738080 stats)
+                if (item.Item.TagData.Unk78.GetValue(item.Item.GetReader()) is S81738080 stats)
                 {
                     if (item.PlugStyle == DestinySocketCategoryStyle.Reusable)
                         return;
 
                     if (itemStrings is not null && itemStrings.TagData.DisplayStyle == DestinyUIDisplayStyle.EnergyMod)
                     {
-                        foreach (var stat in stats.InvestmentStats)
+                        foreach (S86738080 stat in stats.InvestmentStats)
                         {
-                            var statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
+                            S6F588080 statItem = Investment.Get().StatStrings[stat.StatTypeIndex];
                             if (statItem.StatHash.Hash32 is 3578062600 or 514071887)
                             {
-                                PlugItem energy = new PlugItem
+                                PlugItem energy = new()
                                 {
                                     PlugOrderIndex = -1,
                                     Hash = statItem.StatHash,
@@ -157,13 +160,13 @@ public partial class APITooltip : UserControl
                         }
                     }
 
-                    foreach (var perk in stats.Perks)
+                    foreach (S87738080 perk in stats.Perks)
                     {
-                        var perkStrings = Investment.Get().SandboxPerkStrings[perk.PerkIndex];
+                        S33548080 perkStrings = Investment.Get().SandboxPerkStrings[perk.PerkIndex];
                         if (perkStrings.IconIndex == -1)
                             continue;
 
-                        PlugItem perkItem = new PlugItem
+                        PlugItem perkItem = new()
                         {
                             PlugOrderIndex = 5,
                             Hash = perkStrings.SandboxPerkHash,
@@ -176,9 +179,9 @@ public partial class APITooltip : UserControl
                 }
 
 
-                foreach (var notif in itemStrings.TagData.TooltipNotifications)
+                foreach (SB2548080 notif in itemStrings.TagData.TooltipNotifications)
                 {
-                    PlugItem notifItem = new PlugItem
+                    PlugItem notifItem = new()
                     {
                         PlugOrderIndex = 6,
                         Description = $"{notif.DisplayString.Value}",
@@ -300,14 +303,14 @@ public partial class APITooltip : UserControl
 
             List<UIElement> elementList = InfoBoxStackPanel.Children.Cast<UIElement>().ToList();
             InfoBoxStackPanel.Children.Clear();
-            foreach (var element in elementList.OrderBy(x => (((FrameworkElement)x).DataContext as PlugItem).PlugOrderIndex))
+            foreach (UIElement? element in elementList.OrderBy(x => (((FrameworkElement)x).DataContext as PlugItem).PlugOrderIndex))
             {
                 InfoBoxStackPanel.Children.Add(element);
             }
 
             elementList = UserInputStackPanel.Children.Cast<UIElement>().ToList();
             UserInputStackPanel.Children.Clear();
-            foreach (var element in elementList.OrderBy(x => (((FrameworkElement)x).DataContext as PlugItem).PlugOrderIndex))
+            foreach (UIElement? element in elementList.OrderBy(x => (((FrameworkElement)x).DataContext as PlugItem).PlugOrderIndex))
             {
                 UserInputStackPanel.Children.Add(element);
             }

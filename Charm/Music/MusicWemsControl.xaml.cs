@@ -64,16 +64,16 @@ public partial class MusicWemsControl : UserControl
         return _currentWem;
     }
 
-    public void Load(D2Class_F5458080 res)
+    public void Load(SF5458080 res)
     {
         WwiseSound loop = res.MusicLoopSound;
         WemList.ItemsSource = GetWemItems(loop).OrderByDescending(x => x.Wem.GetDuration());
     }
 
-    public void Load(List<D2Class_40668080> res)
+    public void Load(List<S40668080> res)
     {
         var sounds = new ConcurrentBag<WemItem>(
-            res.SelectMany(x => GetWemItems(x.GetSound()))
+            res.SelectMany(x => GetWemItems(x.Sound))
         );
 
         WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());
@@ -88,20 +88,26 @@ public partial class MusicWemsControl : UserControl
         WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());
     }
 
-    public async void Load(D2Class_F7458080 res)
+    public void Load(WwiseSound res)
+    {
+        var sounds = new ConcurrentBag<WemItem>(GetWemItems(res));
+        WemList.ItemsSource = sounds.OrderByDescending(x => x.Wem.GetDuration());
+    }
+
+    public async void Load(SF7458080 res)
     {
         if (res.AmbientMusicSet == null)
             return;
         // ambient_music_set instead of wwise_loop
         MainWindow.Progress.SetProgressStages(res.AmbientMusicSet.TagData.Unk08.Select((x, i) => $"Loading ambient music {i + 1}/{res.AmbientMusicSet.TagData.Unk08.Count}").ToList());
 
-        ConcurrentBag<WemItem> wemItems = new ConcurrentBag<WemItem>();
+        ConcurrentBag<WemItem> wemItems = new();
         await Task.Run(() =>
         {
             Parallel.ForEach(res.AmbientMusicSet.TagData.Unk08, entry =>
             {
-                var items = GetWemItems(entry.MusicLoopSound);
-                foreach (var wemItem in items)
+                ConcurrentBag<WemItem> items = GetWemItems(entry.MusicLoopSound);
+                foreach (WemItem wemItem in items)
                 {
                     wemItem.Name += $" (Ambient group {entry.MusicLoopSound.Hash})";
                     wemItems.Add(wemItem);
@@ -118,7 +124,7 @@ public partial class MusicWemsControl : UserControl
         List<WemItem> wemItems = new();
         Dispatcher.Invoke(() =>
         {
-            var wemItem = GetWem();
+            WemItem? wemItem = GetWem();
             if ((wemItem is null && !ExportAll.IsChecked.Value) || WemList.Items.Count == 0)
             {
                 MessageBox.Show("Nothing selected to export");
@@ -128,14 +134,14 @@ public partial class MusicWemsControl : UserControl
             if (ExportAll.IsChecked.Value)
                 wemItems = WemList.Items.Cast<WemItem>().ToList();
 
-            List<string> stages = wemItems.Select((x, i) => $"Exporting {x.Hash}_{x.Name} ({i + 1}/{wemItems.Count()})").ToList();
+            List<string> stages = wemItems.Select((x, i) => $"Exporting {x.Hash}_{x.Name} ({i + 1}/{wemItems.Count})").ToList();
             MainWindow.Progress.SetProgressStages(stages);
 
             if (MusicPlayer.IsPlaying())
                 MusicPlayer.Pause();
         });
 
-        var saveDirectory = $"{ConfigSubsystem.Get().GetExportSavePath()}/Sound/Music";
+        string saveDirectory = $"{ConfigSubsystem.Get().GetExportSavePath()}/Sound/Music";
         Directory.CreateDirectory(saveDirectory);
         wemItems.ForEach(wemItem =>
         {

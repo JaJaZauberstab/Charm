@@ -85,16 +85,15 @@ public partial class DareView : UserControl
             string name = Investment.Get().GetItemName(item);
             string? type = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash)).TagData.ItemType.Value;
 
-            if (type == null)
-                type = "";
+            type ??= "";
 
             if (ShouldAddToList(item, type))
             {
                 CreateOrnamentItems(item); // D1
-                var isD1 = Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON;
-                var isOrnament = type.Contains("Ornament");
-                var isWeaponOrnament = type.Contains("Weapon Ornament");
-                var isNameNotEmpty = name != "";
+                bool isD1 = Strategy.IsD1();
+                bool isOrnament = type.Contains("Ornament");
+                bool isWeaponOrnament = type.Contains("Weapon Ornament");
+                bool isNameNotEmpty = name != "";
 
                 if ((isD1 && !isOrnament && isNameNotEmpty) || (!isD1 && isNameNotEmpty && !isWeaponOrnament))
                 {
@@ -143,7 +142,7 @@ public partial class DareView : UserControl
 
     private void ClearQueue_OnClick(object sender, RoutedEventArgs e)
     {
-        foreach (var selectedItem in _selectedItems)
+        foreach (ApiItem selectedItem in _selectedItems)
         {
             _allItems.TryAdd(selectedItem.Item.TagData.InventoryItemHash.Hash32, selectedItem);
         }
@@ -155,7 +154,7 @@ public partial class DareView : UserControl
     private void ExecuteQueue_OnClick(object sender, RoutedEventArgs e)
     {
         List<string> apiStages = _selectedItems.Select((_, i) => $"Exporting {_selectedItems[i].ItemName} ({i + 1}/{_selectedItems.Count})").ToList();
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         string savePath = config.GetExportSavePath();
         bool aggregateOutput = (bool)AggregateOutput.IsChecked;
 
@@ -169,7 +168,7 @@ public partial class DareView : UserControl
             // Parallel.ForEach(_selectedItems, item =>
             {
 
-                if (item.ItemType == "Artifact" && item.Item.TagData.Unk28.GetValue(item.Item.GetReader()) is D2Class_C5738080 gearSet)
+                if (item.ItemType == "Artifact" && item.Item.TagData.Unk28.GetValue(item.Item.GetReader()) is SC5738080 gearSet)
                 {
                     if (gearSet.ItemList.Count != 0)
                         item.Item = Investment.Get().GetInventoryItem(gearSet.ItemList.First().ItemIndex);
@@ -195,12 +194,13 @@ public partial class DareView : UserControl
 
             Dispatcher.Invoke(() =>
             {
-                PopupBanner notify = new();
-                notify.DarkenBackground = true;
-                notify.Icon = "☑️";
-                notify.Title = "EXPORT COMPLETE";
-                notify.Description = $"Exported {_selectedItems.Count} item(s) to \"{config.GetExportSavePath()}\"";
-                notify.Style = PopupBanner.PopupStyle.Information;
+                NotificationBanner notify = new()
+                {
+                    Icon = "☑️",
+                    Title = "EXPORT COMPLETE",
+                    Description = $"Exported {_selectedItems.Count} item(s) to \"{config.GetExportSavePath()}\"",
+                    Style = NotificationBanner.PopupStyle.Information
+                };
                 notify.Show();
             });
         });
@@ -224,16 +224,18 @@ public partial class DareView : UserControl
         MainWindow.Progress.SetProgressStages(apiStages);
         Task.Run(() =>
         {
-            ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+            ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
             string savePath = config.GetExportSavePath();
             savePath += $"/AllShaders";
             Directory.CreateDirectory(savePath);
-            Directory.CreateDirectory(savePath + "/Textures");
 
             shaderItems.ToList().ForEach(item =>
             {
                 string itemName = Helpers.SanitizeString(item.Value.ItemName);
-                //itemName = Regex.Replace(string.Join("_", itemName.Split(Path.GetInvalidFileNameChars())), @"[^\u0000-\u007F]", "_");
+                string savePath = Path.Join(config.GetExportSavePath(), $"AllShaders/{itemName}");
+                Directory.CreateDirectory(savePath);
+                Directory.CreateDirectory(Path.Join(savePath, $"Textures"));
+
                 Investment.Get().ExportShader(item.Value.Item, savePath, itemName, config.GetOutputTextureFormat());
 
                 item.Value.Item.GetIconPrimaryTexture().SavetoFile($"{savePath}/{itemName}");
@@ -245,35 +247,32 @@ public partial class DareView : UserControl
 
     private void OpenOutputFolder_OnClick(object sender, RoutedEventArgs e)
     {
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         Process.Start("explorer.exe", config.GetExportSavePath());
     }
 
     //Surely this will only allow numbers and not fail in anyway...
     private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
     {
-        Regex regex = new Regex("[^0-9]+");
+        Regex regex = new("[^0-9]+");
         e.Handled = regex.IsMatch(e.Text);
     }
 
     public void CreateOrnamentItems(InventoryItem parent)
     {
-        var ornaments = parent.GetItemOrnaments();
+        List<InventoryItem> ornaments = parent.GetItemOrnaments();
 
         if (Strategy.CurrentStrategy >= TigerStrategy.DESTINY2_WITCHQUEEN_6307)
         {
-            foreach (var item in ornaments)
+            foreach (InventoryItem item in ornaments)
             {
                 if (item.GetArtArrangementIndex() == -1)
                     continue;
-                var strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+                Tag<S9F548080>? strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
                 if (!strings.IsLoaded())
                     strings.Load();
 
-                string? type = strings.TagData.ItemType.Value;
-                if (type == null)
-                    type = "";
-
+                string? type = strings.TagData.ItemType.Value ?? "";
                 string name = Investment.Get().GetItemName(item);
                 var newItem = new ApiItem
                 {
@@ -293,14 +292,12 @@ public partial class DareView : UserControl
         {
             for (int i = 0; i < ornaments.Count; i++)
             {
-                var item = ornaments[i];
-                var strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+                InventoryItem item = ornaments[i];
+                Tag<S9F548080>? strings = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
 
-                string? type = strings.TagData.ItemType.Value;
-                if (type == null)
-                    type = "";
+                string? type = strings.TagData.ItemType.Value ?? "";
 
-                var name = type != "Armor Ornament" ? Investment.Get().GetItemName(item) : $"{Investment.Get().GetItemName(parent)} Ornament {i + 1}";
+                string name = type != "Armor Ornament" ? Investment.Get().GetItemName(item) : $"{Investment.Get().GetItemName(parent)} Ornament {i + 1}";
                 var newItem = new ApiItem
                 {
                     ItemName = name,
@@ -337,11 +334,11 @@ public partial class DareView : UserControl
             "Shader",
         };
 
-        var a = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
-        var b = a.TagData.ItemType.Value.ToString();
+        Tag<S9F548080>? a = Investment.Get().GetItemStrings(Investment.Get().GetItemIndex(item.TagData.InventoryItemHash));
+        string? b = a.TagData.ItemType.Value.ToString();
         return ((Strategy.CurrentStrategy != TigerStrategy.DESTINY1_RISE_OF_IRON
             && (b == "Artifact" || b == "Seasonal Artifact")
-            && item.TagData.Unk28.GetValue(a.GetReader()) is D2Class_C5738080)
+            && item.TagData.Unk28.GetValue(a.GetReader()) is SC5738080)
             || item.GetArtArrangementIndex() != -1
             ||
             // Whitelist
@@ -359,7 +356,7 @@ public partial class DareView : UserControl
         int maxNumber = 0;
 
         // Regex to capture the numeric part of "Output#"
-        Regex regex = new Regex(@"ApiOutput(\d+)$");
+        Regex regex = new(@"ApiOutput(\d+)$");
 
         foreach (string folder in existingFolders)
         {
@@ -434,15 +431,15 @@ public class ApiItem
                 overlayStream = Item.GetIconOverlayStream();
             }
 
-            var primary = primaryStream != null ? ApiImageUtils.MakeBitmapImage(primaryStream, 96, 96) : null;
-            var overlay = overlayStream != null ? ApiImageUtils.MakeBitmapImage(overlayStream, 96, 96) : null;
-            var bg = bgStream != null ? ApiImageUtils.MakeBitmapImage(bgStream, 96, 96) : null;
+            BitmapImage? primary = primaryStream != null ? ApiImageUtils.MakeBitmapImage(primaryStream, 96, 96) : null;
+            BitmapImage? overlay = overlayStream != null ? ApiImageUtils.MakeBitmapImage(overlayStream, 96, 96) : null;
+            BitmapImage? bg = bgStream != null ? ApiImageUtils.MakeBitmapImage(bgStream, 96, 96) : null;
 
-            if (bgOverlayStream != null && Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+            if (bgOverlayStream != null && Strategy.IsD1())
                 primary = ApiImageUtils.MakeDyedIcon(Item);
 
             // Most if not all legendary armor will use the ornament overlay because of transmog (I assume)
-            var bgOverlay = bgOverlayStream != null && ItemType.Contains("Ornament") ? ApiImageUtils.MakeBitmapImage(bgOverlayStream, 96, 96) : null;
+            BitmapImage? bgOverlay = bgOverlayStream != null && ItemType.Contains("Ornament") ? ApiImageUtils.MakeBitmapImage(bgOverlayStream, 96, 96) : null;
 
             group.Children.Add(new ImageDrawing(bg, new Rect(0, 0, 96, 96)));
             group.Children.Add(new ImageDrawing(bgOverlay, new Rect(0, 0, 96, 96)));
@@ -475,7 +472,7 @@ public class ApiItem
                 bg = bgStream != null ? ApiImageUtils.MakeBitmapImage(bgStream, 96, 96) : null;
             }
 
-            System.Windows.Media.ImageBrush brush = new System.Windows.Media.ImageBrush(bg);
+            System.Windows.Media.ImageBrush brush = new(bg);
             brush.Freeze();
             _GridBackground = brush;
 

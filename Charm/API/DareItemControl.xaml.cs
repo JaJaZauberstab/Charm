@@ -16,7 +16,7 @@ public partial class DareItemControl : UserControl
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
     {
         _mainWindow = Window.GetWindow(this) as MainWindow;
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON) // TODO?
+        if (Strategy.IsD1()) // TODO?
             ItemInspectButton.Visibility = Visibility.Collapsed;
     }
 
@@ -25,7 +25,7 @@ public partial class DareItemControl : UserControl
         e.Handled = true;
         ApiItem apiItem = Container.DataContext as ApiItem;
 
-        APIItemView apiItemView = new APIItemView(apiItem);
+        APIItemView apiItemView = new(apiItem);
         _mainWindow.MakeNewTab(apiItem.ItemName, apiItemView);
         _mainWindow.SetNewestTabSelected();
     }

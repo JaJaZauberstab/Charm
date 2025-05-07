@@ -6,11 +6,22 @@ namespace Tiger.Schema;
 public class TextureExtractor
 {
     private static TextureExportFormat _format = TextureExportFormat.DDS_BGRA_UNCOMP_DX10;
-    public static object _lock = new object();
+    public static object _lock = new();
 
     public static void SetTextureFormat(TextureExportFormat textureExportFormat)
     {
         _format = textureExportFormat;
+    }
+
+    public static void ExportTexture(FileHash fileHash, int index = 0)
+    {
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
+        string pkgName = PackageResourcer.Get().GetPackage(fileHash.PackageId).GetPackageMetadata().Name.Split(".")[0];
+        string savePath = config.GetExportSavePath() + $"/Textures/{pkgName}";
+        Directory.CreateDirectory($"{savePath}/");
+
+        Texture texture = FileResourcer.Get().GetFile<Texture>(fileHash);
+        texture.SavetoFile($"{savePath}/{fileHash}", index);
     }
 
     public static bool SaveTextureToFile(string savePath, ScratchImage scratchImage, TextureDimension dimension = TextureDimension.D2, TextureExportFormat? overrideFormat = null)
@@ -31,6 +42,7 @@ public class TextureExtractor
                     case TextureExportFormat.DDS_BGRA_UNCOMP_DX10:
                         scratchImage.SaveToDDSFile(DDS_FLAGS.FORCE_DX10_EXT, savePath + ".dds");
                         break;
+
                     case TextureExportFormat.DDS_BGRA_BC3_DX10:
                         if (TexHelper.Instance.IsSRGB(scratchImage.GetMetadata().Format))
                             scratchImage = scratchImage.Compress(DXGI_FORMAT.BC3_UNORM_SRGB, TEX_COMPRESS_FLAGS.SRGB, 0);
@@ -39,9 +51,11 @@ public class TextureExtractor
 
                         scratchImage.SaveToDDSFile(DDS_FLAGS.FORCE_DX9_LEGACY, savePath + ".dds");
                         break;
+
                     case TextureExportFormat.DDS_BGRA_UNCOMP:
                         scratchImage.SaveToDDSFile(DDS_FLAGS.FORCE_DX9_LEGACY, savePath + ".dds");
                         break;
+
                     case TextureExportFormat.PNG:
                         Guid guid = TexHelper.Instance.GetWICCodec(WICCodecs.PNG);
                         switch (dimension)
@@ -57,6 +71,7 @@ public class TextureExtractor
                                 break;
                         }
                         break;
+
                     case TextureExportFormat.TGA:
                         switch (dimension)
                         {
@@ -78,7 +93,7 @@ public class TextureExtractor
         }
         catch (Exception e)
         {
-            Log.Error($"{e.Message}");
+            Log.Error($"{Path.GetFileName(savePath)} : {e.Message}");
             scratchImage.Dispose();
             return false;
         }
@@ -86,19 +101,13 @@ public class TextureExtractor
 
     public static string GetExtension(TextureExportFormat exportFormat)
     {
-        switch (exportFormat)
+        return exportFormat switch
         {
-            case TextureExportFormat.DDS_BGRA_UNCOMP_DX10:
-            case TextureExportFormat.DDS_BGRA_BC3_DX10:
-            case TextureExportFormat.DDS_BGRA_UNCOMP:
-                return "dds";
-            case TextureExportFormat.PNG:
-                return "png";
-            case TextureExportFormat.TGA:
-                return "tga";
-        }
-
-        return String.Empty;
+            TextureExportFormat.DDS_BGRA_UNCOMP_DX10 or TextureExportFormat.DDS_BGRA_BC3_DX10 or TextureExportFormat.DDS_BGRA_UNCOMP => "dds",
+            TextureExportFormat.PNG => "png",
+            TextureExportFormat.TGA => "tga",
+            _ => String.Empty,
+        };
     }
 }
 

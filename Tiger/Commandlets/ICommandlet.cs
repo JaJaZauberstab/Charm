@@ -2,19 +2,19 @@
 
 public interface ICommandlet
 {
-    public void Run(CharmArgs args);
+    public void Run(TigerArgs args);
 }
 
-public class CharmArgs
+public class TigerArgs
 {
     private string[] _args { get; }
 
-    public CharmArgs()
+    public TigerArgs()
     {
         _args = Environment.GetCommandLineArgs();
     }
 
-    public CharmArgs(string[] args)
+    public TigerArgs(string[] args)
     {
         _args = args;
     }

@@ -11,7 +11,7 @@
     <UserControl.Resources>
         <ControlTemplate x:Key="DialogueTemplate">
             <Button
-                Height="90"
+                MinHeight="90"
                 Margin="5"
                 Click="PlayWem_OnClick"
                 Style="{StaticResource D2StyleButton}">

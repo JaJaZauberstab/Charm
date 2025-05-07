@@ -119,14 +119,14 @@ public class LocalizedStringsData : Tag<SLocalizedStringsData>
         {
             byte[] sectionData = reader.ReadBytes(3);
             int val = sectionData[0];
-            if (val >= 0xC0 && val <= 0xDF)    // 2 byte unicode
+            if (val is >= 0xC0 and <= 0xDF)    // 2 byte unicode
             {
-                var rawBytes = BitConverter.ToUInt32(Encoding.Convert(Encoding.UTF8, Encoding.UTF32, sectionData));
+                uint rawBytes = BitConverter.ToUInt32(Encoding.Convert(Encoding.UTF8, Encoding.UTF32, sectionData));
                 builder.Append(Convert.ToChar(rawBytes));
                 c += 2;
                 reader.Seek(-1, SeekOrigin.Current);
             }
-            else if (val >= 0xE0 && val <= 0xEF)    // 3 byte unicode
+            else if (val is >= 0xE0 and <= 0xEF)    // 3 byte unicode
             {
                 uint rawBytes = BitConverter.ToUInt32(Encoding.Convert(Encoding.UTF8, Encoding.UTF32, sectionData));
                 builder.Append(Convert.ToChar(CipherShift(rawBytes, part)));

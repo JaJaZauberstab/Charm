@@ -20,7 +20,7 @@ public class EntityControlRig : EntityResource
     //    using TigerReader reader = GetReader();
 
     //    StringBuilder sb = new StringBuilder();
-    //    D2Class_5F8B8080 skelInfo = (D2Class_5F8B8080)_tag.Unk18.GetValue(reader);
+    //    S5F8B8080 skelInfo = (S5F8B8080)_tag.Unk18.GetValue(reader);
     //    var ikTransforms = skelInfo.UnkC8;
     //    var ikDescriptors = skelInfo.UnkB8;
     //    for (int i = 0; i < ikDescriptors.Count; i++)

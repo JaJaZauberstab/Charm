@@ -18,7 +18,7 @@ public class EntityModel : Tag<SEntityModel>
      */
     public List<DynamicMeshPart> Load(ExportDetailLevel detailLevel, EntityResource parentResource, bool transparentsOnly = false, bool hasSkeleton = false)
     {
-        Dictionary<int, Dictionary<int, D2Class_CB6E8080>> dynamicParts = GetPartsOfDetailLevel(detailLevel);
+        Dictionary<int, Dictionary<int, SCB6E8080>> dynamicParts = GetPartsOfDetailLevel(detailLevel);
         List<DynamicMeshPart> parts = GenerateParts(dynamicParts, parentResource, hasSkeleton);
         if (transparentsOnly) // ROI decal/transparent mesh purposes. I hate this and its not the right way to do this
             return parts.Where(x => x.Material.RenderStates.BlendState() != -1).ToList();
@@ -37,9 +37,9 @@ public class EntityModel : Tag<SEntityModel>
     /// </summary>
     /// <param name="detailLevel">The desired level of detail to get parts for.</param>
     /// <returns></returns>
-    private Dictionary<int, Dictionary<int, D2Class_CB6E8080>> GetPartsOfDetailLevel(ExportDetailLevel eDetailLevel)
+    private Dictionary<int, Dictionary<int, SCB6E8080>> GetPartsOfDetailLevel(ExportDetailLevel eDetailLevel)
     {
-        Dictionary<int, Dictionary<int, D2Class_CB6E8080>> parts = new();
+        Dictionary<int, Dictionary<int, SCB6E8080>> parts = new();
 
         using TigerReader reader = GetReader();
 
@@ -47,10 +47,10 @@ public class EntityModel : Tag<SEntityModel>
         foreach (SEntityModelMesh mesh in _tag.Meshes.Enumerate(GetReader()))
         {
             int partIndex = 0;
-            parts.Add(meshIndex, new Dictionary<int, D2Class_CB6E8080>());
+            parts.Add(meshIndex, new Dictionary<int, SCB6E8080>());
             for (int i = 0; i < mesh.Parts.Count; i++)
             {
-                D2Class_CB6E8080 part = mesh.Parts[reader, i];
+                SCB6E8080 part = mesh.Parts[reader, i];
                 //Console.WriteLine($"{i}--------------");
                 //Console.WriteLine($"Material {part.Material?.FileHash}");
                 //Console.WriteLine($"VariantShaderIndex {part.VariantShaderIndex}");
@@ -88,9 +88,9 @@ public class EntityModel : Tag<SEntityModel>
         return parts;
     }
 
-    private List<DynamicMeshPart> GenerateParts(Dictionary<int, Dictionary<int, D2Class_CB6E8080>> dynamicParts, EntityResource parentResource, bool hasSkeleton = false)
+    private List<DynamicMeshPart> GenerateParts(Dictionary<int, Dictionary<int, SCB6E8080>> dynamicParts, EntityResource parentResource, bool hasSkeleton = false)
     {
-        var _strategy = Strategy.CurrentStrategy;
+        TigerStrategy _strategy = Strategy.CurrentStrategy;
 
         List<DynamicMeshPart> parts = new();
         List<int> exportPartRange = new();
@@ -99,7 +99,7 @@ public class EntityModel : Tag<SEntityModel>
         foreach (SEntityModelMesh mesh in _tag.Meshes.Enumerate(GetReader()))
         {
             exportPartRange = GetExportRanges(mesh);
-            foreach ((int i, D2Class_CB6E8080 part) in dynamicParts[meshIndex])
+            foreach ((int i, SCB6E8080 part) in dynamicParts[meshIndex])
             {
                 if (!exportPartRange.Contains(i))
                     continue;
@@ -114,7 +114,8 @@ public class EntityModel : Tag<SEntityModel>
                     HasSkeleton = hasSkeleton,
                     RotationOffset = RotationOffset,
                     TranslationOffset = TranslationOffset,
-                    VertexLayoutIndex = mesh.GetInputLayoutForStage(0)
+                    VertexLayoutIndex = mesh.GetInputLayoutForStage(0),
+                    RenderStage = (TfxRenderStage)Array.IndexOf(mesh.PartRangePerRenderStage, (short)i)
                 };
 
                 //We only care about the vertex shader for now for mesh data
@@ -124,6 +125,7 @@ public class EntityModel : Tag<SEntityModel>
                 dynamicMeshPart.Material.Pixel.Shader is null) // || dynamicMeshPart.Material.Unk08 != 1)
                     continue;
 
+                dynamicMeshPart.Material.RenderStage = dynamicMeshPart.RenderStage;
                 dynamicMeshPart.GetAllData(mesh, _tag);
                 parts.Add(dynamicMeshPart);
             }
@@ -138,9 +140,9 @@ public class EntityModel : Tag<SEntityModel>
     {
         List<int> exportPartRange = new();
 
-        foreach (TfxRenderStage stage in Globals.Get().ExportRenderStages)
+        foreach (TfxRenderStage stage in Globals.Get().GetExportStages())
         {
-            var range = mesh.GetRangeForStage((int)stage);
+            Range range = mesh.GetRangeForStage((int)stage);
             if (!(range.Start.Value < range.End.Value))
                 continue;
 
@@ -154,12 +156,12 @@ public class EntityModel : Tag<SEntityModel>
 
 public class DynamicMeshPart : MeshPart
 {
-    public List<VertexWeight> VertexWeights = new List<VertexWeight>();
+    public List<VertexWeight> VertexWeights = new();
 
     // used for single-pass skin buffer, where we want to find the position vec from a global index
-    public Dictionary<uint, int> VertexIndexMap = new Dictionary<uint, int>();
+    public Dictionary<uint, int> VertexIndexMap = new();
 
-    public List<Vector4> VertexColourSlots = new List<Vector4>();
+    public List<Vector4> VertexColourSlots = new();
     public bool bAlphaClip;
     public bool HasSkeleton;
     public byte GearDyeChangeColorIndex = 0xFF;
@@ -167,7 +169,9 @@ public class DynamicMeshPart : MeshPart
     public Vector4 RotationOffset = new();
     public Vector4 TranslationOffset = new();
 
-    public DynamicMeshPart(D2Class_CB6E8080 part, EntityResource parentResource) : base()
+    public TfxRenderStage RenderStage;
+
+    public DynamicMeshPart(SCB6E8080 part, EntityResource parentResource) : base()
     {
         IndexOffset = part.IndexOffset;
         IndexCount = part.IndexCount;
@@ -187,7 +191,7 @@ public class DynamicMeshPart : MeshPart
         Indices = mesh.Indices.GetIndexData(PrimitiveType, IndexOffset, IndexCount);
 
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -200,6 +204,12 @@ public class DynamicMeshPart : MeshPart
         {
             VertexIndexMap.Add(VertexIndices[i], i);
         }
+
+        //Dictionary<uint, int> lookup = new Dictionary<uint, int>();
+        //for (int i = 0; i < VertexIndices.Count; i++)
+        //{
+        //    lookup[VertexIndices[i]] = i;
+        //}
 
         Log.Debug($"Reading vertex buffers {mesh.Vertices1.Hash}/{mesh.Vertices1.TagData.Stride} and {mesh.Vertices2?.Hash}/{mesh.Vertices2?.TagData.Stride}");
         mesh.Vertices1.ReadVertexDataFromLayout(this, uniqueVertexIndices, 0);
@@ -224,11 +234,10 @@ public class DynamicMeshPart : MeshPart
     {
         Vector2 texcoordScale = !Strategy.IsD1() ? header.TexcoordScale : mesh.TexcoordScale;
         Vector2 texcoordTranslation = !Strategy.IsD1() ? header.TexcoordTranslation : mesh.TexcoordTranslation;
-        float yOffset = 0f;//5f / 3f; // idfk
 
         for (int i = 0; i < VertexTexcoords0.Count; i++)
         {
-            var tx = VertexTexcoords0[i];
+            Vector2 tx = VertexTexcoords0[i];
             VertexTexcoords0[i] = new Vector2(
                 tx.X * texcoordScale.X + texcoordTranslation.X,
                 tx.Y * texcoordScale.Y + texcoordTranslation.Y
@@ -236,13 +245,14 @@ public class DynamicMeshPart : MeshPart
         }
 
         // Detail UVs
+        //TODO: Make outputs match what renderdoc says they actually are
         if (mesh.SinglePassSkinningBuffer != null)
         {
             try
             {
-                var stride = mesh.SinglePassSkinningBuffer.TagData.Stride;
+                short stride = mesh.SinglePassSkinningBuffer.TagData.Stride;
                 using TigerReader handle = mesh.SinglePassSkinningBuffer.GetReferenceReader();
-                //var data = mesh.SinglePassSkinningBuffer.GetReferenceData();
+
                 for (int i = 0; i < VertexPositions.Count; i++)
                 {
                     int normW = (int)(32767.0996f * VertexNormals[i].W);
@@ -253,7 +263,7 @@ public class DynamicMeshPart : MeshPart
                     float UVX = (float)handle.ReadHalf();
                     float UVY = (float)handle.ReadHalf();
 
-                    var tx = VertexTexcoords0[i];
+                    Vector2 tx = VertexTexcoords0[i];
                     var tx1 = new Vector2(tx.X * UVX, ((tx.Y * UVY) * -1) - 0.65); // idfk whats going wrong here
                     VertexTexcoords1.Add(tx1);
                     //Console.WriteLine($"({i}) {mesh.SinglePassSkinningBuffer.Hash} {index} ({(index * 0x4):X}): XY ({tx.X}, {tx.Y}) ZW ({tx1.X}, {tx1.Y})");
@@ -266,15 +276,14 @@ public class DynamicMeshPart : MeshPart
         }
         else
         {
-            yOffset = 0f;
             VertexTexcoords1 = VertexTexcoords0.Select(tx1 => new Vector2(tx1.X * 5, (1 - tx1.Y) * 5)).ToList();
         }
 
         // Flip Y axis, fix detail UV offset
         for (int i = 0; i < VertexTexcoords0.Count; i++)
         {
-            var tx = VertexTexcoords0[i];
-            var tx1 = VertexTexcoords1[i];
+            Vector2 tx = VertexTexcoords0[i];
+            Vector2 tx1 = VertexTexcoords1[i];
             VertexTexcoords0[i] = new Vector2(tx.X, 1f - tx.Y);
         }
     }
@@ -299,13 +308,13 @@ public class DynamicMeshPart : MeshPart
     {
         using TigerReader reader = parentResource.GetReader();
 
-        var map = parentResource is EntityPhysicsModelParent ?
-            ((D2Class_6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap :
-            ((D2Class_8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap;
+        DynamicArrayUnloaded<SExternalMaterialMapEntry> map = parentResource is EntityPhysicsModelParent ?
+            ((S6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap :
+            ((S8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterialsMap;
 
-        var mats = parentResource is EntityPhysicsModelParent ?
-            ((D2Class_6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials :
-            ((D2Class_8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials;
+        DynamicArrayUnloaded<S14008080> mats = parentResource is EntityPhysicsModelParent ?
+            ((S6C6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials :
+            ((S8F6D8080)parentResource.TagData.Unk18.GetValue(reader)).ExternalMaterials;
 
         if (map.Count == 0 || mats.Count == 0)
         {
@@ -314,7 +323,7 @@ public class DynamicMeshPart : MeshPart
         if (variantShaderIndex >= map.Count)
             return null; // todo this is actually wrong ig...
 
-        var mapEntry = map[reader, variantShaderIndex];
+        SExternalMaterialMapEntry mapEntry = map[reader, variantShaderIndex];
 
         return mats[reader, mapEntry.MaterialStartIndex + (0 % mapEntry.MaterialCount)].Material;
     }

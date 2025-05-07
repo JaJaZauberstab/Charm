@@ -14,7 +14,7 @@ public static class Helpers
     {
         StringBuilder sb = new();
         sb.Append($"{typeof(T).Name}(");
-        var fields = typeof(T).GetFields();
+        FieldInfo[] fields = typeof(T).GetFields();
         foreach (FieldInfo fieldInfo in fields)
         {
             sb.Append($"{fieldInfo.Name}: {fieldInfo.GetValue(value)}, ");
@@ -85,7 +85,7 @@ public static class Helpers
     public static uint Fnv(string fnvString, bool le = false)
     {
         uint value = 0x811c9dc5;
-        for (var i = 0; i < fnvString.Length; i++)
+        for (int i = 0; i < fnvString.Length; i++)
         {
             value *= 0x01000193;
             value ^= fnvString[i];
@@ -102,7 +102,7 @@ public static class Helpers
 
     public static string SanitizeString(string input, string replacement = "_")
     {
-        var pattern = @"[^a-zA-Z0-9 ]";
+        string pattern = @"[^a-zA-Z0-9 ]";
         return Regex.Replace(input, pattern, replacement).Trim();
     }
 
@@ -126,53 +126,58 @@ public static class Helpers
         return bytes;
     }
 
-    public static float DecodeF16(ushort half)
-    {
-        // Extract the exponent and mantissa from the half-precision float
-        ushort exp = (ushort)((half >> 10) & 0x1F);
-        ushort mant = (ushort)(half & 0x3FF);
-
-        // Convert to a single-precision float based on the exponent and mantissa
-        float val;
-        if (exp == 0)
-        {
-            // Subnormal number
-            val = (float)(mant * Math.Pow(2.0, -24));
-        }
-        else if (exp != 31)
-        {
-            // Normalized number
-            val = (float)((mant + 1024) * Math.Pow(2.0, exp - 25));
-        }
-        else if (mant == 0)
-        {
-            // Infinity
-            val = float.PositiveInfinity;
-        }
-        else
-        {
-            // NaN
-            val = float.NaN;
-        }
-
-        // Apply the sign bit (if set)
-        if ((half & 0x8000) != 0)
-        {
-            val = -val;
-        }
-
-        return val;
-    }
-
     public static string GetReadableSize(long byteLength)
     {
         string[] sizeSuffixes = { "B", "KB", "MB", "GB" };
-        if (byteLength == 0 || byteLength < 0) return "0 B";
+        if (byteLength is 0 or < 0) return "0 B";
 
         int suffixIndex = (int)Math.Floor(Math.Log(byteLength, 1024));
         double readableValue = byteLength / Math.Pow(1024, suffixIndex);
 
         return $"{readableValue:0.##} {sizeSuffixes[suffixIndex]}";
+    }
+
+    // This is fine :)
+    public static (ushort width, ushort height, ushort depth, ushort array_size) GetTextureDimensionsRaw(FileHash hash)
+    {
+        byte[] data = PackageResourcer.Get().GetFileData(hash);
+        using (TigerReader br = new(data))
+        {
+            int offset = Strategy.IsD1() ? 0x28 : Strategy.IsPreBL() ? 0x0E : 0x22;
+            br.Seek(offset, SeekOrigin.Begin);
+            ushort width = br.ReadUInt16();
+            ushort height = br.ReadUInt16();
+            ushort depth = br.ReadUInt16();
+            ushort array_size = br.ReadUInt16();
+            return (width, height, depth, array_size);
+        }
+    }
+
+    public static bool IsValidHexHash(string input)
+    {
+        return input.Length == 8 &&
+               input.All(c => Uri.IsHexDigit(c));
+    }
+
+    public static bool ParseHash(in string searchStr, out uint parsedHash)
+    {
+        bool isValidHash = Helpers.IsValidHexHash(searchStr);
+        if (isValidHash &&
+            (searchStr.StartsWith("80") || searchStr.StartsWith("81")) &&
+            (!searchStr.EndsWith("80") && !searchStr.EndsWith("81")))
+        {
+            byte[] bytes = Helpers.HexStringToByteArray(searchStr);
+            Array.Reverse(bytes);
+            parsedHash = new TigerHash(BitConverter.ToUInt32(bytes)).Hash32;
+            return true;
+        }
+        else if (isValidHash && (searchStr.EndsWith("80") || searchStr.EndsWith("81")))
+        {
+            parsedHash = new TigerHash(searchStr).Hash32;
+            return true;
+        }
+        parsedHash = 0;
+        return false;
     }
 }
 
@@ -380,7 +385,7 @@ public static class EnumExtensions
         if (Convert.ToInt32(enumValue) == -1)
             return string.Empty;
 
-        var fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
+        FieldInfo? fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
         if (fieldInfo == null)
             return "";
 

@@ -74,7 +74,7 @@ public partial class MainWindow
 
         // Check if packages path exists in config
         // ConfigSubsystem.CheckPackagesPathIsValid();
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         if (config.GetPackagesPath(Strategy.CurrentStrategy) != "" && config.GetExportSavePath() != "")
         {
             MainMenuTab.Visibility = Visibility.Visible;
@@ -84,6 +84,11 @@ public partial class MainWindow
 
             // Log game version
             CheckGameVersion();
+
+            if (!ConfigSubsystem.Get().GetAcceptedAgreement())
+            {
+                ShowAgreement();
+            }
         }
         else
         {
@@ -95,33 +100,39 @@ public partial class MainWindow
         {
             Dispatcher.Invoke(() =>
             {
-                if (Commandlet.RunCommandlet())
+                NotificationBanner versionChanged = new()
                 {
-                    // Environment.Exit(0);
-                }
+                    Icon = "",
+                    Title = "GAME VERSION",
+                    Description = $"Changed game version to {EnumExtensions.GetEnumDescription(args.Strategy)}",
+                    Style = NotificationBanner.PopupStyle.Information
+                };
+                versionChanged.Show();
             });
         };
+    }
 
-        if (!ConfigSubsystem.Get().GetAcceptedAgreement())
+    private void ShowAgreement()
+    {
+        PopupBanner warn = new()
         {
-            PopupBanner warn = new();
-            warn.DarkenBackground = true;
-            warn.Icon = "⚠️";
-            warn.Title = "ATTENTION";
-            warn.Subtitle = "Charm is NOT a datamining tool!";
-            warn.Description = $"Charm's main purpose is focused towards 3D artists, content preservation and learning how the game works!" +
-                $"\n\nBy using Charm, you agree to:" +
-                $"\n• Not use this to leak content." +
-                $"\n• Not use this to spread spoilers." +
-                $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!";
+            DarkenBackground = true,
+            Icon = "⚠️",
+            Title = "ATTENTION",
+            Subtitle = "Charm is NOT a datamining tool!",
+            Description = $"Charm's main purpose is focused towards 3D artists, content preservation and learning how the game works!" +
+            $"\n\nBy using Charm, you agree to:" +
+            $"\n• Not use this to leak content." +
+            $"\n• Not use this to spread spoilers." +
+            $"\n\nSeeing leaks come from here makes public releases and updates less and less likely.\nDon't ruin the experience for yourself and others. Uncover things the way they were intended!",
 
-            warn.Style = PopupBanner.PopupStyle.Warning;
-            warn.UserInput = "Accept";
-            warn.HoldDuration = 4000;
-            warn.Progress = true;
-            warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
-            warn.Show();
-        }
+            Style = PopupBanner.PopupStyle.Warning,
+            UserInput = "Accept",
+            HoldDuration = 4000,
+            Progress = true
+        };
+        warn.OnProgressComplete += () => ConfigSubsystem.Get().SetAcceptedAgreement(true);
+        warn.Show();
     }
 
 
@@ -155,18 +166,18 @@ public partial class MainWindow
         return strategistSingletons.Count;
     }
 
-    private static IEnumerable<Type> SortByInitializationOrder(IEnumerable<Type> types)
+    private static List<Type> SortByInitializationOrder(IEnumerable<Type> types)
     {
         var dependencyMap = new Dictionary<Type, List<Type>>();
         var dependencyCount = new Dictionary<Type, int>();
 
         // Build dependency map and count dependencies
-        foreach (var type in types)
+        foreach (Type type in types)
         {
-            var attributes = type.GenericTypeArguments[0].GetCustomAttributes(typeof(InitializeAfterAttribute), true);
+            object[] attributes = type.GenericTypeArguments[0].GetCustomAttributes(typeof(InitializeAfterAttribute), true);
             foreach (InitializeAfterAttribute attribute in attributes)
             {
-                var dependentType = attribute.TypeToInitializeAfter.GetNonGenericParent(
+                Type? dependentType = attribute.TypeToInitializeAfter.GetNonGenericParent(
                     typeof(Strategy.StrategistSingleton<>));
                 if (!dependencyMap.ContainsKey(dependentType))
                 {
@@ -183,12 +194,12 @@ public partial class MainWindow
         var queue = new Queue<Type>(dependencyMap.Keys.Where(k => dependencyCount[k] == 0));
         while (queue.Count > 0)
         {
-            var type = queue.Dequeue();
+            Type type = queue.Dequeue();
             sortedTypes.Add(type);
 
             if (dependencyMap.ContainsKey(type))
             {
-                foreach (var dependentType in dependencyMap[type])
+                foreach (Type dependentType in dependencyMap[type])
                 {
                     dependencyCount[dependentType]--;
                     if (dependencyCount[dependentType] == 0)
@@ -211,8 +222,8 @@ public partial class MainWindow
     {
         Arithmic.Log.Info("Initialising Charm subsystems");
         string[] args = Environment.GetCommandLineArgs();
-        CharmInstance.Args = new CharmArgs(args);
-        CharmInstance.InitialiseSubsystems();
+        TigerInstance.Args = new TigerArgs(args);
+        TigerInstance.InitialiseSubsystems();
         Arithmic.Log.Info("Initialised Charm subsystems");
 
     }
@@ -221,8 +232,8 @@ public partial class MainWindow
     {
         try
         {
-            ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
-            var path = config.GetPackagesPath(Strategy.CurrentStrategy).Split("packages")[0] + "destiny2.exe";
+            ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
+            string path = config.GetPackagesPath(Strategy.CurrentStrategy).Split("packages")[0] + "destiny2.exe";
             var versionInfo = FileVersionInfo.GetVersionInfo(path);
             string version = versionInfo.FileVersion;
             GameInfo = versionInfo;
@@ -241,32 +252,38 @@ public partial class MainWindow
         versionChecker.LatestVersionName = "version";
         try
         {
-            var upToDate = await versionChecker.IsUpToDate();
+            ApplicationVersion latestVersion = await versionChecker.GetLatestVersion();
+            int latestID = int.Parse(latestVersion.Id.Replace(".", ""));
+            int currentID = int.Parse(App.CurrentVersion.Id.Replace(".", ""));
+
+            bool upToDate = currentID >= latestID;
             if (!upToDate)
             {
                 //MessageBox.Show($"New version available on GitHub! (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id})");
-                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {versionChecker.LatestVersion.Id}).");
+                Arithmic.Log.Info($"Version is not up-to-date (local {versionChecker.CurrentVersion.Id} vs ext {latestVersion.Id}).");
 
-                PopupBanner update = new();
-                update.DarkenBackground = true;
-                update.Icon = "";
-                update.Title = "UPDATE AVAILABLE";
-                update.Subtitle = "A new Charm version is available!";
-                update.Description =
+                PopupBanner update = new()
+                {
+                    DarkenBackground = true,
+                    Icon = "",
+                    Title = "UPDATE AVAILABLE",
+                    Subtitle = "A new Charm version is available!",
+                    Description =
                     $"Current Version: v{App.CurrentVersion.Id}\n" +
-                    $"Latest Version: v{versionChecker.LatestVersion.Id}";
-                update.UserInput = "Update";
-                update.UserInputSecondary = "Dismiss";
+                    $"Latest Version: v{latestVersion.Id}",
+                    UserInput = "Update",
+                    UserInputSecondary = "Dismiss"
+                };
 
                 update.MouseLeftButtonDown += OpenLatestRelease;
-                update.MouseRightButtonDown += update.WarningBanner_MouseDown;
+                update.MouseRightButtonDown += update.Remove;
 
                 update.Style = PopupBanner.PopupStyle.Information;
                 update.Show();
             }
             else
             {
-                Arithmic.Log.Info($"Version is up to date ({versionChecker.CurrentVersion.Id}).");
+                Arithmic.Log.Info($"Version is up to date (v{versionChecker.CurrentVersion.Id}, Github v{latestVersion.Id}).");
             }
         }
         catch (Exception e)
@@ -287,7 +304,7 @@ public partial class MainWindow
     private async void InitialiseHandlers()
     {
         // Set texture format
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         TextureExtractor.SetTextureFormat(config.GetOutputTextureFormat());
     }
 
@@ -317,6 +334,11 @@ public partial class MainWindow
             Task.Run(InitialiseHandlers);
             _bHasInitialised = true;
         }
+
+        if (!ConfigSubsystem.Get().GetAcceptedAgreement())
+        {
+            ShowAgreement();
+        }
     }
 
     public void SetNewestTabSelected()
@@ -340,7 +362,7 @@ public partial class MainWindow
         name = name.ToUpper();
         name = name.Replace('_', '.');
         // Check if the name already exists, if so set newest tab to that
-        var items = MainTabControl.Items;
+        ItemCollection items = MainTabControl.Items;
         foreach (TabItem item in items)
         {
             if (name == (string)item.Header)
@@ -359,7 +381,7 @@ public partial class MainWindow
         name = name.ToUpper();
         name = name.Replace('_', '.');
         // Check if the name already exists, if so set newest tab to that
-        var items = MainTabControl.Items;
+        ItemCollection items = MainTabControl.Items;
         foreach (TabItem item in items)
         {
             if (name == (string)item.Header)
@@ -389,6 +411,10 @@ public partial class MainWindow
             {
                 av.Dispose();
             }
+            else if (content is AudioListView audioView)
+            {
+                audioView.MusicPlayer.Dispose();
+            }
         }
     }
 
@@ -410,59 +436,103 @@ public partial class MainWindow
         {
             var tab = (TabItem)MainTabControl.Items[MainTabControl.SelectedIndex];
             dynamic content = tab.Content;
-            if (content is APIItemView || content is CategoryView)
+            if (content is APIItemView or CategoryView)
                 MainTabControl.Items.Remove(tab);
         }
         else if (e.Key == Key.W
             && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
             && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
         {
-            PopupBanner test = new();
-            test.DarkenBackground = false;
-            test.Icon = "ℹ️";
-            test.Title = "INFORMATION";
-            test.Subtitle = "Test Information Popup Subtitle";
-            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+            PopupBanner test = new()
+            {
+                DarkenBackground = false,
+                Icon = "ℹ️",
+                Title = "INFORMATION",
+                Subtitle = "Test Information Popup Subtitle",
+                Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                Style = PopupBanner.PopupStyle.Information
+            };
+            test.Show();
 
-            test.Style = PopupBanner.PopupStyle.Information;
-
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(test);
+            NotificationBanner test2 = new()
+            {
+                Icon = "",
+                Title = "WAYPOINT ADDED",
+                Description = "The location of this quest is highlighted on your map.",
+                Style = NotificationBanner.PopupStyle.Information
+            };
+            test2.Show();
         }
         else if (e.Key == Key.E
             && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
             && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
         {
-            PopupBanner test = new();
-            test.DarkenBackground = false;
-            test.Icon = "⚠️";
-            test.Title = "ERROR";
-            test.Subtitle = "Test Error Popup Subtitle";
-            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nError code: Valumptious";
+            PopupBanner test = new()
+            {
+                DarkenBackground = false,
+                Icon = "⚠️",
+                Title = "ERROR",
+                Subtitle = "Test Error Popup Subtitle",
+                Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nError code: Valumptious",
+                Style = PopupBanner.PopupStyle.Warning,
+                UserInput = "Hold To Accept",
+                HoldDuration = 300,
+                Progress = true
+            };
+            test.Show();
 
-            test.Style = PopupBanner.PopupStyle.Warning;
-            test.UserInput = "Hold To Accept";
-            test.HoldDuration = 1000;
-            test.Progress = true;
+            //PopupBanner test = new()
+            //{
+            //    DarkenBackground = false,
+            //    Icon = "⚠️",
+            //    IconImage = ApiImageUtils.MakeBitmapImage(new Texture(new FileHash("7180DC80")).GetTexture(), 648, 495),
+            //    Title = "OOPS",
+            //    Subtitle = "WE DELETED THE FUCKING SERVERS",
+            //    Description = "Jimmy the new intern downloaded a 72 yottabyte zip bomb and deleted all of our server data. The game is gone.\n\nThank you for all of your time and money for Pete...I mean supporting Destiny 2!",
+            //    Style = PopupBanner.PopupStyle.Warning,
+            //};
+            //test.Show();
 
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(test);
+            NotificationBanner test2 = new()
+            {
+                Icon = "",
+                Title = "ATTENTION",
+                Description = "Contacting Destiny 2 servers.",
+                Style = NotificationBanner.PopupStyle.Warning
+            };
+            test2.Show();
         }
         else if (e.Key == Key.Q
             && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
             && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
         {
-            PopupBanner test = new();
-            test.DarkenBackground = false;
-            test.Icon = "💬";
-            test.Title = "GENERAL";
-            test.Subtitle = "Test General Popup Subtitle";
-            test.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-            test.UserInput = "Ok";
-            test.Style = PopupBanner.PopupStyle.Generic;
+            PopupBanner test = new()
+            {
+                DarkenBackground = false,
+                Icon = "💬",
+                Title = "GENERAL",
+                Subtitle = "Test General Popup Subtitle",
+                Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                UserInput = "Ok",
+                Style = PopupBanner.PopupStyle.Generic
+            };
+            test.Show();
 
-            var rootPanel = Application.Current.MainWindow?.Content as Panel;
-            rootPanel.Children.Add(test);
+            NotificationBanner test2 = new()
+            {
+                Icon = "",
+                Title = "EVERVERSE",
+                Description = "Buy Silver now! Pete needs a new car!",
+                Style = NotificationBanner.PopupStyle.Generic
+            };
+            test2.Show();
+        }
+        else if (e.Key == Key.A
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control
+            && (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt
+            && (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+        {
+            ShowAgreement();
         }
     }
 

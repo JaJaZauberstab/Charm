@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-
-namespace Tiger.Schema;
+﻿namespace Tiger.Schema;
 
 public class IndexBuffer : TigerReferenceFile<SIndexHeader>
 {
@@ -91,23 +86,26 @@ public class IndexBuffer : TigerReferenceFile<SIndexHeader>
         }
         else
         {
-            handle.BaseStream.Seek(offset * 2, SeekOrigin.Begin);
+            handle.BaseStream.Seek(offset * 2, SeekOrigin.Begin); // seek to start of drawcall
             long start = handle.BaseStream.Position;
-            if (handle.ReadUInt16() != 0xFF_FF)
+            if (handle.ReadUInt16() != 0xFF_FF) // ?
             {
-                handle.Seek(-2, SeekOrigin.Current);
+                handle.Seek(-2, SeekOrigin.Current); // ??????????
             }
+            // gonna assume the while condition is correct
             while (handle.BaseStream.Position + 4 - start < count * 2)  // + 4 from reading the first two previous
             {
+                // +6 bytes
                 uint i1 = handle.ReadUInt16();
                 uint i2 = handle.ReadUInt16();
                 uint i3 = handle.ReadUInt16();
-                if (i3 == 0xFF_FF)
+
+                if (i3 == 0xFF_FF) // degenerate face (non-standard d3d11 bungie-ism)
                 {
                     triCount = 0;
                     continue;
                 }
-                if (triCount % 2 == 0)
+                if (triCount % 2 == 0) // alternate winding order (for triangle strips, checks out)
                 {
                     indices.Add(new UIntVector3(i1, i2, i3));
                 }
@@ -115,7 +113,7 @@ public class IndexBuffer : TigerReferenceFile<SIndexHeader>
                 {
                     indices.Add(new UIntVector3(i2, i1, i3));
                 }
-                handle.BaseStream.Seek(-4, SeekOrigin.Current);
+                handle.BaseStream.Seek(-4, SeekOrigin.Current); // go back 4 bytes, effectively creating a sliding window over 3 indices
                 triCount++;
             }
         }

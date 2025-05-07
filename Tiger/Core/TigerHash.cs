@@ -35,7 +35,7 @@ public class StringHash : TigerHash
 
     public override bool IsValid()
     {
-        return Hash32 != InvalidHash32 && Hash32 != 0;
+        return Hash32 is not InvalidHash32 and not 0;
     }
 }
 
@@ -95,7 +95,7 @@ public class TigerHash : IHash, ITigerDeserialize, IComparable<TigerHash>, IEqua
 
     public virtual bool IsValid()
     {
-        return Hash32 != InvalidHash32 && Hash32 != 0;
+        return Hash32 is not InvalidHash32 and not 0;
     }
 
     public bool IsInvalid()
@@ -242,14 +242,14 @@ public static class FileHashExtensions
         if (Strategy.CurrentStrategy > TigerStrategy.DESTINY1_RISE_OF_IRON)
             return fileHash.GetReferenceHash();
 
-        var temp = FileResourcer.Get().GetSchemaTag<S48018080>(fileHash.GetReferenceHash());
+        Tag<S48018080> temp = FileResourcer.Get().GetSchemaTag<S48018080>(fileHash.GetReferenceHash());
         return new FileHash(temp.TagData.Reference.Hash32);
     }
 
     public static bool ContainsHash(this FileHash fileHash, uint searchValue)
     {
-        var data = PackageResourcer.Get().GetFileData(fileHash);
-        using (TigerReader br = new TigerReader(data))
+        byte[] data = PackageResourcer.Get().GetFileData(fileHash);
+        using (TigerReader br = new(data))
         {
             long position = 0;
             long length = data.Length;
@@ -296,7 +296,7 @@ public class FileHash64 : FileHash
     {
         FallbackHash32 = reader.ReadUInt32();
         uint _isHash32 = reader.ReadUInt32();
-        IsHash32 = _isHash32 == 1 || _isHash32 == 2;
+        IsHash32 = _isHash32 is 1 or 2;
         Hash64 = reader.ReadUInt64();
         Hash32 = IsHash32 ? FallbackHash32 : GetHash32(Hash64);
     }

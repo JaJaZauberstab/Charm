@@ -5,7 +5,7 @@ using Tiger.Schema.Shaders;
 
 public static class TfxBytecodeOp
 {
-    public static List<TfxData> ParseAll(DynamicArray<D2Class_09008080> bytecode)
+    public static List<TfxData> ParseAll(DynamicArray<S09008080> bytecode)
     {
         byte[] data = new byte[bytecode.Count];
         for (int i = 0; i < bytecode.Count; i++)
@@ -14,9 +14,9 @@ public static class TfxBytecodeOp
         }
 
         List<TfxData> opcodes = new();
-        using (MemoryStream stream = new MemoryStream(data))
+        using (MemoryStream stream = new(data))
         {
-            using (BinaryReader reader = new BinaryReader(stream))
+            using (BinaryReader reader = new(stream))
             {
                 while (stream.Position < data.Length)
                 {
@@ -31,7 +31,7 @@ public static class TfxBytecodeOp
 
     public static TfxData ReadTfxBytecodeOp(BinaryReader reader)
     {
-        var _strat = Strategy.CurrentStrategy;
+        TigerStrategy _strat = Strategy.CurrentStrategy;
         TfxData tfxData = new()
         {
             op = (TfxBytecode)reader.ReadByte(),
@@ -84,37 +84,37 @@ public static class TfxBytecodeOp
                     break;
                 case TfxBytecode.PushExternInputFloat:
                     PushExternInputFloatData PushExternInputFloatData = new();
-                    PushExternInputFloatData.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputFloatData.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputFloatData.element = reader.ReadByte();
                     tfxData.data = PushExternInputFloatData;
                     break;
                 case TfxBytecode.PushExternInputVec4:
                     PushExternInputVec4Data PushExternInputVec4Data = new();
-                    PushExternInputVec4Data.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputVec4Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputVec4Data.element = reader.ReadByte();
                     tfxData.data = PushExternInputVec4Data;
                     break;
                 case TfxBytecode.PushExternInputMat4:
                     PushExternInputMat4Data PushExternInputMat4Data = new();
-                    PushExternInputMat4Data.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputMat4Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputMat4Data.element = reader.ReadByte();
                     tfxData.data = PushExternInputMat4Data;
                     break;
                 case TfxBytecode.PushExternInputTextureView:
                     PushExternInputTextureViewData Unk3fData = new();
-                    Unk3fData.extern_ = (TfxExtern)reader.ReadByte();
+                    Unk3fData.extern_ = Externs.GetExtern(reader.ReadByte());
                     Unk3fData.element = reader.ReadByte();
                     tfxData.data = Unk3fData;
                     break;
                 case TfxBytecode.PushExternInputU32:
                     PushExternInputU32Data PushExternInputU32Data = new();
-                    PushExternInputU32Data.extern_ = (TfxExtern)reader.ReadByte();
+                    PushExternInputU32Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     PushExternInputU32Data.element = reader.ReadByte();
                     tfxData.data = PushExternInputU32Data;
                     break;
                 case TfxBytecode.PushExternInputUav when !Strategy.IsD1():
                     PushExternInputUavData Unk41Data = new();
-                    Unk41Data.extern_ = (TfxExtern)reader.ReadByte();
+                    Unk41Data.extern_ = Externs.GetExtern(reader.ReadByte());
                     Unk41Data.element = reader.ReadByte();
                     tfxData.data = Unk41Data;
                     break;
@@ -245,7 +245,7 @@ public static class TfxBytecodeOp
                     tfxData.op = TfxBytecode.PushGlobalChannelVector;
 
                     PushGlobalChannelVectorData PushGlobalChannelVector = new();
-                    PushGlobalChannelVector.unk1 = reader.ReadByte();
+                    PushGlobalChannelVector.Index = reader.ReadByte();
                     tfxData.data = PushGlobalChannelVector;
                     break;
 
@@ -317,11 +317,11 @@ public static class TfxBytecodeOp
                 break;
             case Spline4ConstData:
                 index = ((Spline4ConstData)tfxData.data).constant_index;
-                var C3 = $"{constants[index].Vec}";
-                var C2 = $"{constants[index + 1].Vec}";
-                var C1 = $"{constants[index + 2].Vec}";
-                var C0 = $"{constants[index + 3].Vec}";
-                var threshold = $"{constants[index + 4].Vec}";
+                string C3 = $"{constants[index].Vec}";
+                string C2 = $"{constants[index + 1].Vec}";
+                string C1 = $"{constants[index + 2].Vec}";
+                string C0 = $"{constants[index + 3].Vec}";
+                string threshold = $"{constants[index + 4].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tC3: {C3}" +
@@ -333,16 +333,16 @@ public static class TfxBytecodeOp
 
             case Spline8ConstData:
                 index = ((Spline8ConstData)tfxData.data).constant_index;
-                var s8_C3 = $"{constants[index].Vec}";
-                var s8_C2 = $"{constants[index + 1].Vec}";
-                var s8_C1 = $"{constants[index + 2].Vec}";
-                var s8_C0 = $"{constants[index + 3].Vec}";
-                var s8_D3 = $"{constants[index + 4].Vec}";
-                var s8_D2 = $"{constants[index + 5].Vec}";
-                var s8_D1 = $"{constants[index + 6].Vec}";
-                var s8_D0 = $"{constants[index + 7].Vec}";
-                var C_thresholds = $"{constants[index + 8].Vec}";
-                var D_thresholds = $"{constants[index + 9].Vec}";
+                string s8_C3 = $"{constants[index].Vec}";
+                string s8_C2 = $"{constants[index + 1].Vec}";
+                string s8_C1 = $"{constants[index + 2].Vec}";
+                string s8_C0 = $"{constants[index + 3].Vec}";
+                string s8_D3 = $"{constants[index + 4].Vec}";
+                string s8_D2 = $"{constants[index + 5].Vec}";
+                string s8_D1 = $"{constants[index + 6].Vec}";
+                string s8_D0 = $"{constants[index + 7].Vec}";
+                string C_thresholds = $"{constants[index + 8].Vec}";
+                string D_thresholds = $"{constants[index + 9].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tC3: {s8_C3}" +
@@ -362,12 +362,12 @@ public static class TfxBytecodeOp
                 break;
             case Gradient4ConstData: // Gradient4Const
                 index = ((Gradient4ConstData)tfxData.data).constant_index;
-                var BaseColor = $"{constants[index].Vec}";
-                var Cred = $"{constants[index + 1].Vec}";
-                var Cgreen = $"{constants[index + 2].Vec}";
-                var Cblue = $"{constants[index + 3].Vec}";
-                var Calpha = $"{constants[index + 4].Vec}";
-                var Cthresholds = $"{constants[index + 5].Vec}";
+                string BaseColor = $"{constants[index].Vec}";
+                string Cred = $"{constants[index + 1].Vec}";
+                string Cgreen = $"{constants[index + 2].Vec}";
+                string Cblue = $"{constants[index + 3].Vec}";
+                string Calpha = $"{constants[index + 4].Vec}";
+                string Cthresholds = $"{constants[index + 5].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tBaseColor: {BaseColor}" +
@@ -385,12 +385,12 @@ public static class TfxBytecodeOp
                 Cgreen = $"{constants[index + 2].Vec}";
                 Cblue = $"{constants[index + 3].Vec}";
                 Calpha = $"{constants[index + 4].Vec}";
-                var Dred = $"{constants[index + 5].Vec}";
-                var Dgreen = $"{constants[index + 6].Vec}";
-                var Dblue = $"{constants[index + 7].Vec}";
-                var Dalpha = $"{constants[index + 8].Vec}";
+                string Dred = $"{constants[index + 5].Vec}";
+                string Dgreen = $"{constants[index + 6].Vec}";
+                string Dblue = $"{constants[index + 7].Vec}";
+                string Dalpha = $"{constants[index + 8].Vec}";
                 Cthresholds = $"{constants[index + 9].Vec}";
-                var Dthresholds = $"{constants[index + 10].Vec}";
+                string Dthresholds = $"{constants[index + 10].Vec}";
 
                 output = $"Index {index}:" +
                     $"\n\tBaseColor: {BaseColor}" +
@@ -407,27 +407,27 @@ public static class TfxBytecodeOp
                 break;
 
             case PushExternInputFloatData:
-                var pFloat = ((PushExternInputFloatData)tfxData.data).element;
+                byte pFloat = ((PushExternInputFloatData)tfxData.data).element;
                 output = $"extern {((PushExternInputFloatData)tfxData.data).extern_}, element {pFloat} (0x{(pFloat * 4):X})";
                 break;
             case PushExternInputVec4Data:
-                var pVec = ((PushExternInputVec4Data)tfxData.data).element;
+                byte pVec = ((PushExternInputVec4Data)tfxData.data).element;
                 output = $"extern {((PushExternInputVec4Data)tfxData.data).extern_}, element {pVec} (0x{(pVec * 16):X})";
                 break;
             case PushExternInputMat4Data:
-                var pMat = ((PushExternInputMat4Data)tfxData.data).element;
+                byte pMat = ((PushExternInputMat4Data)tfxData.data).element;
                 output = $"extern {((PushExternInputMat4Data)tfxData.data).extern_}, element {pMat} (0x{(pMat * 16):X})";
                 break;
             case PushExternInputTextureViewData:
-                var pTex = ((PushExternInputTextureViewData)tfxData.data).element;
+                byte pTex = ((PushExternInputTextureViewData)tfxData.data).element;
                 output = $"extern {((PushExternInputTextureViewData)tfxData.data).extern_}, element {pTex} (0x{(pTex * 8):X})";
                 break;
             case PushExternInputU32Data:
-                var pU32 = ((PushExternInputU32Data)tfxData.data).element;
+                byte pU32 = ((PushExternInputU32Data)tfxData.data).element;
                 output = $"extern {((PushExternInputU32Data)tfxData.data).extern_}, element {pU32} (0x{(pU32 * 4):X})";
                 break;
             case PushExternInputUavData:
-                var pUav = ((PushExternInputUavData)tfxData.data).element;
+                byte pUav = ((PushExternInputUavData)tfxData.data).element;
                 output = $"extern {((PushExternInputUavData)tfxData.data).extern_}, element {pUav} (0x{(pUav * 8):X})";
                 break;
 
@@ -450,14 +450,14 @@ public static class TfxBytecodeOp
                 output = $"unk1 {((Unk47Data)tfxData.data).unk1}";
                 break;
             case SetShaderTextureData:
-                var texSlot = ((SetShaderTextureData)tfxData.data).value;
+                byte texSlot = ((SetShaderTextureData)tfxData.data).value;
                 output = $"Texture Slot {texSlot & 0x1F}";
                 break;
             case Unk49Data:
                 output = $"unk1 {((Unk49Data)tfxData.data).unk1}";
                 break;
             case SetShaderSamplerData:
-                var sampSlot = ((SetShaderSamplerData)tfxData.data).value;
+                byte sampSlot = ((SetShaderSamplerData)tfxData.data).value;
                 output = $"Sampler Slot {sampSlot & 0x1F}";
                 break;
             case SetShaderUavData:
@@ -474,7 +474,7 @@ public static class TfxBytecodeOp
                 output = $"hash {GlobalStrings.Get().GetString(hash)}";
                 break;
             case PushGlobalChannelVectorData:
-                index = ((PushGlobalChannelVectorData)tfxData.data).unk1;
+                index = ((PushGlobalChannelVectorData)tfxData.data).Index;
                 output = $"index {index} {GlobalChannels.Get(index)}";
                 break;
             case Unk50Data:
@@ -761,7 +761,7 @@ public struct PushObjectChannelVectorData
 
 public struct PushGlobalChannelVectorData
 {
-    public byte unk1;
+    public byte Index;
 }
 
 public struct Unk50Data

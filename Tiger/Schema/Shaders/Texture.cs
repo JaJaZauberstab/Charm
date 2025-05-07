@@ -15,6 +15,9 @@ public class Texture : TigerReferenceFile<STextureHeader>
     {
     }
 
+    public int Width => _tag.Width;
+    public int Height => _tag.Height;
+
     public bool IsCubemap()
     {
         return _tag.ArraySize == 6;
@@ -38,7 +41,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
     public byte[] GetDDSBytes(DXGI_FORMAT format)
     {
         byte[] data;
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             if (ReferenceHash.IsValid() && ReferenceHash.GetReferenceHash().IsValid())
                 data = PackageResourcer.Get().GetFileData(ReferenceHash.GetReferenceHash());
@@ -47,7 +50,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
             if ((_tag.Flags1 & 0xC00) != 0x400 || IsCubemap())
             {
-                var gcnformat = GcnSurfaceFormatExtensions.GetFormat(_tag.ROIFormat);
+                GcnSurfaceFormatExtensions.GcnSurfaceFormat gcnformat = GcnSurfaceFormatExtensions.GetFormat(_tag.ROIFormat);
                 data = PS4SwizzleAlgorithm.UnSwizzle(data, _tag.Width, _tag.Height, _tag.ArraySize, gcnformat);
             }
         }
@@ -71,14 +74,14 @@ public class Texture : TigerReferenceFile<STextureHeader>
         return final;
     }
 
-    public ScratchImage GetScratchImage(bool overrideConvert = false)
+    public ScratchImage GetScratchImage(bool overrideConvert = false, int index = 0)
     {
         DXGI_FORMAT format = _tag.GetFormat();
 
         byte[] final = GetDDSBytes(format);
         GCHandle gcHandle = GCHandle.Alloc(final, GCHandleType.Pinned);
         IntPtr pixelPtr = gcHandle.AddrOfPinnedObject();
-        var scratchImage = TexHelper.Instance.LoadFromDDSMemory(pixelPtr, final.Length, DDS_FLAGS.NONE);
+        ScratchImage scratchImage = TexHelper.Instance.LoadFromDDSMemory(pixelPtr, final.Length, DDS_FLAGS.NONE);
         gcHandle.Free();
 
         if (IsCubemap())
@@ -92,10 +95,10 @@ public class Texture : TigerReferenceFile<STextureHeader>
             {
                 scratchImage = DecompressScratchImage(scratchImage, IsSrgb() ? DXGI_FORMAT.R8G8B8A8_UNORM_SRGB : DXGI_FORMAT.R8G8B8A8_UNORM);
             }
-            var s1 = scratchImage.FlipRotate(2, TEX_FR_FLAGS.FLIP_VERTICAL).FlipRotate(0, TEX_FR_FLAGS.FLIP_HORIZONTAL);
-            var s2 = scratchImage.FlipRotate(0, TEX_FR_FLAGS.ROTATE90);
-            var s3 = scratchImage.FlipRotate(1, TEX_FR_FLAGS.ROTATE270);
-            var s4 = scratchImage.FlipRotate(4, TEX_FR_FLAGS.FLIP_VERTICAL).FlipRotate(0, TEX_FR_FLAGS.FLIP_HORIZONTAL);
+            ScratchImage s1 = scratchImage.FlipRotate(2, TEX_FR_FLAGS.FLIP_VERTICAL).FlipRotate(0, TEX_FR_FLAGS.FLIP_HORIZONTAL);
+            ScratchImage s2 = scratchImage.FlipRotate(0, TEX_FR_FLAGS.ROTATE90);
+            ScratchImage s3 = scratchImage.FlipRotate(1, TEX_FR_FLAGS.ROTATE270);
+            ScratchImage s4 = scratchImage.FlipRotate(4, TEX_FR_FLAGS.FLIP_VERTICAL).FlipRotate(0, TEX_FR_FLAGS.FLIP_HORIZONTAL);
             scratchImage = TexHelper.Instance.InitializeTemporary(
                 new[]
                 {
@@ -125,6 +128,15 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
         }
 
+        if (index != 0 && index < scratchImage.GetImageCount())
+        {
+            // Have to change the metadata to act like its a 2D texture if we want to do anything else with it later (such as resizing)
+            TexMetadata metadata = scratchImage.GetMetadata();
+            metadata.Depth = 1;
+            metadata.Dimension = TEX_DIMENSION.TEXTURE2D;
+            scratchImage = TexHelper.Instance.InitializeTemporary(new[] { scratchImage.GetImage(index) }, metadata);
+        }
+
         // scratchImage = scratchImage.Convert(DXGI_FORMAT.B8G8R8A8_UNORM, TEX_FILTER_FLAGS.RGB_COPY_RED, 0);
 
         return scratchImage;
@@ -147,7 +159,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
     public static ScratchImage FlattenCubemap(ScratchImage input)
     {
-        var image = input.GetImage(0);
+        Image image = input.GetImage(0);
         if (image.Width == 0)
             return null;
 
@@ -180,7 +192,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
         for (int i = 0; i < input.GetImageCount(); i++)
         {
-            var (x, y) = facePositions[i];
+            (int x, int y) = facePositions[i];
             TexHelper.Instance.CopyRectangle(
                 input.GetImage(i), 0, 0, faceWidth, faceHeight,
                 outputPlate.GetImage(0),
@@ -192,9 +204,9 @@ public class Texture : TigerReferenceFile<STextureHeader>
         return outputPlate;
     }
 
-    public static ScratchImage FlattenVolume(ScratchImage input)
+    public static ScratchImage FlattenVolume(ScratchImage input) // TODO: Figure out why R#G#_ formats dont work here
     {
-        var image = input.GetImage(0);
+        Image image = input.GetImage(0);
         if (image.Width == 0)
         {
             return null;
@@ -202,7 +214,6 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
         bool bSrgb = TexHelper.Instance.IsSRGB(image.Format);
         ScratchImage outputPlate = TexHelper.Instance.Initialize2D(image.Format, image.Width * input.GetImageCount(), image.Height, 1, 0, 0);
-
         for (int i = 0; i < input.GetImageCount(); i++)
         {
             TexHelper.Instance.CopyRectangle(input.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), bSrgb ? TEX_FILTER_FLAGS.SEPARATE_ALPHA : 0, image.Width * i, 0);
@@ -236,6 +247,23 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
     public UnmanagedMemoryStream GetCubemapFace(int index)
     {
+        if (!IsCubemap())
+            index = 0;
+
+        ScratchImage scratchImage = GetScratchImage();
+
+        UnmanagedMemoryStream ms;
+        Guid guid = TexHelper.Instance.GetWICCodec(WICCodecs.BMP);
+        ms = scratchImage.SaveToWICMemory(index, WIC_FLAGS.NONE, guid);
+        scratchImage.Dispose();
+        return ms;
+    }
+
+    public UnmanagedMemoryStream GetVolumeSlice(int index)
+    {
+        if (!IsVolume())
+            index = 0;
+
         ScratchImage scratchImage = GetScratchImage();
 
         UnmanagedMemoryStream ms;
@@ -257,10 +285,10 @@ public class Texture : TigerReferenceFile<STextureHeader>
         }
     }
 
-    public void SavetoFile(string savePath)
+    public void SavetoFile(string savePath, int index = 0)
     {
-        ScratchImage simg = GetScratchImage();
-        if (ConfigSubsystem.Get().GetS2TexPow2Enabled())
+        ScratchImage simg = GetScratchImage(index: index);
+        if (ConfigSubsystem.Get().GetS2TexPow2Enabled()) // TODO make not shit
             simg = ResizeToNearestPowerOf2(simg);
 
         if (ConfigSubsystem.Get().GetS2ShaderExportEnabled())
@@ -301,7 +329,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
 
     public ScratchImage ResizeToNearestPowerOf2(ScratchImage image)
     {
-        var metadata = image.GetMetadata();
+        TexMetadata metadata = image.GetMetadata();
         int width = metadata.Width;
         int height = metadata.Height;
 
@@ -321,7 +349,7 @@ public class Texture : TigerReferenceFile<STextureHeader>
 }
 
 // todo move this
-public class TexturePlate : Tag<D2Class_919E8080>
+public class TexturePlate : Tag<S919E8080>
 {
     public TexturePlate(FileHash hash) : base(hash)
     {
@@ -329,7 +357,7 @@ public class TexturePlate : Tag<D2Class_919E8080>
 
     public ScratchImage? MakePlatedTexture()
     {
-        var dimension = GetPlateDimensions();
+        IntVector2 dimension = GetPlateDimensions();
         if (dimension.X == 0)
         {
             return null;
@@ -339,7 +367,7 @@ public class TexturePlate : Tag<D2Class_919E8080>
         bool bSrgb = _tag.PlateTransforms[reader, 0].Texture.IsSrgb();
         ScratchImage outputPlate = TexHelper.Instance.Initialize2D(bSrgb ? DXGI_FORMAT.B8G8R8A8_UNORM_SRGB : DXGI_FORMAT.B8G8R8A8_UNORM, dimension.X, dimension.Y, 1, 0, 0);
 
-        foreach (var transform in _tag.PlateTransforms.Enumerate(reader))
+        foreach (S939E8080 transform in _tag.PlateTransforms.Enumerate(reader))
         {
             ScratchImage original = transform.Texture.GetScratchImage();
             ScratchImage resizedOriginal = original.Resize(transform.Scale.X, transform.Scale.Y, TEX_FILTER_FLAGS.SEPARATE_ALPHA);
@@ -352,7 +380,7 @@ public class TexturePlate : Tag<D2Class_919E8080>
 
     public void SavePlatedTexture(string savePath)
     {
-        var simg = MakePlatedTexture();
+        ScratchImage? simg = MakePlatedTexture();
         if (simg != null)
         {
             Texture.SavetoFile(savePath, simg);
@@ -362,7 +390,7 @@ public class TexturePlate : Tag<D2Class_919E8080>
     public IntVector2 GetPlateDimensions()
     {
         int maxDimension = 0;  // plate must be square
-        foreach (var transform in _tag.PlateTransforms.Enumerate(GetReader()))
+        foreach (S939E8080 transform in _tag.PlateTransforms.Enumerate(GetReader()))
         {
             if (transform.Translation.X + transform.Scale.X > maxDimension)
             {
@@ -449,13 +477,11 @@ public struct STextureHeader
 
     public DXGI_FORMAT GetFormat()
     {
-        switch (Strategy.CurrentStrategy)
+        return Strategy.CurrentStrategy switch
         {
-            case TigerStrategy.DESTINY1_RISE_OF_IRON:
-                return GcnSurfaceFormatExtensions.ToDXGI(ROIFormat);
-            default:
-                return (DXGI_FORMAT)Format;
-        }
+            TigerStrategy.DESTINY1_RISE_OF_IRON => GcnSurfaceFormatExtensions.ToDXGI(ROIFormat),
+            _ => (DXGI_FORMAT)Format,
+        };
     }
 }
 

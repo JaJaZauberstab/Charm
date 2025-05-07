@@ -28,7 +28,7 @@ public partial class MaterialView : UserControl
         _mainWindow = Window.GetWindow(this) as MainWindow;
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -101,57 +101,57 @@ public partial class MaterialView : UserControl
     {
         var items = new List<TextureDetail>();
 
-        foreach (var tex in material.Vertex.EnumerateTextures())
+        foreach (STextureTag tex in material.Vertex.EnumerateTextures())
         {
-            if (tex.GetTexture() is null)
+            if (tex.Texture is null)
                 continue;
 
             items.Add(new TextureDetail
             {
                 Shader = "Vertex Shader",
-                Hash = $"{tex.GetTexture().Hash}",
+                Hash = $"{tex.Texture.Hash}",
                 Index = $"Index: {tex.TextureIndex}",
-                Type = $"Colorspace: {(tex.GetTexture().IsSrgb() ? "Srgb" : "Non-Color")}",
-                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.GetTexture().GetDimension())}",
-                Format = $"Format: {tex.GetTexture().TagData.GetFormat()}",
-                Dimensions = $"{tex.GetTexture().TagData.Width}x{tex.GetTexture().TagData.Height}",
-                Texture = LoadTexture(tex.GetTexture())
+                Type = $"Colorspace: {(tex.Texture.IsSrgb() ? "Srgb" : "Non-Color")}",
+                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.Texture.GetDimension())}",
+                Format = $"Format: {tex.Texture.TagData.GetFormat()}",
+                Dimensions = $"{tex.Texture.TagData.Width}x{tex.Texture.TagData.Height}",
+                Texture = LoadTexture(tex.Texture)
             });
         }
 
-        foreach (var tex in material.Pixel.EnumerateTextures())
+        foreach (STextureTag tex in material.Pixel.EnumerateTextures())
         {
-            if (tex.GetTexture() is null)
+            if (tex.Texture is null)
                 continue;
 
             items.Add(new TextureDetail
             {
                 Shader = "Pixel Shader",
-                Hash = $"{tex.GetTexture().Hash}",
+                Hash = $"{tex.Texture.Hash}",
                 Index = $"Index: {tex.TextureIndex}",
-                Type = $"Colorspace: {(tex.GetTexture().IsSrgb() ? "Srgb" : "Non-Color")}",
-                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.GetTexture().GetDimension())}",
-                Format = $"Format: {tex.GetTexture().TagData.GetFormat()}",
-                Dimensions = $"{tex.GetTexture().TagData.Width}x{tex.GetTexture().TagData.Height}",
-                Texture = LoadTexture(tex.GetTexture())
+                Type = $"Colorspace: {(tex.Texture.IsSrgb() ? "Srgb" : "Non-Color")}",
+                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.Texture.GetDimension())}",
+                Format = $"Format: {tex.Texture.TagData.GetFormat()}",
+                Dimensions = $"{tex.Texture.TagData.Width}x{tex.Texture.TagData.Height}",
+                Texture = LoadTexture(tex.Texture)
             });
         }
 
-        foreach (var tex in material.Compute.EnumerateTextures())
+        foreach (STextureTag tex in material.Compute.EnumerateTextures())
         {
-            if (tex.GetTexture() is null)
+            if (tex.Texture is null)
                 continue;
 
             items.Add(new TextureDetail
             {
                 Shader = "Compute Shader",
-                Hash = $"{tex.GetTexture().Hash}",
+                Hash = $"{tex.Texture.Hash}",
                 Index = $"Index: {tex.TextureIndex}",
-                Type = $"Colorspace: {(tex.GetTexture().IsSrgb() ? "Srgb" : "Non-Color")}",
-                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.GetTexture().GetDimension())}",
-                Format = $"Format: {tex.GetTexture().TagData.GetFormat()}",
-                Dimensions = $"{tex.GetTexture().TagData.Width}x{tex.GetTexture().TagData.Height}",
-                Texture = LoadTexture(tex.GetTexture())
+                Type = $"Colorspace: {(tex.Texture.IsSrgb() ? "Srgb" : "Non-Color")}",
+                Dimension = $"Dimension: {EnumExtensions.GetEnumDescription(tex.Texture.GetDimension())}",
+                Format = $"Format: {tex.Texture.TagData.GetFormat()}",
+                Dimensions = $"{tex.Texture.TagData.Width}x{tex.Texture.TagData.Height}",
+                Texture = LoadTexture(tex.Texture)
             });
         }
 
@@ -168,7 +168,7 @@ public partial class MaterialView : UserControl
         if (bVertexShader)
         {
             data = material.Vertex.GetCBuffer0();
-            foreach (var vec in material.Vertex.TFX_Bytecode_Constants)
+            foreach (Vec4 vec in material.Vertex.TFX_Bytecode_Constants)
             {
                 const_data.Add(vec.Vec);
             }
@@ -176,7 +176,7 @@ public partial class MaterialView : UserControl
         else
         {
             data = material.Pixel.GetCBuffer0();
-            foreach (var vec in material.Pixel.TFX_Bytecode_Constants)
+            foreach (Vec4 vec in material.Pixel.TFX_Bytecode_Constants)
             {
                 const_data.Add(vec.Vec);
             }
@@ -218,9 +218,9 @@ public partial class MaterialView : UserControl
             Dispatcher.Invoke(() =>
             {
                 TfxBytecodeInterpreter bytecode = new(TfxBytecodeOp.ParseAll(dc.Stage == CBufferDetail.Shader.Pixel ? Material.Pixel.TFX_Bytecode : Material.Vertex.TFX_Bytecode));
-                var bytecode_hlsl = bytecode.Evaluate(dc.Stage == CBufferDetail.Shader.Pixel ? Material.Pixel.TFX_Bytecode_Constants : Material.Vertex.TFX_Bytecode_Constants, dc.Index != "TFX Constants", Material);
+                Dictionary<int, string> bytecode_hlsl = bytecode.Evaluate(dc.Stage == CBufferDetail.Shader.Pixel ? Material.Pixel.TFX_Bytecode_Constants : Material.Vertex.TFX_Bytecode_Constants, dc.Index != "TFX Constants", Material);
 
-                ConcurrentBag<CBufferDataDetail> items = new ConcurrentBag<CBufferDataDetail>();
+                ConcurrentBag<CBufferDataDetail> items = new();
                 for (int i = 0; i < dc.Data.Count; i++)
                 {
                     CBufferDataDetail dataEntry = new();
@@ -273,7 +273,7 @@ public partial class MaterialView : UserControl
 
     public BitmapImage LoadTexture(Texture textureHeader)
     {
-        BitmapImage bitmapImage = new BitmapImage();
+        BitmapImage bitmapImage = new();
         bitmapImage.BeginInit();
         bitmapImage.StreamSource = (textureHeader.IsCubemap() || textureHeader.IsVolume()) ? textureHeader.GetCubemapFace(0) : textureHeader.GetTexture();
         bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
@@ -316,7 +316,7 @@ public partial class MaterialView : UserControl
             if (material.PSSamplers[i].Hash.GetFileMetadata().Type != 34)
                 continue;
 
-            var sampler = material.PSSamplers[i].Sampler;
+            DirectXSampler.D3D11_SAMPLER_DESC sampler = material.PSSamplers[i].Sampler;
             items.Add(new SamplerDataDetail
             {
                 Slot = i + 1,
@@ -344,13 +344,15 @@ public partial class MaterialView : UserControl
         }
         catch (Exception ex)
         {
-            PopupBanner test = new();
-            test.Icon = "⚠️";
-            test.Title = "ERROR";
-            test.Subtitle = "Idk why this breaks sometimes but it can...try again.";
-            test.Description = $"{ex.Message}";
+            PopupBanner test = new()
+            {
+                Icon = "⚠️",
+                Title = "ERROR",
+                Subtitle = "Idk why this breaks sometimes but it can...try again.",
+                Description = $"{ex.Message}",
 
-            test.Style = PopupBanner.PopupStyle.Warning;
+                Style = PopupBanner.PopupStyle.Warning
+            };
             test.Show();
         }
     }

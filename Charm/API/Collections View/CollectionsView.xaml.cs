@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,8 +14,9 @@ public partial class CollectionsView : UserControl
 {
     private static MainWindow _mainWindow = null;
 
-    public Tag<D2Class_D7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
-    public Tag<D2Class_03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
+    public Tag<SD7788080> PresentationNodes = Investment.Get()._presentationNodeDefinitionMap;
+    public Tag<S03588080> PresentationNodeStrings = Investment.Get()._presentationNodeDefinitionStringMap;
+    public int TotalItemAmount { get; set; }
     private APITooltip ToolTip;
 
     public CollectionsView()
@@ -35,7 +35,7 @@ public partial class CollectionsView : UserControl
 
         if (ConfigSubsystem.Get().GetAnimatedBackground())
         {
-            SpinnerShader _spinner = new SpinnerShader();
+            SpinnerShader _spinner = new();
             Spinner.Effect = _spinner;
             SizeChanged += _spinner.OnSizeChanged;
             _spinner.ScreenWidth = (float)ActualWidth;
@@ -47,24 +47,20 @@ public partial class CollectionsView : UserControl
 
     public void LoadContent()
     {
-#if DEBUG
-        Console.WriteLine($"Presentation Nodes: {PresentationNodes.Hash}");
-        Console.WriteLine($"Presentation Node Strings: {PresentationNodeStrings.Hash}");
-#endif
         LoadMainItemCategory();
         LoadBadges();
     }
 
-    public void LoadMainItemCategory()
+    // Badges -> hash 498211331
+    public void LoadMainItemCategory(int i = 0)
     {
-        int totalItemAmount = 0;
-        var nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
-        var strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
+        DynamicArray<SDB788080> nodes = PresentationNodes.TagData.PresentationNodeDefinitions;
+        DynamicArray<S07588080> strings = PresentationNodeStrings.TagData.PresentationNodeDefinitionStrings;
 
-        foreach (var node in nodes[0].PresentationNodes)
+        foreach (SED788080 node in nodes[0].PresentationNodes)
         {
-            var curNode = nodes[node.PresentationNodeIndex];
-            var curNodeStrings = strings[node.PresentationNodeIndex];
+            SDB788080 curNode = nodes[node.PresentationNodeIndex];
+            S07588080 curNodeStrings = strings[node.PresentationNodeIndex];
 
             ItemCategory itemCategory = new()
             {
@@ -75,9 +71,9 @@ public partial class CollectionsView : UserControl
                 ItemCategoryDescription = curNodeStrings.Description.Value,
                 ItemCategoryAmount = GetItemCategoryAmount(node.PresentationNodeIndex)
             };
-            totalItemAmount += itemCategory.ItemCategoryAmount;
+            TotalItemAmount += itemCategory.ItemCategoryAmount;
 
-            Button btn = new Button
+            Button btn = new()
             {
                 DataContext = itemCategory,
                 Style = (Style)FindResource("MainItemsButton")
@@ -85,7 +81,7 @@ public partial class CollectionsView : UserControl
 
             MainItemsGrid.Children.Add(btn);
         }
-        ItemsTextTab.Text = $"ITEMS - {totalItemAmount}";
+        DataContext = this;
     }
 
     // Badges -> hash 498211331
@@ -132,7 +128,7 @@ public partial class CollectionsView : UserControl
 
     public int GetItemCategoryAmount(int index)
     {
-        var node = PresentationNodes.TagData.PresentationNodeDefinitions[index];
+        SDB788080 node = PresentationNodes.TagData.PresentationNodeDefinitions[index];
         int count = node.Collectables.Count;
 
         for (int j = 0; j < node.PresentationNodes.Count; j++)
@@ -143,22 +139,22 @@ public partial class CollectionsView : UserControl
         return count;
     }
 
-    private void ItemCategory_OnClick(object sender, RoutedEventArgs e)
-    {
-        e.Handled = true;
-        ItemCategory item = ((Button)sender).DataContext as ItemCategory;
-
-        CategoryView categoryView = new(item);
-        _mainWindow.MakeNewTab(item.ItemCategoryName, categoryView);
-        _mainWindow.SetNewestTabSelected();
-    }
-
     private void BadgeCategory_OnClick(object sender, RoutedEventArgs e)
     {
         e.Handled = true;
         ItemCategory item = ((Button)sender).DataContext as ItemCategory;
 
         BadgeView categoryView = new(item);
+        _mainWindow.MakeNewTab(item.ItemCategoryName, categoryView);
+        _mainWindow.SetNewestTabSelected();
+    }
+
+    private void ItemCategory_OnClick(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        ItemCategory item = ((Button)sender).DataContext as ItemCategory;
+
+        CategoryView categoryView = new(item);
         _mainWindow.MakeNewTab(item.ItemCategoryName, categoryView);
         _mainWindow.SetNewestTabSelected();
     }

@@ -29,7 +29,7 @@ public partial class DialogueView : UserControl
     {
         List<dynamic?> result = new();
         _viewer = viewer;
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
         {
             _dialogueD1 = new DialogueD1(hash);
             result = _dialogueD1.Load();
@@ -50,20 +50,20 @@ public partial class DialogueView : UserControl
 
     private ObservableCollection<VoicelineItem> GenerateUIRecursive(int recursionDepth, List<dynamic?> dialogueTree)
     {
-        ObservableCollection<VoicelineItem> result = new ObservableCollection<VoicelineItem>();
-        foreach (var dyn in dialogueTree)
+        ObservableCollection<VoicelineItem> result = new();
+        foreach (dynamic? dyn in dialogueTree)
         {
             if (dyn is List<dynamic?>)
             {
                 ObservableCollection<VoicelineItem> res = GenerateUIRecursive(recursionDepth + 1, dyn);
-                foreach (var q in res)
+                foreach (VoicelineItem q in res)
                 {
                     result.Add(q);
                 }
             }
             else
             {
-                if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+                if (Strategy.IsD1())
                 {
                     SAA078080 a = dyn;
 
@@ -103,7 +103,10 @@ public partial class DialogueView : UserControl
                 }
                 else
                 {
-                    D2Class_33978080 entry = dyn;
+                    S33978080 entry = dyn;
+                    if (entry.SoundM is null || entry.SoundM.TagData.Wems[0].GetReferenceHash().IsInvalid())
+                        continue;
+
                     result.Add(new VoicelineItem
                     {
                         Narrator = GlobalStrings.Get().GetString(entry.NarratorString),
@@ -144,16 +147,16 @@ public partial class DialogueView : UserControl
                 MusicPlayer.Pause();
         });
 
-        ConfigSubsystem config = CharmInstance.GetSubsystem<ConfigSubsystem>();
+        ConfigSubsystem config = TigerInstance.GetSubsystem<ConfigSubsystem>();
         Wem wem = FileResourcer.Get().GetFile<Wem>(info.Hash);
         string saveDirectory = config.GetExportSavePath() + $"/Sound/Dialogue/{info.Name}/";
         Directory.CreateDirectory(saveDirectory);
         wem.SaveToFile($"{saveDirectory}/{info.Hash}.wav");
 
-        StringBuilder dialogueBuilder = new StringBuilder();
+        StringBuilder dialogueBuilder = new();
         if (File.Exists($"{saveDirectory}/Dialogue.txt"))
         {
-            using (StreamReader reader = new StreamReader($"{saveDirectory}/Dialogue.txt"))
+            using (StreamReader reader = new($"{saveDirectory}/Dialogue.txt"))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
@@ -182,6 +185,6 @@ public class VoicelineItem
 
     public Thickness Padding  // todo make this work nicely
     {
-        get => new Thickness(Convert.ToDouble(RecursionDepth * 50 - 50), 0, 0, 0);
+        get => new(Convert.ToDouble(RecursionDepth * 50 - 50), 0, 0, 0);
     }
 }

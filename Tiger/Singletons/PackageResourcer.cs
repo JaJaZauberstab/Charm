@@ -57,7 +57,7 @@ public class PackageResourcer : Strategy.StrategistSingleton<PackageResourcer>
         LoadPackageKeys();
         CacheAllActivityNames();
 
-        if (Strategy.CurrentStrategy == TigerStrategy.DESTINY1_RISE_OF_IRON)
+        if (Strategy.IsD1())
             CacheAllD1NamedTags();
     }
 
@@ -76,26 +76,26 @@ public class PackageResourcer : Strategy.StrategistSingleton<PackageResourcer>
             return;
 
         string[] txt = File.ReadAllLines("./keys.txt");
-        foreach (var entry in txt)
+        foreach (string entry in txt)
         {
             try
             {
                 // Split the entry by ':' and trim any whitespace
-                var parts = entry.Split(':');
+                string[] parts = entry.Split(':');
                 if (parts.Length < 3)
                 {
                     Log.Error($"Invalid key entry format: {entry}");
                     continue;
                 }
 
-                var pkgGroup = ulong.Parse(parts[0].Trim(), NumberStyles.HexNumber);
-                var key = Helpers.HexStringToByteArray(parts[1].Trim());
-                var nonce = Helpers.HexStringToByteArray(parts[2].Split("//")[0].Trim());
+                ulong pkgGroup = ulong.Parse(parts[0].Trim(), NumberStyles.HexNumber);
+                byte[] key = Helpers.HexStringToByteArray(parts[1].Trim());
+                byte[] nonce = Helpers.HexStringToByteArray(parts[2].Split("//")[0].Trim());
 
                 if (!_keys.ContainsKey(pkgGroup))
                     _keys[pkgGroup] = new Dictionary<byte[], byte[]>();
 
-                var keyDict = _keys[pkgGroup];
+                Dictionary<byte[], byte[]> keyDict = _keys[pkgGroup];
                 if (!keyDict.ContainsKey(key))
                     keyDict[key] = nonce;
                 else
@@ -283,6 +283,20 @@ public class PackageResourcer : Strategy.StrategistSingleton<PackageResourcer>
         await Parallel.ForEachAsync(packages, parallelOptions, async (package, ct) =>
         {
             fileHashes.UnionWith(await Task.Run(package.GetAllHashes, ct));
+        });
+
+        return fileHashes;
+    }
+
+    public async Task<ConcurrentHashSet<FileHash>> GetAllHashesAsync<T>(Func<ushort, bool> packageFilterFunc)
+    {
+        ConcurrentHashSet<FileHash> fileHashes = new();
+
+        ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = 5, CancellationToken = CancellationToken.None };
+        IEnumerable<Package> packages = _packagesCache.Values.Where(package => packageFilterFunc(package.GetPackageMetadata().Id));
+        await Parallel.ForEachAsync(packages, parallelOptions, async (package, ct) =>
+        {
+            fileHashes.UnionWith(await Task.Run(() => package.GetAllHashes(typeof(T)), ct));
         });
 
         return fileHashes;

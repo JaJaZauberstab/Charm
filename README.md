@@ -44,8 +44,8 @@ dotnet DepotDownloader.dll -app 1085660 -depot 1085662 -manifest 465141233805779
 
 After you've downloaded the version(s) you want:
 
-- You'll need [.NET 7.0 x64](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.400-windows-x64-installer) installed.
-- Download the [latest release]() and run Charm.exe.
+- You'll need [.NET 8.0 x64](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.15-windows-x64-installer) and [VC++ Redistributables](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) installed.
+- Download the [latest release](https://github.com/MontagueM/Charm/releases/latest) and run Charm.exe.
 - Set the packages and export paths first.
 
 If you encounter any problems, take a look in the `Logs/` folder, find the latest log file, and look at the exception.
@@ -63,6 +63,12 @@ Also take a look at the [Charm wiki](https://github.com/MontagueM/DestinyDocs/bl
 
 If you experience any issue, you can register an issue in this repository. If the program has crashed, it is extremely valuable to provide the charm.log file.
 
+## Known issues
+- Textures will not export if the export path contains a period
+- UI elements do not scale correctly for any resolution other than 1080p
+- API crashes for some people (extremely rare?) (Related to DirectXTex)
+
+
 ## Screenshots
 <p float="left">
     <img src="https://github.com/user-attachments/assets/e93e3c4d-9ec4-4829-a94c-c650d03cffc4" width="400" />
@@ -73,6 +79,8 @@ If you experience any issue, you can register an issue in this repository. If th
     <img src="https://github.com/user-attachments/assets/da13a70b-4d89-4e4a-af97-b4e56c7920d7" width="400" />
 </p>
 
+## Blender
+- Use the [Blender Importer addon](https://github.com/DeltaDesigns/d2-map-importer-addon) to simplify and automate importing maps and models into Blender.
 
 ## S&Box
  - [Import guide](https://github.com/DeltaDesigns/Charm/wiki/Source-2-Importing)

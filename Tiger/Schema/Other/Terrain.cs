@@ -2,12 +2,13 @@ using System.Diagnostics;
 using Tiger.Exporters;
 using Tiger.Schema.Model;
 using Tiger.Schema.Shaders;
+using Tiger.Schema.Static;
 
-namespace Tiger.Schema.Static;
-
+namespace Tiger.Schema;
 
 public class Terrain : Tag<STerrain>
 {
+    public TfxFeatureRenderer FeatureType = TfxFeatureRenderer.TerrainPatch;
     public Terrain(FileHash hash) : base(hash)
     {
 
@@ -17,17 +18,16 @@ public class Terrain : Tag<STerrain>
     public void LoadIntoExporter(ExporterScene scene, string saveDirectory, ulong? identifier = null)
     {
         var _config = ConfigSubsystem.Get();
-        var _exportIndiv = _config.GetIndvidualStaticsEnabled();
+        if (_config.GetSingleFolderMapAssetsEnabled())
+            saveDirectory = Path.Join(_config.GetExportSavePath(), $"Maps/Assets/");
 
         // Uses triangle strip + only using first set of vertices and indices
-        Dictionary<StaticPart, Material> parts = new Dictionary<StaticPart, Material>();
-        List<Texture> dyeMaps = new List<Texture>();
-
-        int terrainTextureIndex = 14;
+        Dictionary<StaticPart, Material> parts = new();
+        List<Texture> dyeMaps = new();
         Texture lastValidEntry = null;
         for (int i = 0; i < _tag.MeshGroups.Count; i++)
         {
-            var meshGroup = _tag.MeshGroups[i];
+            SMeshGroup meshGroup = _tag.MeshGroups[i];
             // Check if the current Dyemap is null
 
             if (meshGroup.Dyemap == null)
@@ -35,15 +35,15 @@ public class Terrain : Tag<STerrain>
                 if (lastValidEntry != null)
                 {
                     // Use the last valid Dyemap for any invalid
-                    scene.Textures.Add(lastValidEntry);
+                    scene.ExternalTextures.Add(lastValidEntry);
                     dyeMaps.Add(lastValidEntry);
                 }
                 else // Use the first valid dyemap if it gets to this point
                 {
-                    var firstValidDyemap = _tag.MeshGroups.FirstOrDefault(x => x.Dyemap != null).Dyemap;
+                    Texture firstValidDyemap = _tag.MeshGroups.FirstOrDefault(x => x.Dyemap != null).Dyemap;
                     if (firstValidDyemap != null)
                     {
-                        scene.Textures.Add(firstValidDyemap);
+                        scene.ExternalTextures.Add(firstValidDyemap);
                         dyeMaps.Add(firstValidDyemap);
                     }
                 }
@@ -52,18 +52,18 @@ public class Terrain : Tag<STerrain>
             {
                 // Update lastValidEntry with the current Dyemap
                 lastValidEntry = meshGroup.Dyemap;
-                scene.Textures.Add(meshGroup.Dyemap);
+                scene.ExternalTextures.Add(meshGroup.Dyemap);
                 dyeMaps.Add(meshGroup.Dyemap);
             }
 
-            foreach (var partEntry in _tag.StaticParts.Where(x => x.GroupIndex == i))
+            foreach (STerrainPart partEntry in _tag.StaticParts.Where(x => x.GroupIndex == i))
             {
                 // MainGeom0 LOD0, GripStock0 LOD1, Stickers0 LOD2?
                 if ((ELodCategory)partEntry.DetailLevel == ELodCategory.MainGeom0)
                 {
                     if (partEntry.Material != null && partEntry.Material.Vertex.Shader != null)
                     {
-                        var part = MakePart(partEntry);
+                        StaticPart part = MakePart(partEntry);
 
                         scene.Materials.Add(new ExportMaterial(partEntry.Material, true));
                         part.Material = partEntry.Material;
@@ -72,7 +72,7 @@ public class Terrain : Tag<STerrain>
                         TransformTexcoords(part);
                         TransformVertexColors(part);
 
-                        if (_config.GetS2ShaderExportEnabled() && _exportIndiv)
+                        if (_config.GetS2ShaderExportEnabled())
                             Source2Handler.SaveVMAT($"{saveDirectory}", $"{part.Material.Hash}", part.Material, dyeMaps);
 
                         parts.TryAdd(part, partEntry.Material);
@@ -82,7 +82,7 @@ public class Terrain : Tag<STerrain>
 
             scene.AddTerrain($"{Hash}", parts.Keys.ToList(), identifier, i);
 
-            if (_config.GetS2VMDLExportEnabled() && _exportIndiv)
+            if (_config.GetS2VMDLExportEnabled())
                 Source2Handler.SaveTerrainVMDL($"{Hash}_{i}", saveDirectory, parts.Keys.ToList());
 
             parts.Clear();
@@ -95,7 +95,7 @@ public class Terrain : Tag<STerrain>
         }
     }
 
-    public StaticPart MakePart(SStaticPart entry)
+    public StaticPart MakePart(STerrainPart entry)
     {
         StaticPart part = new(entry);
         part.GroupIndex = entry.GroupIndex;
@@ -115,7 +115,7 @@ public class Terrain : Tag<STerrain>
         }
 
         // Get unique vertex indices we need to get data for
-        HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
+        HashSet<uint> uniqueVertexIndices = new();
         foreach (UIntVector3 index in part.Indices)
         {
             uniqueVertexIndices.Add(index.X);
@@ -254,7 +254,7 @@ public struct STerrain
     public Material Unk70;
     [SchemaField(0x80, TigerStrategy.DESTINY1_RISE_OF_IRON)]
     [SchemaField(0x78, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
-    public DynamicArray<SStaticPart> StaticParts;
+    public DynamicArray<STerrainPart> StaticParts;
     public VertexBuffer Vertices3;
     public VertexBuffer Vertices4;
     public IndexBuffer Indices2;
@@ -291,7 +291,7 @@ public struct SMeshGroup
 [SchemaStruct(TigerStrategy.DESTINY1_RISE_OF_IRON, "481A8080", 0x0C)]
 [SchemaStruct(TigerStrategy.DESTINY2_SHADOWKEEP_2601, "52718080", 0x0C)]
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "846C8080", 0x0C)]
-public struct SStaticPart
+public struct STerrainPart
 {
     public Material Material;
     public uint IndexOffset;

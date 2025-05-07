@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using Arithmic;
 
+namespace Charm;
 
 // TODO: Find where these indexes actually go?
 // Would be nice if bungie stopped changing these every season :)
@@ -14,36 +15,25 @@ public static class DestinyDamageType
         {
             case -1:
                 return DestinyDamageTypeEnum.None;
-            case 1319:
-            case 1373:
-            case 1405:
-            case 1469: // nice
-                return DestinyDamageTypeEnum.Kinetic;
-            case 1320:
-            case 1374:
-            case 1406:
-            case 1470:
-                return DestinyDamageTypeEnum.Arc;
-            case 1321:
-            case 1375:
-            case 1407:
-            case 1471:
-                return DestinyDamageTypeEnum.Solar;
-            case 1322:
-            case 1376:
-            case 1408:
-            case 1472:
-                return DestinyDamageTypeEnum.Void;
-            case 1323:
-            case 1377:
-            case 1409:
+
             case 1473:
-                return DestinyDamageTypeEnum.Stasis;
-            case 1324:
-            case 1378:
-            case 1410:
+                return DestinyDamageTypeEnum.Kinetic;
+
             case 1474:
+                return DestinyDamageTypeEnum.Arc;
+
+            case 1475:
+                return DestinyDamageTypeEnum.Solar;
+
+            case 1476:
+                return DestinyDamageTypeEnum.Void;
+
+            case 1477:
+                return DestinyDamageTypeEnum.Stasis;
+
+            case 1478:
                 return DestinyDamageTypeEnum.Strand;
+
             default:
                 Log.Warning($"Unknown DestinyDamageTypeEnum {index}");
                 return DestinyDamageTypeEnum.None;
@@ -98,7 +88,7 @@ public enum DestinyUnlockValueUIStyle
 
 public static class DestinyTierTypeColor
 {
-    private static readonly Dictionary<DestinyTierType, Color> Colors = new Dictionary<DestinyTierType, Color>
+    private static readonly Dictionary<DestinyTierType, Color> Colors = new()
     {
         { DestinyTierType.Unknown, Color.FromArgb(255, 56, 56, 56) },
         { DestinyTierType.Currency, Color.FromArgb(255, 56, 56, 56) },
