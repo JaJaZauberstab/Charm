@@ -971,10 +971,12 @@ public struct SBB678080
 [SchemaStruct(TigerStrategy.DESTINY2_BEYONDLIGHT_3402, "20698080", 0x40)]
 public struct S20698080
 {
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)] // TODO
     [SchemaField(0x14, TigerStrategy.DESTINY2_BEYONDLIGHT_3402)]
     [SchemaField(0x18, TigerStrategy.DESTINY2_LATEST)]
     public Material UnkMat;
 
+    [SchemaField(TigerStrategy.DESTINY1_RISE_OF_IRON, Obsolete = true)]
     [SchemaField(0x18, TigerStrategy.DESTINY2_BEYONDLIGHT_3402, Tag64 = true)]
     [SchemaField(0x20, TigerStrategy.DESTINY2_LATEST, Tag64 = true)]
     public Tag<S29698080> ModelContainer;
