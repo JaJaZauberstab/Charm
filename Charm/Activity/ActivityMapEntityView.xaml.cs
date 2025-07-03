@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -409,6 +410,9 @@ public partial class ActivityMapEntityView : UserControl
             AutomatedExporter.SaveInteropUnrealPythonFile(savePath, hash, AutomatedExporter.ImportType.Map, _config.GetOutputTextureFormat(), _config.GetSingleFolderMapAssetsEnabled());
         }
     }
+    private static readonly object GlobalSceneLock = new();
+    private static readonly HashSet<object> GlobalSceneObjects = new();
+
 
     private static void ExtractDataTables(List<FileHash> dataTables, string hash, string savePath)
     {
@@ -466,7 +470,11 @@ public partial class ActivityMapEntityView : UserControl
                                     {
                                         if (c.Unk10.GetValue(resource.GetReader()) is SD1918080 globals)
                                         {
-                                            globalScene.AddToGlobalScene(globals);
+                                            lock (GlobalSceneLock)
+                                            {
+                                                if (GlobalSceneObjects.Add(globals))
+                                                    globalScene.AddToGlobalScene(globals);
+                                            }
                                         }
                                     }
                                     break;
@@ -529,7 +537,26 @@ public partial class ActivityMapEntityView : UserControl
                             break;
 
                         case SMapAtmosphere atmosphere:
-                            globalScene.AddToGlobalScene(atmosphere, true);
+                            lock (GlobalSceneLock)
+                            {
+                                if (GlobalSceneObjects.Add(atmosphere))
+                                    try
+                                    {
+                                        globalScene.AddToGlobalScene(atmosphere, true);
+                                    }
+                                    catch (InvalidOperationException ex)
+                                    {
+                                        if (ex.Message.Contains("already exists"))
+                                        {
+                                            // Silently skip duplicate atmosphere
+                                        }
+                                        else
+                                        {
+                                            throw;
+                                        }
+                                    }
+
+                            }
                             break;
 
                         case SMapLensFlareResource lensFlare:
@@ -549,7 +576,11 @@ public partial class ActivityMapEntityView : UserControl
                             break;
 
                         case S716A8080 dayCycle:
-                            globalScene.AddToGlobalScene(dayCycle, true);
+                            lock (GlobalSceneLock)
+                            {
+                                if (GlobalSceneObjects.Add(dayCycle))
+                                    globalScene.AddToGlobalScene(dayCycle, true);
+                            }
                             break;
 
                         default:
