@@ -523,8 +523,17 @@ public partial class ActivityMapEntityView : UserControl
 
                         case SDecoratorMapResource decorator:
                             decorator.Decorator?.Load();
-                            if (decorator.Decorator is not null)
-                                decorator.Decorator.LoadIntoExporter(decoratorsScene, savePath);
+                            if (decorator.Decorator != null)
+                            {
+                                try
+                                {
+                                    decorator.Decorator.LoadIntoExporter(decoratorsScene, savePath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"[WARN] Failed to export decorator: {ex.Message}");
+                                }
+                            }
                             break;
 
                         case SMapWaterDecal waterDecal:
